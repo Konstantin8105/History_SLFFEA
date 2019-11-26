@@ -10,11 +10,11 @@
     this is used to calculate the corresponding top nodes for the
     entire mesh.
 
-        Updated 11/3/09
+	        Updated 11/4/09
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999-2009 San Le 
+    Version:  1.4
+    Copyright (C) 1999-2009  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -33,16 +33,16 @@
 
 int shVolume( int *, double *, double *);
 
-int shwriter( BOUND , int *, double *, int *, double *, int *, MATL *,
-	char *, STRAIN *, SDIM *, STRESS *, SDIM *, double *, double *);
+int shwriter( BOUND , int *, double *, int *, double *, int *, double *,
+	MATL *, char *, STRAIN *, SDIM *, STRESS *, SDIM *, double *, double *);
 
 int eval_data_print( EIGEN *, char *, int );
 
 int shLanczos(double *, BOUND , int *, double *, EIGEN *, int *, int *,
-	int *, double *,  double *, MATL *, double *, int );
+	int *, double *, double *, double *, double *, MATL *, double *, int );
 
-int shConjGrad(double *, BOUND , int *, double *, int *, double *, double *, MATL *,
-	double *);
+int shConjGrad(double *, BOUND , int *, double *, int *, double *, double *, double *,
+	double *, MATL *, double *);
 
 int dotX(double *,double *, double *, int );
 
@@ -50,10 +50,10 @@ int solve(double *,double *,int *, int );
 
 int decomp(double *,int *,int );
 
-int shMassemble(int *, double *, int *, int *, double *, MATL *);
+int shMassemble(int *, double *, int *, int *, double *, double *, double *, MATL *);
 
-int shKassemble(double *, int *, double *, int *, double *, double *, int *,
-	int *, double *, int *, MATL *, double *, STRAIN *, SDIM *, STRESS *,
+int shKassemble(double *, int *, double *, int *, double *, double *, int *, int *,
+	double *, int *, double*, double *, MATL *, double *, STRAIN *, SDIM *, STRESS *,
 	SDIM *, double *);
 
 int diag( int *, int *, int, int, int, int);
@@ -61,6 +61,8 @@ int diag( int *, int *, int, int, int, int);
 int formlm( int *, int *, int *, int, int, int );
 
 int shformid( BOUND, int *);
+
+int shlocal_vectors( double *, double *, double * );
 
 int shTopCoordinates(int *, double *, int *, double *, MATL *, double *);
 
@@ -81,8 +83,8 @@ int shshl_node2(double * );
 int analysis_flag, dof, sdof, modal_flag, integ_flag, doubly_curved_flag,
 	neqn, nmat, nmode, numel, numnp, sof;
 int static_flag, consistent_mass_flag, consistent_mass_store, eigen_print_flag,
-        lumped_mass_flag, stress_read_flag, element_stress_read_flag,
-        element_stress_print_flag, gauss_stress_flag;
+	lumped_mass_flag, stress_read_flag, element_stress_read_flag,
+	element_stress_print_flag, gauss_stress_flag;
 
 int LU_decomp_flag, numel_K, numel_P, numnp_LUD_max;
 int iteration_max, iteration_const, iteration;
@@ -94,115 +96,115 @@ double shl_node2[sosh_node2], *Vol0, w[num_int];
 
 int main(int argc, char** argv)
 {
-        int i, j;
-        int *id, *lm, *idiag, check, name_length, counter, MemoryCounter;
-        XYZPhiI *mem_XYZPhiI;
-        int *mem_int, sofmA, sofmA_K, sofmA_mass, sofmi, sofmf, sofmSTRESS,
+	int i, j;
+	int *id, *lm, *idiag, check, name_length, counter, MemoryCounter;
+	XYZPhiI *mem_XYZPhiI;
+	int *mem_int, sofmA, sofmA_K, sofmA_mass, sofmi, sofmf, sofmSTRESS,
 		sofmshf, sofmrotf, sofmXYZPhiI, sofmSDIM, ptr_inc;
-        MATL *matl;
-        double *mem_double, *mem_sh_double, *mem_rotate_double;
-        double fpointx, fpointy, fpointz, node_vec[nsd];
-        int *connect, *el_matl, dum;
-        double *coord, *force, *mass, *U, *Uz_fib, *Voln, *A,
-		*node_counter, *vector_dum, *fiber_vec;
+	MATL *matl;
+	double *mem_double, *mem_sh_double, *mem_rotate_double;
+	double fpointx, fpointy, fpointz, node_vec[nsd];
+	int *connect, *el_matl, dum;
+	double *coord, *force, *mass, *U, *Uz_fib, *Voln, *A,
+		*node_counter, *vector_dum, *fiber_vec, *fiber_xyz, *lamina_ref;
 	double *K_diag, *ritz;
 	EIGEN *eigen;
 	int num_eigen;
-        char name[30], buf[ BUFSIZ ];
+	char name[30], buf[ BUFSIZ ];
 	char name_mode[30], *ccheck;
-        FILE *o1, *o2;
-        BOUND bc;
-        STRESS *stress;
-        STRAIN *strain;
+	FILE *o1, *o2;
+	BOUND bc;
+	STRESS *stress;
+	STRAIN *strain;
 	SDIM *stress_node, *strain_node, *mem_SDIM;
-        double g, fdum;
-        long timec;
-        long timef;
+	double g, fdum;
+	long timec;
+	long timef;
 	int  mem_case, mem_case_mass;
 	double RAM_max, RAM_usable, RAM_needed, MEGS;
-        double thickness;
+	double thickness;
 
-        sof = sizeof(double);
+	sof = sizeof(double);
 
 /* For the ROTATE doubles */
 
-        sofmrotf=2*sorls + 2*sorlb + 2*sorfs;
-        mem_rotate_double=(double *)calloc(sofmrotf,sizeof(double));
+	sofmrotf=2*sorls + 2*sorlb + 2*sorfs;
+	mem_rotate_double=(double *)calloc(sofmrotf,sizeof(double));
 
-        if(!mem_rotate_double )
-        {
-                printf( "failed to allocate memory for ROTATE doubles\n ");
-                exit(1);
-        }
-                                           	             ptr_inc=0;
-        rotate.l_bend=(mem_rotate_double+ptr_inc);           ptr_inc += sorlb;
-        rotate.l_shear=(mem_rotate_double+ptr_inc);          ptr_inc += sorls;
-        rotate.f_shear=(mem_rotate_double+ptr_inc);          ptr_inc += sorfs;
+	if(!mem_rotate_double )
+	{
+		printf( "failed to allocate memory for ROTATE doubles\n ");
+		exit(1);
+	}
+	                                                     ptr_inc=0;
+	rotate.l_bend=(mem_rotate_double+ptr_inc);           ptr_inc += sorlb;
+	rotate.l_shear=(mem_rotate_double+ptr_inc);          ptr_inc += sorls;
+	rotate.f_shear=(mem_rotate_double+ptr_inc);          ptr_inc += sorfs;
 
-        rotate_node.l_bend=(mem_rotate_double+ptr_inc);      ptr_inc += sorlb;
-        rotate_node.l_shear=(mem_rotate_double+ptr_inc);     ptr_inc += sorls;
-        rotate_node.f_shear=(mem_rotate_double+ptr_inc);     ptr_inc += sorfs;
+	rotate_node.l_bend=(mem_rotate_double+ptr_inc);      ptr_inc += sorlb;
+	rotate_node.l_shear=(mem_rotate_double+ptr_inc);     ptr_inc += sorls;
+	rotate_node.f_shear=(mem_rotate_double+ptr_inc);     ptr_inc += sorfs;
 
 /* For the SH doubles */
-        sofmshf=2*soshlb + 2*soshls + 2*soshl_zb + 2*soshl_zs +
+	sofmshf=2*soshlb + 2*soshls + 2*soshl_zb + 2*soshl_zs +
 		2*soshgb + 2*soshgs + 2*soshg_zb + 2*soshg_zs;
-        mem_sh_double=(double *)calloc(sofmshf,sizeof(double));
+	mem_sh_double=(double *)calloc(sofmshf,sizeof(double));
 
-        if(!mem_sh_double )
-        {
-                printf( "failed to allocate memory for SH double\n ");
-                exit(1);
-        }
-                                           		ptr_inc=0;
-        shl.bend=(mem_sh_double+ptr_inc);   		ptr_inc += soshlb;
-        shl.shear=(mem_sh_double+ptr_inc);   		ptr_inc += soshls;
-        shl.bend_z=(mem_sh_double+ptr_inc);   		ptr_inc += soshl_zb;
-        shl.shear_z=(mem_sh_double+ptr_inc);   		ptr_inc += soshl_zs;
+	if(!mem_sh_double )
+	{
+		printf( "failed to allocate memory for SH double\n ");
+		exit(1);
+	}
+	                                                ptr_inc=0;
+	shl.bend=(mem_sh_double+ptr_inc);               ptr_inc += soshlb;
+	shl.shear=(mem_sh_double+ptr_inc);              ptr_inc += soshls;
+	shl.bend_z=(mem_sh_double+ptr_inc);             ptr_inc += soshl_zb;
+	shl.shear_z=(mem_sh_double+ptr_inc);            ptr_inc += soshl_zs;
 
-        shl_node.bend=(mem_sh_double+ptr_inc);		ptr_inc += soshlb;
-        shl_node.shear=(mem_sh_double+ptr_inc);		ptr_inc += soshls;
-        shl_node.bend_z=(mem_sh_double+ptr_inc);	ptr_inc += soshl_zb;
-        shl_node.shear_z=(mem_sh_double+ptr_inc);	ptr_inc += soshl_zs;
+	shl_node.bend=(mem_sh_double+ptr_inc);          ptr_inc += soshlb;
+	shl_node.shear=(mem_sh_double+ptr_inc);         ptr_inc += soshls;
+	shl_node.bend_z=(mem_sh_double+ptr_inc);        ptr_inc += soshl_zb;
+	shl_node.shear_z=(mem_sh_double+ptr_inc);       ptr_inc += soshl_zs;
 
-        shg.bend=(mem_sh_double+ptr_inc);   		ptr_inc += soshgb;
-        shg.shear=(mem_sh_double+ptr_inc);   		ptr_inc += soshgs;
-        shg.bend_z=(mem_sh_double+ptr_inc);   		ptr_inc += soshg_zb;
-        shg.shear_z=(mem_sh_double+ptr_inc);   		ptr_inc += soshg_zs;
+	shg.bend=(mem_sh_double+ptr_inc);               ptr_inc += soshgb;
+	shg.shear=(mem_sh_double+ptr_inc);              ptr_inc += soshgs;
+	shg.bend_z=(mem_sh_double+ptr_inc);             ptr_inc += soshg_zb;
+	shg.shear_z=(mem_sh_double+ptr_inc);            ptr_inc += soshg_zs;
 
-        shg_node.bend=(mem_sh_double+ptr_inc);   	ptr_inc += soshgb;
-        shg_node.shear=(mem_sh_double+ptr_inc);   	ptr_inc += soshgs;
-        shg_node.bend_z=(mem_sh_double+ptr_inc);   	ptr_inc += soshg_zb;
-        shg_node.shear_z=(mem_sh_double+ptr_inc);   	ptr_inc += soshg_zs;
+	shg_node.bend=(mem_sh_double+ptr_inc);          ptr_inc += soshgb;
+	shg_node.shear=(mem_sh_double+ptr_inc);         ptr_inc += soshgs;
+	shg_node.bend_z=(mem_sh_double+ptr_inc);        ptr_inc += soshg_zb;
+	shg_node.shear_z=(mem_sh_double+ptr_inc);       ptr_inc += soshg_zs;
 
 /* Create local shape funcions at gauss points */
 
 	g = 2.0/sq3;
-        check = shshl( g, shl, w );
-        if(!check) printf( " Problems with shshl \n");
+	check = shshl( g, shl, w );
+	if(!check) printf( " Problems with shshl \n");
 
 /* Create local shape funcions at nodal points */
 
 	g = 2.0;
-        check = shshl( g, shl_node, w );
-        if(!check) printf( " Problems with shshl \n");
+	check = shshl( g, shl_node, w );
+	if(!check) printf( " Problems with shshl \n");
 
 /* Create local streamlined shape funcion matrix at nodal points */
 
 #if 0
-        check = shshl_node2(shl_node2);
-        if(!check) printf( " Problems with shshl_node2 \n");
+	check = shshl_node2(shl_node2);
+	if(!check) printf( " Problems with shshl_node2 \n");
 #endif
 
 	memset(name,0,30*sizeof(char));
 	
-    	printf("What is the name of the file containing the \n");
-    	printf("shell structural data? \n");
-    	scanf( "%30s",name);
+	printf("What is the name of the file containing the \n");
+	printf("shell structural data? (example: bubble4node)\n");
+	scanf( "%30s",name);
 
 /*   o1 contains all the structural shell data  */
 /*   o2 contains input parameters */
 
-        o1 = fopen( name,"r" );
+	o1 = fopen( name,"r" );
 	o2 = fopen( "shinput","r" );
 
 	if(o1 == NULL ) {
@@ -238,10 +240,10 @@ int main(int argc, char** argv)
 		fscanf( o2, "%d\n ",&eigen_print_flag);
 	}
 
-        fgets( buf, BUFSIZ, o1 );
-        fscanf( o1, "%d %d %d %d %d\n ",&numel,&numnp,&nmat,&nmode,&integ_flag);
-        dof=numnp*ndof;
-        sdof=numnp*nsd;
+	fgets( buf, BUFSIZ, o1 );
+	fscanf( o1, "%d %d %d %d %d\n ",&numel,&numnp,&nmat,&nmode,&integ_flag);
+	dof=numnp*ndof;
+	sdof=numnp*nsd;
 
 	numnp_LUD_max = 450;
 
@@ -305,7 +307,7 @@ int main(int argc, char** argv)
 	}
 
 #if 0
-        LU_decomp_flag = 0;
+	LU_decomp_flag = 0;
 #endif
 
 /*   Begin allocation of meomory */
@@ -313,12 +315,13 @@ int main(int argc, char** argv)
 	MemoryCounter = 0;
 
 /* For the doubles */
-	sofmf=2*sdof + 3*dof + numnp + 2*numel + 2*numnp + dof + sdof;
-        if(modal_flag)
-        {
+	sofmf=2*sdof + 3*dof + numnp + 2*numel + 2*numnp + dof + sdof + numnp*nsdsq +
+		numnp*nsd;
+	if(modal_flag)
+	{
 		sofmf=2*sdof + 3*dof + numnp + 2*numel + 2*numnp + dof +
-			sdof + num_eigen*dof;
-        }
+			sdof + numnp*nsdsq + numnp*nsd + num_eigen*dof;
+	}
 	MemoryCounter += sofmf*sizeof(double);
 	printf( "\n Memory requrement for doubles is %15d bytes\n",MemoryCounter);
 
@@ -338,7 +341,7 @@ int main(int argc, char** argv)
 	printf( "\n Memory requrement for SDIM doubles is %15d bytes\n",MemoryCounter);
 
 /* For the STRESS */
-        sofmSTRESS=numel;
+	sofmSTRESS=numel;
 	MemoryCounter += sofmSTRESS*sizeof(STRESS) + sofmSTRESS*sizeof(STRAIN);
 	printf( "\n Memory requrement for STRESS doubles is %15d bytes\n",MemoryCounter);
 
@@ -348,17 +351,19 @@ int main(int argc, char** argv)
 	if(!check) printf( " Problems with shMemory \n");
 
 /* For the doubles */
-                                                ptr_inc=0;
-        coord=(mem_double+ptr_inc);    	        ptr_inc += 2*sdof;
+	                                        ptr_inc=0;
+	coord=(mem_double+ptr_inc);             ptr_inc += 2*sdof;
 	vector_dum=(mem_double+ptr_inc);        ptr_inc += dof;
-        force=(mem_double+ptr_inc);             ptr_inc += dof;
-        U=(mem_double+ptr_inc);                 ptr_inc += dof;
-        Uz_fib=(mem_double+ptr_inc);            ptr_inc += numnp;
-        Voln=(mem_double+ptr_inc);              ptr_inc += numel;
-        Vol0=(mem_double+ptr_inc);              ptr_inc += numel;
+	force=(mem_double+ptr_inc);             ptr_inc += dof;
+	U=(mem_double+ptr_inc);                 ptr_inc += dof;
+	Uz_fib=(mem_double+ptr_inc);            ptr_inc += numnp;
+	Voln=(mem_double+ptr_inc);              ptr_inc += numel;
+	Vol0=(mem_double+ptr_inc);              ptr_inc += numel;
 	node_counter=(mem_double+ptr_inc);      ptr_inc += 2*numnp;
 	K_diag=(mem_double+ptr_inc);            ptr_inc += dof;
 	fiber_vec=(mem_double+ptr_inc);         ptr_inc += sdof;
+	fiber_xyz=(mem_double+ptr_inc);         ptr_inc += numnp*nsdsq;
+	lamina_ref=(mem_double+ptr_inc);        ptr_inc += numnp*nsd;
 
 /* If modal analysis is desired, allocate for ritz vectors */
 
@@ -368,17 +373,17 @@ int main(int argc, char** argv)
 	}
 
 /* For the integers */
-						ptr_inc = 0; 
-	connect=(mem_int+ptr_inc);	 	ptr_inc += numel*npell; 
-        id=(mem_int+ptr_inc);                   ptr_inc += dof;
-        idiag=(mem_int+ptr_inc);                ptr_inc += dof;
-        lm=(mem_int+ptr_inc);                   ptr_inc += numel*npell*ndof;
-        el_matl=(mem_int+ptr_inc);              ptr_inc += numel;
+	                                        ptr_inc = 0; 
+	connect=(mem_int+ptr_inc);              ptr_inc += numel*npell; 
+	id=(mem_int+ptr_inc);                   ptr_inc += dof;
+	idiag=(mem_int+ptr_inc);                ptr_inc += dof;
+	lm=(mem_int+ptr_inc);                   ptr_inc += numel*npell*ndof;
+	el_matl=(mem_int+ptr_inc);              ptr_inc += numel;
 	bc.force =(mem_int+ptr_inc);            ptr_inc += numnp+1;
 	bc.num_force=(mem_int+ptr_inc);         ptr_inc += 1;
 
 /* For the XYZPhiI integers */
-					      ptr_inc = 0; 
+	                                      ptr_inc = 0; 
 	bc.fix =(mem_XYZPhiI+ptr_inc);        ptr_inc += numnp+1;
 	bc.num_fix=(mem_XYZPhiI+ptr_inc);     ptr_inc += 1;
 
@@ -405,7 +410,7 @@ int main(int argc, char** argv)
 	stress_read_flag = 1;
 	check = shreader( bc, connect, coord, el_matl, force, matl, name,
 		o1, stress, stress_node, U);
-        if(!check) printf( " Problems with shreader \n");
+	if(!check) printf( " Problems with shreader \n");
 
 	if(!doubly_curved_flag)
 	{
@@ -417,58 +422,62 @@ int main(int argc, char** argv)
 	    if(!check) printf( " Problems with fiber_vec \n");
 
 	    shTopCoordinates(connect, coord, el_matl, fiber_vec, matl, node_counter);
+	    if(!check) printf( " Problems with shTopCoordinates\n");
 
 	    memset(node_counter,0,numnp*sizeof(double));
 	}
 
-        printf(" \n\n");
+	check = shlocal_vectors( coord, lamina_ref, fiber_xyz );
+	if(!check) printf( " Problems with shlocal_vectors\n");
 
-        check = shformid( bc, id );
-        if(!check) printf( " Problems with shformid \n");
+	printf(" \n\n");
+
+	check = shformid( bc, id );
+	if(!check) printf( " Problems with shformid \n");
 /*
-        printf( "\n This is the id matrix \n");
-        for( i = 0; i < numnp; ++i )
-        {
-                printf("\n node(%4d)",i);
-                for( j = 0; j < ndof; ++j )
-                {
-                        printf(" %4d  ",*(id+ndof*i+j));
-                }
-        }
+	printf( "\n This is the id matrix \n");
+	for( i = 0; i < numnp; ++i )
+	{
+		printf("\n node(%4d)",i);
+		for( j = 0; j < ndof; ++j )
+		{
+			printf(" %4d  ",*(id+ndof*i+j));
+		}
+	}
 */
 	check = formlm( connect, id, lm, ndof, npell, numel );
-        if(!check) printf( " Problems with formlm \n");
+	if(!check) printf( " Problems with formlm \n");
 /*
-        printf( "\n\n This is the lm matrix \n");
-        for( i = 0; i < numel; ++i )
-        {
-            printf("\n element(%4d)",i);
-            for( j = 0; j < neqel; ++j )
-            {
-                printf( "%5d",*(lm+neqel*i+j));
-            }
-        }
-        printf( "\n");
+	printf( "\n\n This is the lm matrix \n");
+	for( i = 0; i < numel; ++i )
+	{
+	    printf("\n element(%4d)",i);
+	    for( j = 0; j < neqel; ++j )
+	    {
+		printf( "%5d",*(lm+neqel*i+j));
+	    }
+	}
+	printf( "\n");
 */
 	check = diag( idiag, lm, ndof, neqn, npell, numel);
-        if(!check) printf( " Problems with diag \n");
+	if(!check) printf( " Problems with diag \n");
 /*
-        printf( "\n\n This is the idiag matrix \n");
-        for( i = 0; i < neqn; ++i )
-        {
-            printf( "\ndof %5d   %5d",i,*(idiag+i));
-        }
-        printf( "\n");
+	printf( "\n\n This is the idiag matrix \n");
+	for( i = 0; i < neqn; ++i )
+	{
+	    printf( "\ndof %5d   %5d",i,*(idiag+i));
+	}
+	printf( "\n");
 */
 /*   allocate meomory for A, the global stiffness.  There are 2 possibilities:
 
      1) Use standard Linear Algebra with LU decomposition and skyline storage
-        of global stiffness matrix.
+	of global stiffness matrix.
 
      2) Use the Conjugate Gradient method with storage of numel_K element
-        stiffness matrices.
+	stiffness matrices.
 */
-	sofmA = numel_K*neqlsq;		 /* case 2 */
+	sofmA = numel_K*neqlsq;                  /* case 2 */
 	mem_case = 2;
 
 	if(LU_decomp_flag)
@@ -503,7 +512,7 @@ int main(int argc, char** argv)
 /* If modal analysis is desired, determine how much memory is needed and available
    for mass matrix */
 
-	sofmA_K = sofmA;              /* mass case 3 */
+	sofmA_K = sofmA;                                /* mass case 3 */
 	sofmA_mass = 0;
 	consistent_mass_store = 0;
 	mem_case_mass = 3;
@@ -532,21 +541,21 @@ int main(int argc, char** argv)
 		mem_case_mass = 1;
 	    }
 
-            printf( "\n We are in mass case %3d\n\n", mem_case_mass);
-            switch (mem_case_mass) {
-                case 1:
-                        printf( " Diagonal lumped mass matrix \n\n");
-                break;
-                case 2:
-                        printf( " Consistent mass matrix with all\n");
-                        printf( " element masses stored \n\n");
-                break;
-                case 3:
-                        printf( " Consistent mass matrix with no\n");
-                        printf( " storage of element masses \n\n");
-                break;
-            }
-        }
+	    printf( "\n We are in mass case %3d\n\n", mem_case_mass);
+	    switch (mem_case_mass) {
+		case 1:
+			printf( " Diagonal lumped mass matrix \n\n");
+		break;
+		case 2:
+			printf( " Consistent mass matrix with all\n");
+			printf( " element masses stored \n\n");
+		break;
+		case 3:
+			printf( " Consistent mass matrix with no\n");
+			printf( " storage of element masses \n\n");
+		break;
+	    }
+	}
 
 	MemoryCounter += sofmA*sizeof(double);
 	printf( "\n Memory requrement for disp calc. with %15d doubles is %15d bytes\n",
@@ -556,7 +565,7 @@ int main(int argc, char** argv)
 	printf( "\n This is numel, numel_K, numel_P %5d %5d %5d\n", numel, numel_K, numel_P);
 
 #if 0
-        consistent_mass_store = 0;
+	consistent_mass_store = 0;
 #endif
 
 	if(sofmA < 1)
@@ -576,23 +585,23 @@ int main(int argc, char** argv)
 
 	if(modal_flag)
 	{
-		                               ptr_inc = sofmA_K;
+	                                       ptr_inc = sofmA_K;
 		mass = (A + ptr_inc);          ptr_inc += sofmA_mass;
 	}
 
 	analysis_flag = 1;
 	memset(A,0,sofmA*sof);
 	check = shKassemble(A, connect, coord, el_matl, fiber_vec, force,
-		id, idiag, K_diag, lm, matl, node_counter, strain, strain_node,
-		stress, stress_node, U);
-        if(!check) printf( " Problems with shKassembler \n");
+		id, idiag, K_diag, lm, lamina_ref, fiber_xyz, matl, node_counter,
+		strain, strain_node, stress, stress_node, U);
+	if(!check) printf( " Problems with shKassembler \n");
 /*
-        printf( "\n\n This is the force matrix \n");
-        for( i = 0; i < neqn; ++i )
-        {
-            printf( "\ndof %5d   %14.5f",i,*(force+i));
-        }
-        printf(" \n");
+	printf( "\n\n This is the force matrix \n");
+	for( i = 0; i < neqn; ++i )
+	{
+	    printf( "\ndof %5d   %14.5f",i,*(force+i));
+	}
+	printf(" \n");
 */
 
 	if(modal_flag)
@@ -604,7 +613,8 @@ int main(int argc, char** argv)
    the case of consistent mass, create and store all element mass matrices (if
    there is enough memory).
 */
-		check = shMassemble(connect, coord, el_matl, id, mass, matl);
+		check = shMassemble(connect, coord, el_matl, id, lamina_ref,
+			fiber_xyz, mass, matl);
 		if(!check) printf( " Problems with shMassemble \n");
 
 		/*if( lumped_mass_flag )
@@ -629,14 +639,14 @@ int main(int argc, char** argv)
 	}
 
 /*
-        for( i = 0; i < *(idiag+neqn-1)+1; ++i )
-        {
-                printf( "\n a[%3d] = %12.5e",i,*(A+i));
-        }
-        for( i = 0; i < neqn; ++i )
-        {
-                printf( "\n force[%3d] = %12.5e",i,*(force+i));
-        }
+	for( i = 0; i < *(idiag+neqn-1)+1; ++i )
+	{
+		printf( "\n a[%3d] = %12.5e",i,*(A+i));
+	}
+	for( i = 0; i < neqn; ++i )
+	{
+		printf( "\n force[%3d] = %12.5e",i,*(force+i));
+	}
 */
 
 	if(static_flag)
@@ -663,7 +673,7 @@ int main(int argc, char** argv)
 	    if(!LU_decomp_flag)
 	    {
 		check = shConjGrad( A, bc, connect, coord, el_matl, force, K_diag,
-			matl, U);
+			lamina_ref, fiber_xyz, matl, U);
 		if(!check) printf( " Problems with shConjGrad \n");
 	    }
 /*
@@ -696,8 +706,8 @@ int main(int argc, char** argv)
 	    analysis_flag = 2;
 	    memset(force,0,dof*sof);
 	    check = shKassemble(A, connect, coord, el_matl, fiber_vec, force,
-		id, idiag, K_diag, lm, matl, node_counter, strain, strain_node,
-		stress, stress_node, U);
+		id, idiag, K_diag, lm, lamina_ref, fiber_xyz, matl, node_counter,
+		strain, strain_node, stress, stress_node, U);
 	    if(!check) printf( " Problems with shKassembler \n");
 
 /* Calcuate the local z fiber displacement on each node */
@@ -706,9 +716,9 @@ int main(int argc, char** argv)
 	    {
 /* Calcuate the projection of displacement vector to local z fiber vector */
 
-		*(node_vec) = *(coord+nsd*(numnp+i))-*(coord+nsd*i);
-		*(node_vec+1) = *(coord+nsd*(numnp+i)+1)-*(coord+nsd*i+1);
-		*(node_vec+2) = *(coord+nsd*(numnp+i)+2)-*(coord+nsd*i+2);
+		*(node_vec) = *(coord+nsd*(i+numnp))-*(coord+nsd*i);
+		*(node_vec+1) = *(coord+nsd*(i+numnp)+1)-*(coord+nsd*i+1);
+		*(node_vec+2) = *(coord+nsd*(i+numnp)+2)-*(coord+nsd*i+2);
 		fdum = *(node_vec)*(*(node_vec)) +
 			*(node_vec+1)*(*(node_vec+1)) + *(node_vec+2)*(*(node_vec+2));
 		fdum = sqrt(fdum);
@@ -718,8 +728,9 @@ int main(int argc, char** argv)
 		check = dotX( (Uz_fib+i), (node_vec), (U+ndof*i), nsd);
 		if(!check) printf( " Problems with dotX \n");
 		/* *(Uz_fib+i) *= .5;*/
-		/*printf("\n node %3d %14.9f %14.9f %14.9f %14.9f %14.9f",
-			i,*(Uz_fib+i),fdum,*(node_vec), *(node_vec+1), *(node_vec+2));*/
+		/*printf("\n node %3d %16.8e %16.8e %16.8e %16.8e %16.8e %16.8e %16.8e",
+			i,*(Uz_fib+i),*(U+ndof*i),*(U+ndof*i+1),*(U+ndof*i+2),
+			*(node_vec), *(node_vec+1), *(node_vec+2),fdum);*/
 	    }
 /*
 	    printf( "\n\n These are the reaction forces and moments\n");
@@ -746,24 +757,43 @@ int main(int argc, char** argv)
 			printf("\n node %3d phi y   %14.6f ",i,*(force+ndof*i+4));
 		}
 	    }
+*/
+/* This method for calculating the updated coordinates is based on equations 6.2.20-6.2.24 of
+   "The Finite Element Method" by Thomas Hughes, page 388-389.  (David Benson, in "AMES 232 B
+   Course Notes" page 50, does the same as Hughes.)  I have made some modifications,
+   specifically, I replace za in equation 6.2.23 with "Uz_fib" which is the projection of the
+   displacement at a node in the fiber "e3" direction.
 
-	    printf( "\n\n               These are the updated coordinates \n");
-	    printf( "\n                  x               y               z\n");
+   It should be noted that in the "ANSYS User's Manual", page 12-12, these same equations mistakenly
+   switch the fiber vectors e1 and e2(which are called "a" and "b" in ANSYS).  The first time these
+   equations appear are in 12.5.1, 12.5.2, 12.5.3.  They also appear incorrectly like this later.
+*/
+
+/*
+	    printf( "\n\n              These are the updated coordinates \n");
+	    printf( "\n           x            y               z\n");
 
 	    for( i = 0; i < numnp; ++i )
 	    {
+		fdum = - *(fiber_xyz + nsdsq*i + 1*nsd)*(*(U+ndof*i+3)) +
+		    *(fiber_xyz + nsdsq*i)*(*(U+ndof*i+4));
 		fpointx = *(coord+nsd*i) + *(U+ndof*i) +
-			*(Uz_fib+i)*(*(U+ndof*i+4));
-		fpointy = *(coord+nsd*i+1) + *(U+ndof*i+1) -
-			*(Uz_fib+i)*(*(U+ndof*i+3));
-		fpointz = *(coord+nsd*i+2) + *(U+ndof*i+2);
+		    *(Uz_fib+i)*fdum;
+		fdum = - *(fiber_xyz + nsdsq*i + 1*nsd + 1)*(*(U+ndof*i+3)) +
+		    *(fiber_xyz + nsdsq*i + 1)*(*(U+ndof*i+4));
+		fpointy = *(coord+nsd*i+1) + *(U+ndof*i+1) +
+		    *(Uz_fib+i)*fdum;
+		fdum = - *(fiber_xyz + nsdsq*i + 1*nsd + 2)*(*(U+ndof*i+3)) +
+		    *(fiber_xyz + nsdsq*i + 2)*(*(U+ndof*i+4));
+		fpointz = *(coord+nsd*i+2) + *(U+ndof*i+2) +
+		    *(Uz_fib+i)*fdum;
 		printf("\n node %3d %14.9f %14.9f %14.9f",i,fpointx,fpointy,fpointz);
 	    }
 	    printf(" \n");
 */
 
-	    check = shwriter( bc, connect, coord, el_matl, force, id, matl,
-		name, strain, strain_node, stress, stress_node, U, Uz_fib);
+	    check = shwriter( bc, connect, coord, el_matl, force, id, fiber_xyz,
+		matl, name, strain, strain_node, stress, stress_node, U, Uz_fib);
 	    if(!check) printf( " Problems with shwriter \n");
 	}
 
@@ -800,7 +830,7 @@ int main(int argc, char** argv)
 /* Use Lanczos method for determining eigenvalues */
 
 	    check = shLanczos(A, bc, connect, coord, eigen, el_matl, id, idiag, K_diag,
-		mass, matl, ritz, num_eigen);
+		lamina_ref, fiber_xyz, mass, matl, ritz, num_eigen);
 	    if(!check) printf( " Problems with shLanczos \n");
 
 /* Write out the eigenvalues to a file */
@@ -836,16 +866,16 @@ int main(int argc, char** argv)
 
 /* Re-initialize the stress, strain, stress_node, stain_node */
 
-                memset(stress,0,sofmSTRESS*sizeof(STRESS));
-                memset(strain,0,sofmSTRESS*sizeof(STRAIN));
-                memset(mem_SDIM,0,sofmSDIM*sizeof(SDIM));
+		memset(stress,0,sofmSTRESS*sizeof(STRESS));
+		memset(strain,0,sofmSTRESS*sizeof(STRAIN));
+		memset(mem_SDIM,0,sofmSDIM*sizeof(SDIM));
 
 /* Calculate the stresses */
 		analysis_flag = 2;
 
 		check = shKassemble(A, connect, coord, el_matl, fiber_vec,
-		    vector_dum, id, idiag, K_diag, lm, matl, node_counter,
-		    strain, strain_node, stress, stress_node, U);
+		    vector_dum, id, idiag, K_diag, lm, lamina_ref, fiber_xyz, matl,
+		    node_counter, strain, strain_node, stress, stress_node, U);
 		if(!check) printf( " Problems with shKassembler \n");
 
 /* Calcuate the local z fiber displacement on each node */
@@ -854,9 +884,9 @@ int main(int argc, char** argv)
 		{
 /* Calcuate the projection of displacement vector to local z fiber vector */
 
-		    *(node_vec) = *(coord+nsd*(numnp+i))-*(coord+nsd*i);
-		    *(node_vec+1) = *(coord+nsd*(numnp+i)+1)-*(coord+nsd*i+1);
-		    *(node_vec+2) = *(coord+nsd*(numnp+i)+2)-*(coord+nsd*i+2);
+		    *(node_vec) = *(coord+nsd*(i+numnp))-*(coord+nsd*i);
+		    *(node_vec+1) = *(coord+nsd*(i+numnp)+1)-*(coord+nsd*i+1);
+		    *(node_vec+2) = *(coord+nsd*(i+numnp)+2)-*(coord+nsd*i+2);
 		    fdum = *(node_vec)*(*(node_vec)) +
 			*(node_vec+1)*(*(node_vec+1)) + *(node_vec+2)*(*(node_vec+2));
 		    fdum = sqrt(fdum);
@@ -866,12 +896,13 @@ int main(int argc, char** argv)
 		    check = dotX( (Uz_fib+i), (node_vec), (U+ndof*i), nsd);
 		    if(!check) printf( " Problems with dotX \n");
 		    /* *(Uz_fib+i) *= .5;*/
-		    /*printf("\n node %3d %14.9f %14.9f %14.9f %14.9f %14.9f",
-			i,*(Uz_fib+i),fdum,*(node_vec), *(node_vec+1), *(node_vec+2));*/
+		    /*printf("\n node %3d %16.8e %16.8e %16.8e %16.8e %16.8e %16.8e %16.8e",
+			i,*(Uz_fib+i),*(U+ndof*i),*(U+ndof*i+1),*(U+ndof*i+2),
+			*(node_vec), *(node_vec+1), *(node_vec+2),fdum);*/
 		}
 
-		check = shwriter( bc, connect, coord, el_matl, force, id, matl,
-		    name_mode, strain, strain_node, stress, stress_node, U, Uz_fib);
+		check = shwriter( bc, connect, coord, el_matl, force, id, fiber_xyz,
+		    matl, name_mode, strain, strain_node, stress, stress_node, U, Uz_fib);
 		if(!check) printf( " Problems with shwriter \n");
 
 		++counter;
@@ -892,7 +923,7 @@ int main(int argc, char** argv)
 	}
 */
 
-    	timec = clock();
+	timec = clock();
 	printf("\n\n elapsed CPU = %lf\n\n",( (double)timec)/800.);
 
 	free(strain);

@@ -39,15 +39,15 @@ int brPassemble(int *connect, double *coord, double *coordh, int *el_matl,
 	MATL *matl, double *P_global, STRESS *stress, double *dU)
 
 {
-        int i,i1,i2,j,k,dof_el[npel*ndof],sdof_el[npel*nsd];
+	int i,i1,i2,j,k,dof_el[npel*ndof],sdof_el[npel*nsd];
 	int check, node;
 	int matl_num;
 	double Emod, G, K, Pois;
 	double D11, D12, D13, D21, D22, D23, D31, D32, D33;
 	double lamda, mu, hydro;
-        double B[soB], Bh[soB], stressd[sdim];
-        double P_el[neqel], P_temp[neqel];
-        double dU_el[neqel], domega_el[3], coord_el[npel*nsd], coordh_el[npel*nsd],
+	double B[soB], Bh[soB], stressd[sdim];
+	double P_el[neqel], P_temp[neqel];
+	double dU_el[neqel], domega_el[3], coord_el[npel*nsd], coordh_el[npel*nsd],
 		coord_el_trans[npel*nsd], coordh_el_trans[npel*nsd];
 	double stress_el[sdim],  dstress_el[sdim], dstrain_el[sdim];
 	double det[num_int], deth[num_int], wXdet;
@@ -55,18 +55,18 @@ int brPassemble(int *connect, double *coord, double *coordh, int *el_matl,
 
 	memset(P_global,0,dof*sof);
 
-        for( k = 0; k < numel; ++k )
-        {
-                matl_num = *(el_matl+k);
-                Emod = matl[matl_num].E;
-                Pois = matl[matl_num].nu;
+	for( k = 0; k < numel; ++k )
+	{
+		matl_num = *(el_matl+k);
+		Emod = matl[matl_num].E;
+		Pois = matl[matl_num].nu;
 
-        	K=Emod/(1.0-2*Pois)/3.0;
-        	G=Emod/(1.0+Pois)/2.0;
+		K=Emod/(1.0-2*Pois)/3.0;
+		G=Emod/(1.0+Pois)/2.0;
 
 		lamda = Emod*Pois/((1.0+Pois)*(1.0-2.0*Pois));
 		mu = Emod/(1.0+Pois)/2.0;
-        	/*printf("lamda, mu, Emod, Pois  %f %f %f %f \n", lamda, mu, Emod, Pois);*/
+		/*printf("lamda, mu, Emod, Pois  %f %f %f %f \n", lamda, mu, Emod, Pois);*/
 
 		D11 = lamda+2.0*mu;
 		D12 = lamda;
@@ -77,9 +77,6 @@ int brPassemble(int *connect, double *coord, double *coordh, int *el_matl,
 		D31 = lamda;
 		D32 = lamda;
 		D33 = lamda+2.0*mu;
-
-/*      initialize P_el */
-        	memset(P_el,0,neqel*sof);
 
 		for( j = 0; j < npel; ++j )
 		{
@@ -129,53 +126,56 @@ int brPassemble(int *connect, double *coord, double *coordh, int *el_matl,
 /* The loop over j below calculates the 8 points of the gaussian integration 
    for several quantities */
 
-                for( j = 0; j < num_int; ++j )
-                {
+/* Initialize P_el */
+		memset(P_el,0,neqel*sof);
+
+		for( j = 0; j < num_int; ++j )
+		{
 		    memset(B,0,soB*sof);
 		    memset(Bh,0,soB*sof);
 
 /* Assembly of the Bh matrix at 1/2 time */
 
 		    check = brickB((shgh+npel*(nsd+1)*j),Bh);
-                    if(!check) printf( "Problems with brickB \n");
+		    if(!check) printf( "Problems with brickB \n");
 
-                    /*for( i2 = 0; i2 < sdim; ++i2 )
-                    {
-                        for( i1 = 0; i1 < 8; ++i1 )
-                        {
-                                printf("%6.4f ",*(Bh+neqel*i2+i1));
-                        }
-                        printf("\n");
-                    }*/
+		    /*for( i2 = 0; i2 < sdim; ++i2 )
+		    {
+			for( i1 = 0; i1 < 8; ++i1 )
+			{
+				printf("%6.4f ",*(Bh+neqel*i2+i1));
+			}
+			printf("\n");
+		    }*/
 
 
 /* Assembly of the B matrix at full time */
 
 		    check = brickB((shg+npel*(nsd+1)*j),B);
-                    if(!check) printf( "Problems with brickB \n");
+		    if(!check) printf( "Problems with brickB \n");
 
 /* Calculation of the incremental strain at 1/2 time */
 
-                    check=matX(dstrain_el,Bh,dU_el, sdim, 1, neqel);
-                    if(!check) printf( "Problems with matX \n");
+		    check=matX(dstrain_el,Bh,dU_el, sdim, 1, neqel);
+		    if(!check) printf( "Problems with matX \n");
 
 /* Assembly of domega_el(rotation) of the element at 1/2 time = Bh*dU_el */
 
 /* First, Bh is modified slightly before the calculaiton is performed */
 
-	            for( i4 = 1; i4 < 9; ++i4 )
-        	    {
-                        i5      = ndof*i4-1;
-                        i5m1    = i5-1;
-                        i5m2    = i5-2;
+		    for( i4 = 1; i4 < 9; ++i4 )
+		    {
+			i5      = ndof*i4-1;
+			i5m1    = i5-1;
+			i5m2    = i5-2;
 
-                        *(Bh+neqel*3+i5m1) *= -1.0;
-                        *(Bh+neqel*4+i5m2) *= -1.0;
-                        *(Bh+neqel*5+i5) *= -1.0;
-            	    }
+			*(Bh+neqel*3+i5m1) *= -1.0;
+			*(Bh+neqel*4+i5m2) *= -1.0;
+			*(Bh+neqel*5+i5) *= -1.0;
+		    }
 
-                    check=matX((domega_el),(Bh+72), dU_el, 3, 1, neqel);
-                    if(!check) printf( "Problems with matX \n");
+		    check=matX((domega_el),(Bh+72), dU_el, 3, 1, neqel);
+		    if(!check) printf( "Problems with matX \n");
 
 /* Calculation of the incremental Yaumann constitutive rate change */
 
@@ -248,6 +248,7 @@ int brPassemble(int *connect, double *coord, double *coordh, int *el_matl,
 
 		    if(Passemble_flag)
 		    {
+			memset(P_temp,0,neqel*sof);
 
 /* Calculation of the element stress matrix at full time */
 
@@ -272,18 +273,18 @@ int brPassemble(int *connect, double *coord, double *coordh, int *el_matl,
 				*(P_el+i1) += *(P_temp+i1)*wXdet;
 			}
 		    }
-                }
+		}
 
 		if(Passemble_flag)
 		{
 
 /* Assembly of the global P matrix */
 
-                    for( j = 0; j < neqel; ++j )
-                    {
-                	*(P_global+*(dof_el+j)) += *(P_el+j);
+		    for( j = 0; j < neqel; ++j )
+		    {
+			*(P_global+*(dof_el+j)) += *(P_el+j);
 		    }
 		}
-        }
-        return 1;
+	}
+	return 1;
 }

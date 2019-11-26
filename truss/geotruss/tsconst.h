@@ -19,12 +19,12 @@
 #include <math.h>
 
 #define nsd       3                     /* number of spatial dimentions per node */
-#define ndof      3			/* degrees of freedom per node */
-#define npel      2			/* nodes per element */
-#define neqel     npel*ndof		/* degrees of freedom per element */
-#define num_int   1			/* number of integration points */
-#define neqlsq    neqel*neqel 		/* neqel squared */
-#define npelsq    npel*npel		/* npel squared */
+#define ndof      3                     /* degrees of freedom per node */
+#define npel      2                     /* nodes per element */
+#define neqel     npel*ndof             /* degrees of freedom per element */
+#define num_int   1                     /* number of integration points */
+#define neqlsq    neqel*neqel           /* neqel squared */
+#define npelsq    npel*npel             /* npel squared */
 #define sdim      1                     /* stress dimentions per element */
 #define soB       sdim*npel             /* size of B matrix */
 
@@ -43,7 +43,7 @@
   connect (0-1) connectivity array 
   matl    material structure
   Emod    young's modulus
-  area	  Area
+  area    Area
   force   *(force + 0) x component of applied load
           *(force + 1) y component of applied load
           *(force + 2) z component of applied load

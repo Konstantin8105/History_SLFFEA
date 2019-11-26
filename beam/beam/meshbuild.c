@@ -2,10 +2,10 @@
     This program generates the mesh for the building
     problem for a beam.
 
-		Updated 10/5/00
+		Updated 1/15/07
 
     SLFFEA source file
-    Version:  1.3
+    Version:  1.4
     Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the

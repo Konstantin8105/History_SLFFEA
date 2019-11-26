@@ -6,11 +6,11 @@
     which allocates the memory and goes through the steps of the algorithm.
     These go with the calculation of displacement.
 
-		Updated 1/7/03
+	        Updated 10/20/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -27,11 +27,17 @@
 
 #define SMALL      1.e-20
 
-extern int analysis_flag, dof, numel, numnp, plane_stress_flag, sof;
+extern int analysis_flag, dof, numel, numnp, plane_stress_flag, sof, flag_3D;
 extern int LU_decomp_flag, numel_K, numel_P;
 extern double shg[sosh], shl[sosh], w[num_int], *Area0;
 extern int  iteration_max, iteration_const, iteration;
 extern double tolerance;
+
+int matXrot2(double *, double *, double *, int, int);
+
+int rotXmat2(double *, double *, double *, int, int);
+
+int rotTXmat2(double *, double *, double *, int, int);
 
 int matX(double *,double *,double *, int ,int ,int );
 
@@ -41,28 +47,32 @@ int triangleB(double *,double *);
 
 int dotX(double *, double *, double *, int);
 
-int trBoundary( double *, BOUND );
+int Boundary( double *, BOUND );
 
 
-int trConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *matl,
-	double *P_global_CG, double *U)
+int trConjPassemble(double *A, int *connect, double *coord, int *el_matl,
+	double *local_xyz, MATL *matl, double *P_global_CG, double *U)
 {
 /* This function assembles the P_global_CG matrix for the displacement calculation by
    taking the product [K_el]*[U_el].  Some of the [K_el] is stored in [A].
 
-			Updated 12/18/02
+                        Updated 9/20/06
 */
 	int i, i1, i2, j, k, dof_el[neqel], sdof_el[npel*nsd];
-	int check, node;
+	int check, node, dum;
 	int matl_num;
-	double Emod, Pois, G;
+	double Emod, Pois, G, Gt, thickness;
 	double fdum, area_el;
 	double D11,D12,D21,D22;
 	double lamda, mu;
 	double B[soB], DB[soB];
-	double K_temp[neqlsq], K_el[neqlsq];
+	double K_temp[neqlsq], K_el[neqlsq], K_local[neqlsq36], rotate[nsd2*nsd];
 	double U_el[neqel];
-	double coord_el_trans[npel*nsd], X1, X2, X3, Y1, Y2, Y3;
+	double coord_el[npel*nsd], coord_el_trans[npel*nsd],
+		coord_el_local[npel*nsd2], coord_el_local_trans[npel*nsd2];
+	double X1, X2, X3, Y1, Y2, Y3, Z1, Z2, Z3, X12, X13, Y12, Y13, Z12, Z13;
+	double Xp, Xr, Xq, Yp, Yr, Yq, Zp, Zr, Zq, Xpr, Xpq, Ypr, Ypq, Zpr, Zpq;
+	double Lpq, Ltr, Mpq, Mtr, Npq, Ntr, Dpq, Dpt, Dtr;
 	double det[num_int];
 	double P_el[neqel];
 
@@ -78,6 +88,7 @@ int trConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *
 
 			*(dof_el+ndof*j) = ndof*node;
 			*(dof_el+ndof*j+1) = ndof*node+1;
+			*(dof_el+ndof*j+2) = ndof*node+2;
 		}
 
 /* Assembly of the global P matrix */
@@ -101,6 +112,7 @@ int trConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *
 		matl_num = *(el_matl+k);
 		Emod = matl[matl_num].E;
 		Pois = matl[matl_num].nu;
+		thickness = matl[matl_num].thick;
 
 		mu = Emod/(1.0+Pois)/2.0;
 
@@ -115,12 +127,19 @@ int trConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *
 
 		/*printf("lamda, mu, Emod, Pois  %f %f %f %f \n", lamda, mu, Emod, Pois);*/
 
-		D11 = lamda+2.0*mu;
-		D12 = lamda;
-		D21 = lamda;
-		D22 = lamda+2.0*mu;
+/* Normally, with plane elements, we assume a unit thickness in the transverse direction.  But
+   because these elements can be 3 dimensional, I multiply the material property matrix by the
+   thickness.  This is justified by equation 5.141a in "Theory of Matrix Structural
+   Analysis" by J. S. Przemieniecki on page 86.
+*/
+
+		D11 = thickness*(lamda+2.0*mu);
+		D12 = thickness*lamda;
+		D21 = thickness*lamda;
+		D22 = thickness*(lamda+2.0*mu);
 
 		G = mu;
+		Gt = thickness*mu;
 
 /* Create the coord_el vector for one element */
 
@@ -130,20 +149,55 @@ int trConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *
 
 			*(sdof_el+nsd*j) = nsd*node;
 			*(sdof_el+nsd*j+1) = nsd*node+1;
+			*(sdof_el+nsd*j+2) = nsd*node+2;
+
+			*(coord_el+nsd*j)=*(coord+*(sdof_el+nsd*j));
+			*(coord_el+nsd*j+1)=*(coord+*(sdof_el+nsd*j+1));
+			*(coord_el+nsd*j+2)=*(coord+*(sdof_el+nsd*j+2));
 
 			*(coord_el_trans+j)=*(coord+*(sdof_el+nsd*j));
 			*(coord_el_trans+npel*1+j)=*(coord+*(sdof_el+nsd*j+1));
+			*(coord_el_trans+npel*2+j)=*(coord+*(sdof_el+nsd*j+2));
 
 			*(dof_el+ndof*j) = ndof*node;
 			*(dof_el+ndof*j+1) = ndof*node+1;
-
+			*(dof_el+ndof*j+2) = ndof*node+2;
 		}
 
-		memset(U_el,0,neqel*sof);
-		memset(K_el,0,neqlsq*sof);
+		memset(rotate,0,nsd2*nsd*sof);
 
-		memset(B,0,soB*sof);
-		memset(DB,0,soB*sof);
+		if(!flag_3D)
+		{
+/* For 2-D meshes */
+		    X1 = *(coord_el_trans);
+		    X2 = *(coord_el_trans + 1);
+		    X3 = *(coord_el_trans + 2);
+
+		    Y1 = *(coord_el_trans + npel*1);
+		    Y2 = *(coord_el_trans + npel*1 + 1);
+		    Y3 = *(coord_el_trans + npel*1 + 2);
+		}
+		else
+		{
+/* For 3-D meshes */
+
+/* For 3-D triangle meshes, I have to rotate from the global coordinates to the local x and
+   y coordinates which lie in the plane of the element.  The local basis used for the
+   rotation has already been calculated and stored in local_xyz[].  Below, it is
+   copied to rotate[].
+*/
+		    *(rotate)     = *(local_xyz + nsdsq*k);
+		    *(rotate + 1) = *(local_xyz + nsdsq*k + 1);
+		    *(rotate + 2) = *(local_xyz + nsdsq*k + 2);
+		    *(rotate + 3) = *(local_xyz + nsdsq*k + 3);
+		    *(rotate + 4) = *(local_xyz + nsdsq*k + 4);
+		    *(rotate + 5) = *(local_xyz + nsdsq*k + 5);
+
+/* Put coord_el into local coordinates */
+
+		    dum = nsd*npel;
+		    check = rotXmat2(coord_el_local, rotate, coord_el, 1, dum);
+		    if(!check) printf( "Problems with  rotXmat2 \n");
 
 /* Assembly of the B matrix.  This is taken from "Fundamentals of the Finite
    Element Method" by Hartley Grandin Jr., page 201-205.
@@ -157,14 +211,18 @@ int trConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *
      This change only effects the calculation of the area.  The [B] matrix
      is still the same.
 */
+		    X1 = *(coord_el_local);     Y1 = *(coord_el_local + 1);
+		    X2 = *(coord_el_local + 2); Y2 = *(coord_el_local + 3);
+		    X3 = *(coord_el_local + 4); Y3 = *(coord_el_local + 5);
+		}
 
-		X1 = *(coord_el_trans);
-		X2 = *(coord_el_trans + 1);
-		X3 = *(coord_el_trans + 2);
+		*(coord_el_local_trans) = X1;     *(coord_el_local_trans + 3) = Y1;
+		*(coord_el_local_trans + 1) = X2; *(coord_el_local_trans + 4) = Y2;
+		*(coord_el_local_trans + 2) = X3; *(coord_el_local_trans + 5) = Y3;
 
-		Y1 = *(coord_el_trans + npel*1);
-		Y2 = *(coord_el_trans + npel*1 + 1);
-		Y3 = *(coord_el_trans + npel*1 + 2);
+/* Area is simply the the cross product of the sides connecting node 1 to node 0
+   and node 2 to node 0, divided by 2.
+*/
 
 		fdum = (X2 - X1)*(Y3 - Y1) - (X3 - X1)*(Y2 - Y1);
 
@@ -172,6 +230,14 @@ int trConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *
    "The Finite Element Method" by Thomas Hughes, page 174
 */
 		area_el = .5*fdum;
+
+		memset(U_el,0,neqel*sof);
+		memset(K_el,0,neqlsq*sof);
+		memset(K_temp,0,neqlsq*sof);
+
+		memset(B,0,soB*sof);
+		memset(DB,0,soB*sof);
+		memset(K_local,0,neqlsq36*sof);
 	
 		*(B) = Y2 - Y3;
 		*(B+2) = Y3 - Y1;
@@ -186,23 +252,64 @@ int trConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *
 		*(B+16) = X2 - X1;
 		*(B+17) = Y1 - Y2;
 
-		for( i1 = 0; i1 < neqel; ++i1 )
+		for( i1 = 0; i1 < neqel6; ++i1 )
 		{
 			*(DB+i1) = *(B+i1)*D11+
-				*(B+neqel*1+i1)*D12;
-			*(DB+neqel*1+i1) = *(B+i1)*D21+
-				*(B+neqel*1+i1)*D22;
-			*(DB+neqel*2+i1) = *(B+neqel*2+i1)*G;
+				*(B+neqel6*1+i1)*D12;
+			*(DB+neqel6*1+i1) = *(B+i1)*D21+
+				*(B+neqel6*1+i1)*D22;
+			*(DB+neqel6*2+i1) = *(B+neqel6*2+i1)*Gt;
 		}
 
-		check=matXT(K_el, B, DB, neqel, neqel, sdim);
+		check=matXT(K_local, B, DB, neqel6, neqel6, sdim);
 		if(!check) printf( "Problems with matXT  \n");
 
-		for( j = 0; j < neqlsq; ++j )
+		for( j = 0; j < neqlsq36; ++j )
 		{
-			*(K_el + j) /= 4.0*area_el;
+			*(K_el + j) = *(K_local + j)/(4.0*area_el);
 		}
 
+		if(!flag_3D)
+		{
+/* For 2-D meshes */
+		   for( i = 0; i < npel; ++i )
+		   {
+			for( j = 0; j < npel; ++j )
+			{
+/* row for displacement x */
+			   *(K_temp + ndof*neqel*i + ndof*j) =
+				*(K_el + ndof2*neqel6*i + ndof2*j);
+			   *(K_temp + ndof*neqel*i + ndof*j + 1) =
+				*(K_el + ndof2*neqel6*i + ndof2*j + 1);
+			   *(K_temp + ndof*neqel*i + ndof*j + 2) = 0.0;
+
+/* row for displacement y */
+			   *(K_temp + ndof*neqel*i + neqel  + ndof*j) =
+				*(K_el + ndof2*neqel6*i + neqel6 + ndof2*j);
+			   *(K_temp + ndof*neqel*i + neqel + ndof*j + 1) =
+				*(K_el + ndof2*neqel6*i + neqel6 + ndof2*j + 1);
+			   *(K_temp + ndof*neqel*i + neqel + ndof*j + 2) = 0.0;
+
+/* row for displacement z */
+			   *(K_temp + ndof*neqel*i + 2*neqel + ndof*j) = 0.0;
+			   *(K_temp + ndof*neqel*i + 2*neqel + ndof*j + 1) = 0.0;
+			   *(K_temp + ndof*neqel*i + 2*neqel + ndof*j + 2) = 0.0;
+			}
+		   }
+		   memcpy(K_el, K_temp, neqlsq*sizeof(double));
+		}
+		else
+		{
+/* For 3-D meshes */
+
+/* Put K back to global coordinates */
+
+		   check = matXrot2(K_temp, K_el, rotate, neqel6, neqel);
+		   if(!check) printf( "Problems with matXrot2 \n");
+
+		   check = rotTXmat2(K_el, rotate, K_temp, neqel, neqel);
+		   if(!check) printf( "Problems with rotTXmat2 \n");
+		}
 
 /* Assembly of the global P matrix */
 
@@ -225,14 +332,14 @@ int trConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *
 
 
 int trConjGrad(double *A, BOUND bc, int *connect, double *coord, int *el_matl,
-	double *force, double *K_diag, MATL *matl, double *U)
+	double *force, double *K_diag, double *local_xyz, MATL *matl, double *U)
 {
 /* This function does memory allocation and uses the conjugate gradient
    method to solve the linear system arising from the calculation of
    displacements.  It also makes the call to trConjPassemble to get the
    product of [A]*[p].
 
-			Updated 1/7/03
+                        Updated 1/24/06
 
    It is taken from the algorithm 10.3.1 given in "Matrix Computations",
    by Golub, page 534.
@@ -257,10 +364,10 @@ int trConjGrad(double *A, BOUND bc, int *connect, double *coord, int *el_matl,
 /* For the Conjugate Gradient Method doubles */
 
 	                                        ptr_inc = 0;
-	p=(mem_double+ptr_inc);	                ptr_inc += dof;
+	p=(mem_double+ptr_inc);                 ptr_inc += dof;
 	P_global_CG=(mem_double+ptr_inc);       ptr_inc += dof;
-	r=(mem_double+ptr_inc);	                ptr_inc += dof;
-	z=(mem_double+ptr_inc);	                ptr_inc += dof;
+	r=(mem_double+ptr_inc);                 ptr_inc += dof;
+	z=(mem_double+ptr_inc);                 ptr_inc += dof;
 
 /* Using Conjugate gradient method to find displacements */
 
@@ -276,11 +383,11 @@ int trConjGrad(double *A, BOUND bc, int *connect, double *coord, int *el_matl,
 		*(z + j) = *(r + j)/(*(K_diag + j));
 		*(p+j) = *(z+j);
 	}
-	check = trBoundary (r, bc);
-	if(!check) printf( " Problems with trBoundary \n");
+	check = Boundary (r, bc);
+	if(!check) printf( " Problems with Boundary \n");
 
-	check = trBoundary (p, bc);
-	if(!check) printf( " Problems with trBoundary \n");
+	check = Boundary (p, bc);
+	if(!check) printf( " Problems with Boundary \n");
 
 	alpha = 0.0;
 	alpha2 = 0.0;
@@ -295,10 +402,11 @@ int trConjGrad(double *A, BOUND bc, int *connect, double *coord, int *el_matl,
 	{
 
 		printf( "\n %3d %16.8e\n",counter, fdum2);
-		check = trConjPassemble( A, connect, coord, el_matl, matl, P_global_CG, p);
+		check = trConjPassemble( A, connect, coord, el_matl, local_xyz, matl,
+			P_global_CG, p);
 		if(!check) printf( " Problems with trConjPassemble \n");
-		check = trBoundary (P_global_CG, bc);
-		if(!check) printf( " Problems with trBoundary \n");
+		check = Boundary (P_global_CG, bc);
+		if(!check) printf( " Problems with Boundary \n");
 		check = dotX(&alpha2, p, P_global_CG, dof);	
 		alpha = fdum/(SMALL + alpha2);
 
@@ -321,12 +429,12 @@ int trConjGrad(double *A, BOUND bc, int *connect, double *coord, int *el_matl,
 		    /*printf( "%4d %14.5f  %14.5f  %14.5f  %14.5f %14.5f\n",j,alpha,
 			*(U+j),*(r+j),*(P_global_CG+j),*(force+j));
 		    printf( "%4d %14.8f  %14.8f  %14.8f  %14.8f %14.8f\n",j,
-			*(U+j)*bet,*(r+j)*bet,*(P_global_CG+j)*alp/(*(mass+j)),
-			*(force+j)*alp/(*(mass+j)));*/
+			*(U+j)*beta,*(r+j)*beta,*(P_global_CG+j)*alpha,
+			*(force+j)*alpha);*/
 		    *(p+j) = *(z+j)+beta*(*(p+j));
 		}
-		check = trBoundary (p, bc);
-		if(!check) printf( " Problems with trBoundary \n");
+		check = Boundary (p, bc);
+		if(!check) printf( " Problems with Boundary \n");
 
 		++counter;
 	}
@@ -344,7 +452,8 @@ The lines below are for testing the quality of the calculation:
 */
 
 /*
-	check = trConjPassemble( A, connect, coord, el_matl, matl, P_global_CG, U);
+	check = trConjPassemble( A, connect, coord, el_matl, local_xyz, matl,
+		P_global_CG, U);
 	if(!check) printf( " Problems with trConjPassemble \n");
 
 	for( j = 0; j < dof; ++j )

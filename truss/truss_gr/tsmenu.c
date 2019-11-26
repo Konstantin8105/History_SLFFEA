@@ -1,11 +1,11 @@
 /*
     This program draws the drag down menus.  It works with a truss FEM code.
   
-   			Last Update 6/9/01
+	                Last Update 1/22/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -31,11 +31,11 @@ extern double *U;
 extern int *connecter;
 extern BOUND bc;
 extern double *force;
-extern STRESS *stress;
-extern STRAIN *strain;
+extern SDIM *stress;
+extern SDIM *strain;
 extern XYZF *force_vec, *force_vec0;
-extern ISTRESS *stress_color;
-extern ISTRAIN *strain_color;
+extern ISDIM *stress_color;
+extern ISDIM *strain_color;
 extern int *U_color;
 
 extern int input_flag, post_flag, color_choice,
@@ -47,8 +47,8 @@ extern int Before_flag, After_flag,
     Both_flag, Amplify_flag;
 extern double amplify_factor, amplify_step, amplify_step0;
 
-int tsset( BOUND , double *, XYZF *, STRAIN *, ISTRAIN *, STRESS *,
-	ISTRESS *, double *, int *);
+int tsset( BOUND , double *, XYZF *, SDIM *, ISDIM *, SDIM *,
+	ISDIM *, double *, int *);
 
 void tsReGetparameter( void);
 

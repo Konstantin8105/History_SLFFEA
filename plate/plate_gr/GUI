@@ -32,16 +32,24 @@
  YY   YY                  |___|
  XY   XY        6.448e6   |   |
  stress/strain            |___|
- ZX   ZX        7.447e5   |   |
- YZ   YZ                  |___|
- principal      8.112e2   |   |
- moment/curve             |___|
- I    I         4.282e-4  |   |
- II   II                  |___|
-               -2.458e-6  |   |
- disp/angle               |___|
- Z    X        -8.420e9   |   |
-      Y                   |___|
-               -1.420e10  |   |
-                          |___|
+ XX   XX        7.447e5   |   |
+ YY   YY                  |___|
+ XY   XY        8.112e2   |   |
+ ZX   ZX                  |___|
+ YZ   YZ        4.282e-4  |   |
+ principal                |___|
+ moment/curve  -2.458e-6  |   |
+ I    I                   |___|
+ II   II       -8.420e9   |   |
+ principal                |___|
+ stress/strain -1.420e10  |   |
+ I    I                   |___|
+ II   II
+ III  III
+
+ disp/angle
+ X    X
+ Y    Y
+ Z    Z
+
 

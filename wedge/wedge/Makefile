@@ -1,5 +1,5 @@
 # SLFFEA Makefile
-# Version:  1.3
+# Version:  1.4
 # Copyright (C) 1999, 2000, 2001, 2002  San Le (slffea@yahoo.com)
 # http://slffea.com/
 #
@@ -38,14 +38,14 @@ PROGS = we wep
 all: we wep
 
 we: femwe.o \
-		wememory.o \
+		memory.o \
 		wereader.o \
-		weid.o \
+		id.o \
 		weshape.o \
 		wedgeb.o \
 		wekasmbl.o \
 		weconj.o \
-		webound.o \
+		bound.o \
 		westress.o \
 		wemasmbl.o \
 		welanczos.o \
@@ -56,14 +56,14 @@ we: femwe.o \
 		weconst.h \
 		westruct.h 
 	$(CC) -o we femwe.o \
-		wememory.o \
+		memory.o \
 		wereader.o \
-		weid.o \
+		id.o \
 		weshape.o \
 		wedgeb.o \
 		wekasmbl.o \
 		weconj.o \
-		webound.o \
+		bound.o \
 		westress.o \
 		wemasmbl.o \
 		welanczos.o \
@@ -100,8 +100,8 @@ wemasmbl.o: wemasmbl.c
 westress.o: westress.c
 	$(CC) -c westress.c 
 
-webound.o: webound.c
-	$(CC) -c webound.c -DWEDGE1
+bound.o: $(COMMON)/bound.c
+	$(CC) -c $(COMMON)/bound.c -DWEDGE1
 
 weconj.o: weconj.c
 	$(CC) -c weconj.c 
@@ -115,14 +115,14 @@ wedgeb.o: wedgeb.c
 weshape.o: weshape.c
 	$(CC) -c weshape.c 
 
-weid.o: weid.c
-	$(CC) -c weid.c -DWEDGE1
+id.o: $(COMMON)/id.c
+	$(CC) -c $(COMMON)/id.c -DWEDGE1
 
 wereader.o: wereader.c
 	$(CC) -c wereader.c
 
-wememory.o: wememory.c
-	$(CC) -c wememory.c -DWEDGE1
+memory.o: $(COMMON)/memory.c
+	$(CC) -c $(COMMON)/memory.c -DWEDGE1
 
 femwe.o: femwe.c
 	$(CC) -c femwe.c

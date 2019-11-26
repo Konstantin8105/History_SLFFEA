@@ -2,11 +2,11 @@
     This program reads in the new input file and prepares it
     for graphical display.
   
-   			Last Update 4/27/05
+                  Last Update 12/4/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -36,35 +36,35 @@
 
 /******** Data management and calculations ********/
 
-void brforce_vectors0(int , BOUND , double *, XYZF *);
+void force_vectors0(int , BOUND , double *, XYZF *);
 
-void brdisp_vectors0(int , BOUND , double *);
+void disp_vectors0(int , BOUND , double *);
 
 void agvMakeAxesList(GLuint);
 
-int br2set(BOUND , int *, double *, XYZF *,  double *, int *, SDIM *,
+int set(BOUND , int *, double *, XYZF *,  double *, int *, SDIM *,
 	ISTRAIN *, SDIM *, ISTRESS *, double *, int *, double *, int *);
 
-int br2parameter( double *, double *, SDIM *, SDIM *, double *, double *);
+int parameter( double *, double *, SDIM *, SDIM *, double *, double *);
+
+int ReGetMemory2_gr( XYZF **, int );
 
 int brnormal_vectors (int *, double *, NORM * );
 
-int brReGetMemory2_gr( XYZF **, int );
+int ConnectSurfreader( int *, int *, char *);
 
-int brConnectSurfreader( int *, int *, char *);
-
-int brreader_gr( FILE *, SDIM *, SDIM *);
+int reader_gr( FILE *, SDIM *, SDIM *);
 
 int br2reader( BOUND , int *, int *, double *, int *, int *, double *, double *,
 	double *, MATL *, char *name, FILE *, double *, STRESS *, SDIM *, double *,
 	double *, double *);
 
-int brReGetMemory_gr( ISTRAIN **, ISTRESS **, NORM **, int, int );
+int ReGetMemory_gr( ISTRAIN **, ISTRESS **, int, NORM **, int );
 
-int brReGetMemory( double **, int, int **, int, MATL **, int , XYZI **, int,
+int ReGetMemory( double **, int, int **, int, MATL **, int , XYZI **, int,
 	SDIM **, int, STRAIN **, STRESS **, int );
 
-int filecheck( char *, char *, FILE **, FILE **, FILE **, char * );
+int filecheck( char *, char *, FILE **, FILE **, FILE **, char *, int );
 
 /******************************* GLOBAL VARIABLES **************************/
 
@@ -117,14 +117,15 @@ extern double amplify_factor;
 
 int br2GetNewMesh(void)
 {
-        int i, j, check;
-        char *ccheck;
-        int dum, dum1, dum2, dum3, dum4, dum5;
-        double fpointx, fpointy, fpointz;
+	int i, j, check;
+	char *ccheck;
+	int dum, dum1, dum2, dum3, dum4, dum5;
+	double fpointx, fpointy, fpointz;
 	int  sofmi, sofmf, sofmSTRESS, sofmISTRESS, sofmSTRAIN,
 		sofmXYZI, sofmXYZF, sofmSDIM, sofmNORM, ptr_inc;
-        char name[30], name2[30], obr_exten[4], buf[ BUFSIZ ];
-        FILE *o1, *o2, *o3, *o4;
+	char name[30], name2[30], obr_exten[4], buf[ BUFSIZ ];
+	int obr_exten_length = 4;
+	FILE *o1, *o2, *o3, *o4;
 
 /* Delete the old display lists */
 
@@ -139,7 +140,7 @@ int br2GetNewMesh(void)
 
 	memset(name,0,30*sizeof(char));
 	memset(name2,0,30*sizeof(char));
-	memset(obr_exten,0,4*sizeof(char));
+	memset(obr_exten,0,obr_exten_length*sizeof(char));
 
 /* Initialize old variables */
 
@@ -153,23 +154,23 @@ int br2GetNewMesh(void)
 	node_choice = 0;
 	ele_choice = 0;
 
-	ccheck = strncpy(obr_exten,".obr",4);
+	ccheck = strncpy(obr_exten,".obr",obr_exten_length);
 	if(!ccheck) printf( " Problems with strncpy \n");
 
 #if LINUX
-        printf("What is the name of the input file containing the \n");
-        printf("brick 2 structural data? \n");
-        scanf( "%30s",name2);
+	printf("What is the name of the input file containing the \n");
+	printf("brick 2 structural data? (example: fins4)\n");
+	scanf( "%30s",name2);
 #endif
 
 #if WINDOWS
-        o4 = fopen( "brname.txt", "r");
+	o4 = fopen( "brname.txt", "r");
 
-        if(o4 == NULL ) {
-                printf("Can't find file brname.txt\n");
-                exit(1);
-        }
-        fscanf(o4, "%30s\n", name2);
+	if(o4 == NULL ) {
+		printf("Can't find file brname.txt\n");
+		exit(1);
+	}
+	fscanf(o4, "%30s\n", name2);
 	fclose(o4);
 #endif
 
@@ -185,31 +186,31 @@ int br2GetNewMesh(void)
 	}
 	/*printf( "%3d %30s\n ",name2_length,name2);*/
 
-        fgets( buf, BUFSIZ, o2 );
-        fscanf( o2, "%d %d %d %d %d %d\n ",
+	fgets( buf, BUFSIZ, o2 );
+	fscanf( o2, "%d %d %d %d %d %d\n ",
 		&numel,&numnp,&nmat,&numel_film,&linear_analysis,&thermal_analysis);
 	Tdof=numnp*Tndof;
-        dof=numnp*ndof;
+	dof=numnp*ndof;
 	sdof=numnp*nsd;
 
 /* Begin exmaining and checking for the existence of data files */
 
-	check = filecheck( name, name2, &o1, &o2, &o3, obr_exten );
+	check = filecheck( name, name2, &o1, &o2, &o3, obr_exten, obr_exten_length );
 	if(!check) printf( " Problems with filecheck \n");
 
 	if( input_flag )
 	{
-        	fgets( buf, BUFSIZ, o1 );
-        	fscanf( o1, "%d %d %d %d %d %d\n ",&dum,&dum1,&dum2,&dum3,&dum4,&dum5);
-        	printf( "%d %d %d %d %d %d\n ",dum,dum1,dum2,dum3,dum4,dum5);
-                /*printf( "name %30s\n ",name);*/
+		fgets( buf, BUFSIZ, o1 );
+		fscanf( o1, "%d %d %d %d %d %d\n ",&dum,&dum1,&dum2,&dum3,&dum4,&dum5);
+		printf( "%d %d %d %d %d %d\n ",dum,dum1,dum2,dum3,dum4,dum5);
+		/*printf( "name %30s\n ",name);*/
 	}
 	if( post_flag )
 	{
-        	fgets( buf, BUFSIZ, o3 );
-        	fscanf( o3, "%d %d %d %d %d %d\n ",&dum,&dum1,&dum2,&dum3,&dum4,&dum5);
-        	printf( "%d %d %d %d %d %d\n ",dum,dum1,dum2,dum3,dum4,dum5);
-                /*printf( "out %30s\n ",out);*/
+		fgets( buf, BUFSIZ, o3 );
+		fscanf( o3, "%d %d %d %d %d %d\n ",&dum,&dum1,&dum2,&dum3,&dum4,&dum5);
+		printf( "%d %d %d %d %d %d\n ",dum,dum1,dum2,dum3,dum4,dum5);
+		/*printf( "out %30s\n ",out);*/
 	}
 
 /*   Begin allocation of meomory */
@@ -222,7 +223,7 @@ int br2GetNewMesh(void)
 		numnp + 1 + numel + 1 + 4*numnp + 4 + 6 + dof + 2*Tdof;
 
 /* For the XYZI integers */
-        sofmXYZI=numnp+1+1;
+	sofmXYZI=numnp+1+1;
 
 /* For the SDIM doubles */
 	sofmSDIM = 2*numnp;
@@ -237,16 +238,16 @@ int br2GetNewMesh(void)
 	sofmNORM=numel;
 	if( input_flag && post_flag ) sofmNORM=2*numel;
 
-	check = brReGetMemory( &mem_double, sofmf, &mem_int, sofmi, &matl, nmat,
+	check = ReGetMemory( &mem_double, sofmf, &mem_int, sofmi, &matl, nmat,
 		&mem_XYZI, sofmXYZI, &mem_SDIM, sofmSDIM, &strain, &stress, sofmSTRESS );
-	if(!check) printf( " Problems with brReGetMemory \n");
+	if(!check) printf( " Problems with ReGetMemory \n");
 
-	check = brReGetMemory_gr( &strain_color, &stress_color, &mem_NORM, sofmISTRESS,
+	check = ReGetMemory_gr( &strain_color, &stress_color, sofmISTRESS, &mem_NORM,
 		sofmNORM );
-	if(!check) printf( " Problems with brReGetMemory_gr \n");
+	if(!check) printf( " Problems with ReGetMemory_gr \n");
 
 /* For the doubles */
-                                                ptr_inc=0;
+	                                        ptr_inc=0;
 	coord=(mem_double+ptr_inc);             ptr_inc += sdof;
 	coord0=(mem_double+ptr_inc);            ptr_inc += sdof;
 	force=(mem_double+ptr_inc);             ptr_inc += dof;
@@ -262,7 +263,7 @@ int br2GetNewMesh(void)
 	matl_crtl = matl;
 
 /* For the integers */
-                                                ptr_inc = 0;
+	                                        ptr_inc = 0;
 	connecter=(mem_int+ptr_inc);            ptr_inc += numel*npel;
 	connecter_film=(mem_int+ptr_inc);       ptr_inc += numel_film*npel_film;
 	el_matl=(mem_int+ptr_inc);              ptr_inc += numel;
@@ -286,9 +287,9 @@ int br2GetNewMesh(void)
 	el_matl_color = el_matl;
 
 /* For the XYZI integers */
-                                          	ptr_inc = 0;
-        bc.fix =(mem_XYZI+ptr_inc);       	ptr_inc += numnp+1;
-        bc.num_fix=(mem_XYZI+ptr_inc);    	ptr_inc += 1;
+	                                        ptr_inc = 0;
+	bc.fix =(mem_XYZI+ptr_inc);             ptr_inc += numnp+1;
+	bc.num_fix=(mem_XYZI+ptr_inc);          ptr_inc += 1;
 
 /* For the SDIM doubles */
                                                 ptr_inc = 0;
@@ -296,7 +297,7 @@ int br2GetNewMesh(void)
 	strain_node=(mem_SDIM+ptr_inc);         ptr_inc += numnp;
 
 /* For the NORM doubles */
-                                                ptr_inc = 0;
+	                                        ptr_inc = 0;
 	norm =(mem_NORM+ptr_inc);
 	if( input_flag && post_flag )           ptr_inc += numel;
 	norm0 =(mem_NORM+ptr_inc);              ptr_inc += numel;
@@ -326,57 +327,57 @@ int br2GetNewMesh(void)
 		check = br2reader( bc, connecter, connecter_film, coord, el_matl,
 			el_matl_film, force, heat_el, heat_node, matl, name, o3,
 			Q, stress, stress_node, T, TB, U);
-        	if(!check) printf( " Problems with br2reader \n");
+		if(!check) printf( " Problems with br2reader \n");
 		stress_read_flag = 0;
 
-        	check = brreader_gr( o3, strain_node, stress_node);
-        	if(!check) printf( " Problems with brreader_gr \n");
+		check = reader_gr( o3, strain_node, stress_node);
+		if(!check) printf( " Problems with reader_gr \n");
 	}
 	if( input_flag )
 	{
 		check = br2reader( bc, connecter, connecter_film, coord0, el_matl,
 			el_matl_film, force, heat_el, heat_node, matl, name, o1,
 			Q, stress, stress_node, T, TB, U);
-        	if(!check) printf( " Problems with br2reader \n");
+		if(!check) printf( " Problems with br2reader \n");
 	}
 
-	check = brConnectSurfreader( connecter, el_matl, name);
-	if(!check) printf( " Problems with brConnectSurfreader \n");
+	check = ConnectSurfreader( connecter, el_matl, name);
+	if(!check) printf( " Problems with ConnectSurfreader \n");
 
 	if( post_flag )
 	{
 		check = brnormal_vectors(connecter, coord, norm );
-        	if(!check) printf( " Problems with brnormal_vectors \n");
+		if(!check) printf( " Problems with brnormal_vectors \n");
 	}
 
 	if( input_flag )
 	{
 		check = brnormal_vectors(connecter, coord0, norm0 );
-        	if(!check) printf( " Problems with brnormal_vectors \n");
+		if(!check) printf( " Problems with brnormal_vectors \n");
 	}
 
 /* For the XYZF doubles  */
-        sofmXYZF=2*bc.num_force[0];
+	sofmXYZF=2*bc.num_force[0];
 /*
-   This is allocated seperately from brReGetMemory_gr because we need to know the
+   This is allocated seperately from ReGetMemory_gr because we need to know the
    number of force vectors read from brreader and stored in bc.num_force[0].
 */
 
-	check = brReGetMemory2_gr( &mem_XYZF, sofmXYZF );
-	if(!check) printf( " Problems with brReGetMemory2_gr \n");
+	check = ReGetMemory2_gr( &mem_XYZF, sofmXYZF );
+	if(!check) printf( " Problems with ReGetMemory2_gr \n");
 
-                                                ptr_inc = 0;
-        force_vec =(mem_XYZF+ptr_inc);          ptr_inc += bc.num_force[0];
-        force_vec0 =(mem_XYZF+ptr_inc);         ptr_inc += bc.num_force[0];
+	                                        ptr_inc = 0;
+	force_vec =(mem_XYZF+ptr_inc);          ptr_inc += bc.num_force[0];
+	force_vec0 =(mem_XYZF+ptr_inc);         ptr_inc += bc.num_force[0];
 
 /* Search for extreme values */
  
 /* In mesh viewer, search for extreme values of nodal points, displacements
-   and stresss and strains to obtain viewing parameters and set color
+   and stress and strains to obtain viewing parameters and set color
    assignments.  Also initialize variables */
 
-	check = br2parameter( coord, Q, strain_node, stress_node, T, U);
-        if(!check) printf( " Problems with br2parameter \n");
+	check = parameter( coord, Q, strain_node, stress_node, T, U);
+	if(!check) printf( " Problems with parameter \n");
 
 /* Rescale undeformed coordinates */
 
@@ -397,18 +398,18 @@ int br2GetNewMesh(void)
 	{
 	    for ( i = 0; i < numnp; ++i)
 	    {
-	    	*(coord0 + nsd*i) = *(coord + nsd*i) - *(U + ndof*i);
-	    	*(coord0 + nsd*i + 1) = *(coord + nsd*i + 1) - *(U + ndof*i + 1);
-	    	*(coord0 + nsd*i + 2) = *(coord + nsd*i + 2) - *(U + ndof*i + 2);
+		*(coord0 + nsd*i) = *(coord + nsd*i) - *(U + ndof*i);
+		*(coord0 + nsd*i + 1) = *(coord + nsd*i + 1) - *(U + ndof*i + 1);
+		*(coord0 + nsd*i + 2) = *(coord + nsd*i + 2) - *(U + ndof*i + 2);
 	    }
 	}
 
-	check = br2set( bc, connecter, force, force_vec0, Q, Q_color, strain_node,
+	check = set( bc, connecter, force, force_vec0, Q, Q_color, strain_node,
 		strain_color, stress_node, stress_color, T, T_color, U, U_color);
-        if(!check) printf( " Problems with br2set \n");
+	if(!check) printf( " Problems with set \n");
 
-  	AxesList = glGenLists(1);
-  	agvMakeAxesList(AxesList);
+	AxesList = glGenLists(1);
+	agvMakeAxesList(AxesList);
 
 	if( input_flag )
 	{
@@ -416,21 +417,21 @@ int br2GetNewMesh(void)
 /* create display list for displacement and force grapics vectors
    on undeformed mesh*/
 
-  	    DispList = glGenLists(1);
-  	    brdisp_vectors0(DispList, bc, coord0);
+	    DispList = glGenLists(1);
+	    disp_vectors0(DispList, bc, coord0);
 
-            for( i = 0; i < bc.num_force[0]; ++i)
-            {
-                fpointx = *(coord0+nsd*bc.force[i]);
-                fpointy = *(coord0+nsd*bc.force[i] + 1);
-                fpointz = *(coord0+nsd*bc.force[i] + 2);
-                force_vec[i].x = fpointx - force_vec0[i].x;
+	    for( i = 0; i < bc.num_force[0]; ++i)
+	    {
+		fpointx = *(coord0+nsd*bc.force[i]);
+		fpointy = *(coord0+nsd*bc.force[i] + 1);
+		fpointz = *(coord0+nsd*bc.force[i] + 2);
+		force_vec[i].x = fpointx - force_vec0[i].x;
 		force_vec[i].y = fpointy - force_vec0[i].y;
 		force_vec[i].z = fpointz - force_vec0[i].z;
-            }
+	    }
     
-  	    ForceList = glGenLists(1);
-  	    brforce_vectors0(ForceList, bc, coord0, force_vec);
+	    ForceList = glGenLists(1);
+	    force_vectors0(ForceList, bc, coord0, force_vec);
     
 	}
 
@@ -438,15 +439,15 @@ int br2GetNewMesh(void)
 	{
 /* create force grapics vectors for deformed mesh*/
 
-            for( i = 0; i < bc.num_force[0]; ++i)
-            {
-                fpointx = *(coord+nsd*bc.force[i]);
-                fpointy = *(coord+nsd*bc.force[i] + 1);
-                fpointz = *(coord+nsd*bc.force[i] + 2);
-                force_vec[i].x = fpointx - force_vec0[i].x;
+	    for( i = 0; i < bc.num_force[0]; ++i)
+	    {
+		fpointx = *(coord+nsd*bc.force[i]);
+		fpointy = *(coord+nsd*bc.force[i] + 1);
+		fpointz = *(coord+nsd*bc.force[i] + 2);
+		force_vec[i].x = fpointx - force_vec0[i].x;
 		force_vec[i].y = fpointy - force_vec0[i].y;
 		force_vec[i].z = fpointz - force_vec0[i].z;
-            }
+	    }
 	}
 
 	return 1;

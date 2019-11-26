@@ -6,7 +6,7 @@
                 Updated 5/31/00
 
     SLFFEA source file
-    Version:  1.3
+    Version:  1.4
     Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
@@ -19,10 +19,10 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define	pt5  	.5 
-#define	pt25 	.25
-#define	pt1667  .166666666667
-#define	sq3    1.732050808 
+#define pt5     .5 
+#define pt25    .25
+#define pt1667  .166666666667
+#define sq3    1.732050808 
 
 #define nsd           3                /* number of spatial dimensions per node */
 #define ndof          3                /* degrees of freedom per node */
@@ -76,7 +76,7 @@
   matl                material structure
      Emod             young's modulus
      nu               poisson's ratio
-     K	              bulk modulus
+     K                bulk modulus
      G                shear modulus 
   force               *(force + 0) x component of applied load
                       *(force + 1) y component of applied load

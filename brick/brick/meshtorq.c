@@ -5,7 +5,7 @@
 		Updated 4/1/03
 
     SLFFEA source file
-    Version:  1.3
+    Version:  1.4
     Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
@@ -67,7 +67,7 @@ int main(int argc, char** argv)
 	nmode = 0;
 	numel = (square_el_num*square_el_num + (angle_div)*(cylinder_el_num))*height_el_num;
 	numnp = nodes_per_layer*(height_el_num+1);
-	coord=(double *)calloc(3*numnp,sizeof(double));
+	coord=(double *)calloc(nsd*numnp,sizeof(double));
 
 	cylinder_el_length = cylinder_length/((double)cylinder_el_num);
 	square_el_length = square_length/((double)square_el_num);
@@ -191,9 +191,9 @@ int main(int argc, char** argv)
            		fprintf( o1, "%d ",dum);
            		fprintf( o1, "%9.4f %9.4f %9.4f ",fdum1,fdum2,fdum3);
            		fprintf( o1, "\n");
-			*(coord + 3*dum) = fdum1;
-			*(coord + 3*dum + 1) = fdum2;
-			*(coord + 3*dum + 2) = fdum3;
+			*(coord + nsd*dum) = fdum1;
+			*(coord + nsd*dum + 1) = fdum2;
+			*(coord + nsd*dum + 2) = fdum3;
 			++dum;
 		
 	        }
@@ -207,9 +207,9 @@ int main(int argc, char** argv)
            	   fprintf( o1, "%d ",dum);
            	   fprintf( o1, "%9.4f %9.4f %9.4f ",fdum1,fdum2,fdum3);
            	   fprintf( o1, "\n");
-		   *(coord + 3*dum) = fdum1;
-		   *(coord + 3*dum + 1) = fdum2;
-		   *(coord + 3*dum + 2) = fdum3;
+		   *(coord + nsd*dum) = fdum1;
+		   *(coord + nsd*dum + 1) = fdum2;
+		   *(coord + nsd*dum + 2) = fdum3;
 		   ++dum;
          	}
 	    }
@@ -225,9 +225,9 @@ int main(int argc, char** argv)
            	   fprintf( o1, "%d ",dum);
            	   fprintf( o1, "%9.4f %9.4f %9.4f ",fdum1,fdum2,fdum3);
            	   fprintf( o1, "\n");
-		   *(coord + 3*dum) = fdum1;
-		   *(coord + 3*dum + 1) = fdum2;
-		   *(coord + 3*dum + 2) = fdum3;
+		   *(coord + nsd*dum) = fdum1;
+		   *(coord + nsd*dum + 1) = fdum2;
+		   *(coord + nsd*dum + 2) = fdum3;
 		   ++dum;
          	}
 	    }
@@ -280,12 +280,12 @@ int main(int argc, char** argv)
         for( i = 0; i < nodes_per_layer; ++i )
         {
 		dum = i+height_el_num*dum2;
-		fdum = *(coord + 3*i)*(*(coord + 3*i)) + *(coord + 3*i + 1)*(*(coord + 3*i + 1));
+		fdum = *(coord + nsd*i)*(*(coord + nsd*i)) + *(coord + nsd*i + 1)*(*(coord + nsd*i + 1));
 		fdum = sqrt(fdum);
 		if(fdum > fdum4)
 		{
-			fdum1 = *(coord + 3*i)*100.0/(fdum + SMALL);
-			fdum2 = *(coord + 3*i + 1)*100.0/(fdum + SMALL);
+			fdum1 = *(coord + nsd*i)*100.0/(fdum + SMALL);
+			fdum2 = *(coord + nsd*i + 1)*100.0/(fdum + SMALL);
                 	fprintf( o1, "%4d %14.6e %14.6e %14.6e\n",dum, -fdum2, fdum1,0.0);
                 	printf(  "%4d %14.6e %14.6e %14.6e\n",dum, -fdum2, fdum1,0.0);
 		}

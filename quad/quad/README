@@ -10,3 +10,104 @@
 You can do either plane stress or plane strain analysis.  For plane stress,
 set the plane_stress_flag in your input file to 1.  For plane strain, set
 it to 0.
+
+I once considered merging the quad element together with the brick because
+I could have coded the brick so that it would read in the 4 nodes of a
+quad and treat the second set of brick nodes on top as nodes parallel to
+the first 4.  But it is fortunate that I did not because I modified the quad
+code so that it could also solve for 3-D 4 node membrane elements.  This may
+have been complicated in terms of adding this capacity to the brick.
+
+------------------------------------------------------------------------------------------------
+3-D 4 Node Quadrilateral Membrane Elements
+
+In October 2005, I added code to make the 2-D triangle element into a 3-D
+element.  This meant adding rotations between 3-D global coordinates and 2-D
+local coordinates.  I encountered many of the same problems with 4 node quads
+as I did with my 3 node triangle elements which you can read in:
+
+   ~/slffea-1.4/tri/tri/README
+
+In addition to the problems of membranes lacking bending, I also had the problem
+of the nodes of an element not all lying in the same plane.  This problem is
+discussed in the ANSYS manual:
+
+       Kohneke, Peter, *ANSYS User's Manual for Revision 5.0,
+           Vol IV Theory, Swanson Analysis Systems Inc., Houston, 1992.
+
+look on page 14-152 under "Assumptions and Restrictions".  I again did a lot of
+testing with the bubble2 mesh, which is analogous to trbubble2.  There are
+slight problems with the results, particularly when the conjugate gradient
+solver is being used.  I tried to make an improved version, called bubble3,
+where the hole at the top is made up of more regular quads but there were a
+lot of problems with warped elements as well as having quads whose local mapping
+made their node numbering clockwise resulting in negative area.  
+
+Ultimately though, the improved mesh may be a better mesh because it gives
+more accurate results when using the conjugate gradient method to do modal
+analysis.  The eigenvalues I get are:
+
+ Eigenvalue    1 =   8.43048295e+01
+ Eigenvalue    2 =   8.43057903e+01
+ Eigenvalue    3 =   2.49251605e+02
+ Eigenvalue    4 =   2.93818070e+02
+ Eigenvalue    5 =   4.07885091e+02
+
+for LU decomposition, and:
+
+ Eigenvalue    1 =   8.43038068e+01
+ Eigenvalue    2 =   8.43063859e+01
+ Eigenvalue    3 =   2.49251928e+02
+ Eigenvalue    4 =   2.93819920e+02
+ Eigenvalue    5 =   4.07889930e+02
+
+using conjugate gradients.  And if you compare the mode shapes themselves, you
+can see that they qualatatively match.  This is in contrast to the original
+mesh, where LU decomposition did produce good results which were similar to
+those above:
+
+ Eigenvalue    1 =   8.42870466e+01
+ Eigenvalue    2 =   2.48896362e+02
+ Eigenvalue    3 =   2.92479075e+02
+ Eigenvalue    4 =   3.99864584e+02
+ Eigenvalue    5 =   5.95613465e+02
+
+but the conjugate gradient method gives:
+
+ Eigenvalue    1 =   8.42870340e+01
+ Eigenvalue    2 =   2.44512200e+02
+ Eigenvalue    3 =   2.51924077e+02
+ Eigenvalue    4 =   2.93254902e+02
+ Eigenvalue    5 =   5.40585265e+02
+
+showing that only the first eigenvalue matches.  I think the cause of this
+descrepancy is numerical error accumulating throughout the calculation.  I
+encountered a similar phenomenon when I was working with the plate.  You
+can read about this in the file:
+
+   ~/slffea-1.4/plate/plate/notes
+
+When the ANSYS method for creating the local basis is used, I get eigenvalues of:
+
+ Eigenvalue    1 =   8.42312078e+01
+ Eigenvalue    2 =   1.90917992e+02
+ Eigenvalue    3 =   2.49148990e+02
+ Eigenvalue    4 =   2.92922592e+02
+ Eigenvalue    5 =   5.27650186e+02
+
+While there are some incorrect eigenmodes, the 4th eigenvale of the above
+calculation, 2.92922592e+02, is similar to the 2nd eigenmode of the
+LU decomposition calculation.  This is strange since the eigenvalues do not
+match(the 3rd and 2nd are closer in value), but at least there is a twisting
+mode, unlike in the previous conjugate gradient calculation. 
+
+Finally, the LU decomposition calculation using the ANSYS method gives
+almost exactly the same results as that for my method using LU decomposition.
+
+ Eigenvalue    1 =   8.42311943e+01
+ Eigenvalue    2 =   2.48855614e+02
+ Eigenvalue    3 =   2.92480624e+02
+ Eigenvalue    4 =   4.00411984e+02
+ Eigenvalue    5 =   5.95910913e+02
+
+ 

@@ -1,27 +1,28 @@
                             node
                           min  max       min            max
-displacement Ux            0     0     0.000000e+00   0.000000e+00
-displacement Uy            0     0     0.000000e+00   0.000000e+00
+displacement Ux          201   205    -3.977217e-03   4.263411e-03
+displacement Uy          201   208    -3.687144e-03   5.740783e-03
+displacement Uz          203   208    -2.288445e-03   2.288460e-03
 
                             node
                         min       max         min           max
-stress xx                0         0     0.000000e+00   0.000000e+00
-stress yy                0         0     0.000000e+00   0.000000e+00
-stress xy                0         0     0.000000e+00   0.000000e+00
-stress I                 0         0     0.000000e+00   0.000000e+00
-stress II                0         0     0.000000e+00   0.000000e+00
+stress xx               19        14    -8.677917e+00   8.677878e+00
+stress yy               27        22    -4.360296e+00   4.360289e+00
+stress xy               20        25    -3.166498e+00   3.166497e+00
+stress I                19        21    -3.761947e-01   1.220043e+01
+stress II               26        14    -1.220041e+01   3.761785e-01
 
-strain xx                0         0     0.000000e+00   0.000000e+00
-strain yy                0         0     0.000000e+00   0.000000e+00
-strain xy                0         0     0.000000e+00   0.000000e+00
-strain I                 0         0     0.000000e+00   0.000000e+00
-strain II                0         0     0.000000e+00   0.000000e+00
+strain xx               26        21    -2.698670e-07   2.698667e-07
+strain yy               24        29    -1.878673e-07   1.878675e-07
+strain xy               20        25    -2.744298e-07   2.744297e-07
+strain I                 0        21     0.000000e+00   5.821428e-07
+strain II               26         0    -5.821424e-07   0.000000e+00
 
 Orthographic viewport parameters(right, left, top, bootom, near, far)
-   1.110000e+00  -1.010000e+00   1.010000e+00  -1.110000e+00   0.000000e+00   1.000000e+03
+   2.200426e+00  -2.199574e+00   2.258625e+00  -2.141375e+00   1.300252e+00   1.000000e+03
 Perspective viewport parameters( mesh width and height)
     320    320
 Step sizes in x, y, z
-   6.000000e-03   6.000000e-03   2.400000e-03
+   1.200000e-01   1.141639e-01   7.200549e-01
 Amplification size
-   5.000000e+18
+   1.741923e+02

@@ -4,7 +4,7 @@
 		Udated 11/15/04
 
     SLFFEA source file
-    Version:  1.3
+    Version:  1.4
     Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
@@ -19,32 +19,32 @@
 #include "bmconst.h"
 
 typedef struct {
-        double xx,yy,zz;
+	double xx,yy,zz;
 } MDIM;
 
 typedef struct {
-        double xx,xy,zx;
+	double xx,xy,zx;
 } SDIM;
 
 typedef struct {
-        double x, y, z, phix, phiy, phiz;
+	double x, y, z, phix, phiy, phiz;
 } XYZPhiF;
 
 typedef struct {
-        double qy, qz;
+	double qy, qz;
 } QYQZ;
 
 typedef struct {
-        int x, y, z, phix, phiy, phiz;
+	int x, y, z, phix, phiy, phiz;
 } XYZPhiI;
 
 typedef struct {
 	XYZPhiI *num_fix;
-        int *num_force;
-        int *num_dist_load;
+	int *num_force;
+	int *num_dist_load;
 	XYZPhiI *fix;
 	int *dist_load;
-        int *force;
+	int *force;
 } BOUND;
 
 typedef struct {
@@ -61,7 +61,7 @@ typedef struct {
 } MATL;
 
 typedef struct {
-        MDIM pt[num_int];
+	MDIM pt[num_int];
 } MOMENT;
 
 typedef struct {
@@ -69,7 +69,7 @@ typedef struct {
 } STRESS;
 
 typedef struct {
-        MDIM pt[num_int];
+	MDIM pt[num_int];
 } CURVATURE;
 
 typedef struct {

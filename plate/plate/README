@@ -1,10 +1,10 @@
 
-                             SLFFEA 1.1 Plate README
+                             SLFFEA 1.4 Plate README
 
-                    Copyright (C) 1999 San Le
+                    Copyright (C) 1999-2006 San Le
 
                     email:     slffea@yahoo.com
-                    homepage:  http://www.geocities.com/Athens/2099/slffea.html
+                    homepage:  http://www.geocities.com/slffea/slffea.html
 
 
 The patch test is divided into one for angles and one for displacement.  The reason
@@ -22,4 +22,103 @@ correct for XX, YY, XY, I, and II but for ZX and YZ, they are very different.  N
 stress and strain ZX and YZ are orders of magnitude larger than when
 under integration is used.  This is expected, since as you know, the purpose
 of under integrating is to prevent shear locking.
+
+-----------------------------------------------------------------------------
+
+In expanding the plate from 2-D to 3-D, I initially tried to fit it into the
+structure of the shell in that there are 2 local rotations rather than the 3
+global rotations.  This proved too difficult, for the following reasons:
+
+1) In the shell, the rotations are built into the [B] matrix rather than being
+   separate rotations performed on the element stiffness after it is assembled.
+
+2) Even trying to embed the rotations into the plates [B] proved difficult since
+   we are calculating different stresses and strains.  For instance, in the plate,
+   we calculate moment xx, yy, and xy and shear stresses zx and yz.  For the
+   shell, we calculate stress xx, yy, xy, zx, yz, and the principal stresses I
+   and II.
+
+It is for this reason that I got to the simplest way of handling 3-D plate elements
+as prescribed in Hughes and Benson.
+
+-----------------------------------------------------------------------------
+
+IMPORTANT NOTE ON NEW TRIANGLE PLATE ELEMENTS
+
+When I expanded the the 4 node quadrilateral plates to 3-D elements with
+membrane properties, I also added the 3 node triangular plate equivalent.  But
+there are problems related to shear locking, which you can read in:
+
+   Benson, David, AMES 232 B Course Notes: Winter Quarter 1997, UCSD
+       Soft Reserves, La Jolla, 1997.
+
+page 31.  Benson says the cause is that it is "hard to interpolate constant
+curvature modes on a triangle".  His recommendation is to use the Hughes-Tezduyar
+element which interpolates the shear from the midpoint of each side.  Other
+modifications are necessary as well such as choosing the proper meshing scheme.
+I may implement this element in the future.
+
+I will keep this triangle plate here as it is because I may find another solution to
+this problem in the future.  In addition, the infrastructure of this code can be
+expanded upon for other types of triangular plates such as the Hughes-Tezduyar
+plate previously mentioned. 
+
+-----------------------------------------------------------------------------
+
+To test the plate code, I have made comparisons with the triangle and quadrilateral
+codes which have only membrane support.  To do this, I have to do the following:
+
+1) Add code which removes the rotational degrees of freedom:
+
+#if 1
+        for( i = 0; i < numnp; ++i )
+        {
+                bc.fix[i].phix = i;
+                bc.fix[i].phiy = i;
+                bc.fix[i].phiz = i;
+        }
+        bc.num_fix[0].phix=numnp;
+        bc.num_fix[0].phiy=numnp;
+        bc.num_fix[0].phiz=numnp;
+#endif
+
+   to "fempl.c".
+
+2) In "plkasmbl.c" and "plkasmbl2.c", remove the stiffness due to bending by adding the
+   line:
+
+#if 1
+                memset(K_bend,0,neqlsq144*sof);
+#endif
+
+   for the quad and:
+
+#if 1
+                memset(K_bend,0,neqlsq81*sof);
+#endif
+
+   for the triangle.
+
+3) In "plmasmbl.c" and "plmasmbl2.c" , remove the mass due to bending by adding the
+   line:
+
+#if 1
+                memset(M_bend,0,neqlsq144*sof);
+#endif
+
+   for the quad and:
+
+#if 1
+                memset(M_bend,0,neqlsq81*sof);
+#endif
+
+   for the triangle.
+
+I also have to change, for modal analysis with the quadrilateral comparison:
+
+                num_eigen = (int)(2.6*nmode);
+to:
+                num_eigen = (int)(2.0*nmode);
+
+in "fempl.c".
 

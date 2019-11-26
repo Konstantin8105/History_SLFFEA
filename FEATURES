@@ -1,5 +1,5 @@
 
-                             SLFFEA 1.3
+                             SLFFEA 1.4
 
                     Copyright (C) 1999 San Le
 
@@ -36,31 +36,49 @@ viewing.  A complete list is given below:
  o - move out 
  e - Element ID (use command line input to ID desired element)
 
-             1 - strain or curvature xx
-             2 - strain or curvature yy
-             3 - strain zz
-             4 - strain or curvature xy
-             5 - strain zx
-             6 - strain yz
-             7 - strain or curvature I
-             8 - strain or curvature II
-             9 - strain III
-  <shift>1 = ! - stress or moment xx
-  <shift>2 = @ - stress or moment yy
-  <shift>3 = # - stress zz
-  <shift>4 = $ - stress or moment xy
-  <shift>5 = % - stress zx
-  <shift>6 = ^ - stress yz
-  <shift>7 = & - stress or moment I
-  <shift>8 = * - stress or moment II
-  <shift>9 = ( - stress III
+                         1 - strain xx
+                         2 - strain yy
+                         3 - strain zz
+                         4 - strain xy
+                         5 - strain zx
+                         6 - strain yz
+                         7 - strain I
+                         8 - strain II
+                         9 - strain III
+       F1 (Function Key 1) - curvature xx
+       F2 (Function Key 2) - curvature yy
+       F3 (Function Key 2) - curvature zz
+       F4 (Function Key 2) - curvature xy
+       F5 (Function Key 2) - curvature zx
+       F6 (Function Key 2) - curvature yz
+           Home (Home Key) - curvature I
+     Page Up (Page Up Key) - curvature II
+              <shift>1 = ! - stress xx
+              <shift>2 = @ - stress yy
+              <shift>3 = # - stress zz
+              <shift>4 = $ - stress xy
+              <shift>5 = % - stress zx
+              <shift>6 = ^ - stress yz
+              <shift>7 = & - stress I
+              <shift>8 = * - stress II
+              <shift>9 = ( - stress III
+       F7 (Function Key 2) - moment xx
+       F8 (Function Key 2) - moment yy
+       F9 (Function Key 2) - moment zz
+      F10 (Function Key 2) - moment xy
+      F11 (Function Key 2) - moment zx
+      F12 (Function Key 2) - moment yz
+             End (End Key) - moment I
+ Page Down (Page Down Key) - moment II
 
  0 - displacement Ux
  - - displacement Uy
  = - displacement Uz
- [ - Rotation Phi x or temperature
- ] - Rotation Phi y or heat
- \ - Rotation Phi z
+ ) - Rotation Phi x
+ _ - Rotation Phi y
+ + - Rotation Phi z
+ [ - temperature
+ ] - heat
  m - material ID (use command line input to ID desired material)
  n - node ID (use command line input to ID desired node)
  > - increase deformed mesh amplification  *

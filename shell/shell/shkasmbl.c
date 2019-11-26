@@ -2,10 +2,10 @@
     This utility function assembles the stiffness matrix for a finite 
     element program which does analysis on a shell element.  
 
-		Updated 9/25/06
+		Updated 10/10/06
 
     SLFFEA source file
-    Version:  1.3
+    Version:  1.4
     Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
 
     The source code contained in this file is released under the
@@ -32,7 +32,7 @@ extern double w[num_int];
 int cubic( double *);
 
 int globalConjKassemble(double *, int *, int , double *,
-        double *, int , int , int );
+	double *, int , int , int );
 
 int globalKassemble(double *, int *, double *, int *, int );
 
@@ -49,32 +49,29 @@ int shellB4pt(double *, double *,double *, double *, double *, double *);
 int shshg( double *, int , SH , SH , XL , double *, double *, double *,
 	double *, ROTATE );
 
-int normcrossX(double *, double *, double *);
-
 int shKassemble(double *A, int *connect, double *coord, int *el_matl, double *fiber_vec,
-	double *force, int *id, int *idiag, double *K_diag, int *lm, MATL *matl,
-	double *node_counter, STRAIN *strain, SDIM *strain_node, STRESS *stress,
-	SDIM *stress_node, double *U)
+	double *force, int *id, int *idiag, double *K_diag, int *lm, double *lamina_ref,
+	double *fiber_xyz, MATL *matl, double *node_counter, STRAIN *strain, SDIM *strain_node,
+	STRESS *stress, SDIM *stress_node, double *U)
 {
-        int i, i1, i2, i3, i4, i5, j, k, dof_el[neqel], sdof_el[npel*nsd];
+	int i, i1, i2, i3, i4, i5, j, k, dof_el[neqel], sdof_el[npel*nsd];
 	int check, counter, node;
 	int matl_num;
 	double Emod, Pois, G1, G2, G3, shearK, thickness, const1, const2,
 		fdum1, fdum2, fdum3, fdum4;
 	double D11,D12,D21,D22;
-        double B[soB], DB[soB];
-        double K_temp[neqlsq], K_el[neqlsq];
+	double B[soB], DB[soB];
+	double K_temp[neqlsq], K_el[neqlsq];
 	double force_el[neqel], U_el[neqel];
-        double coord_el_trans[npel*nsd], zm1[npell], zp1[npell],
+	double coord_el_trans[npel*nsd], zm1[npell], zp1[npell],
 		znode[npell*num_ints], dzdt_node[npell];
 	double stress_el[sdim], strain_el[sdim], xxaddyy, xxsubyy, xysq, invariant[nsd],
-                yzsq, zxsq, xxyy;
-        double vec_dum[nsd];
-        double det[num_int+num_ints], wXdet;
+		yzsq, zxsq, xxyy;
+	double det[num_int+num_ints], wXdet;
 	XL xl;
 
-        for( k = 0; k < numel; ++k )
-        {
+	for( k = 0; k < numel; ++k )
+	{
 
 		matl_num = *(el_matl+k);
 		Emod = matl[matl_num].E;
@@ -85,18 +82,18 @@ int shKassemble(double *A, int *connect, double *coord, int *el_matl, double *fi
 /* The constants below are for plane stress */
 
 		const1 = Emod/(1.0-Pois*Pois);
-        	const2 = .5*(1.0-Pois);
+		const2 = .5*(1.0-Pois);
 
 		/*printf("Emod, Pois %f %f \n", Emod, Pois);*/
 
-                D11 = const1;
+		D11 = const1;
 		D12 = Pois*const1;
-                D21 = Pois*const1;
+		D21 = Pois*const1;
 		D22 = const1;
 
-                G1 = const1*const2;
-                G2 = const1*const2*shearK;
-                G3 = const1*const2*shearK;
+		G1 = const1*const2;
+		G2 = const1*const2*shearK;
+		G3 = const1*const2*shearK;
 
 /* Create the coord transpose vector and other variables for one element */
 
@@ -162,57 +159,34 @@ int shKassemble(double *A, int *connect, double *coord, int *el_matl, double *fi
 
 /* Create the coord_bar and coord_hat vector for one element */
 
-			xl.bar[j]=.5*( *(coord_el_trans+j)*(1.0-zeta)+
-				*(coord_el_trans+npell+j)*(1.0+zeta));
-			xl.bar[npell*1+j]=.5*( *(coord_el_trans+npel*1+j)*(1.0-zeta)+
-				*(coord_el_trans+npel*1+npell+j)*(1.0+zeta));
-			xl.bar[npell*2+j]=.5*( *(coord_el_trans+npel*2+j)*(1.0-zeta)+
-				*(coord_el_trans+npel*2+npell+j)*(1.0+zeta));
+			xl.bar[j] = *(lamina_ref + nsd*node);
+			xl.bar[npell*1+j] = *(lamina_ref + nsd*node + 1);
+			xl.bar[npell*2+j] = *(lamina_ref + nsd*node + 2);
 
-			xl.hat[j]=*(coord_el_trans+npell+j)-*(coord_el_trans+j);
-			xl.hat[npell*1+j]=*(coord_el_trans+npel*1+npell+j)-
-				*(coord_el_trans+npel*1+j);
-			xl.hat[npell*2+j]=*(coord_el_trans+npel*2+npell+j)-
-				*(coord_el_trans+npel*2+j);
-
-			fdum1=fabs(xl.hat[j]);
-			fdum2=fabs(xl.hat[npell*1+j]);
-			fdum3=fabs(xl.hat[npell*2+j]);
+			fdum1=*(coord_el_trans+npell+j)-*(coord_el_trans+j);
+			fdum2=*(coord_el_trans+npel*1+npell+j)-*(coord_el_trans+npel*1+j);
+			fdum3=*(coord_el_trans+npel*2+npell+j)-*(coord_el_trans+npel*2+j);
 			fdum4=sqrt(fdum1*fdum1+fdum2*fdum2+fdum3*fdum3);
-			xl.hat[j] /= fdum4;
-			xl.hat[npell*1+j] /= fdum4;
-			xl.hat[npell*2+j] /= fdum4;
+
 			*(zp1+j)=.5*(1.0-zeta)*fdum4;
 			*(zm1+j)=-.5*(1.0+zeta)*fdum4;
-/*
-   Calculating rotation matrix for the fiber q[i,j] matrix.
 
-   The algorithm below is taken from "The Finite Element Method" by Thomas Hughes,
-   page 388.  The goal is to find the local shell coordinates which come closest
-   to the global x, y, z coordinates.  In the algorithm below, vec_dum is set to either
-   the global x, y, or z basis vector based on the one of the 2 smaller components of
-   xl.hat.  xl.hat itself is the local z direction of that node.  Once set, the cross
-   product of xl.hat and vec_dum produces the local y fiber direction.  This local y is
-   then crossed with xl.hat to produce local x.
-*/
-		       	memset(vec_dum,0,nsd*sof);
-			i2=1;
-			if( fdum1 > fdum3)
+			xl.hat[j] = *(fiber_xyz + nsdsq*node + 2*nsd);
+			xl.hat[npell*1+j] = *(fiber_xyz + nsdsq*node + 2*nsd + 1);
+			xl.hat[npell*2+j] = *(fiber_xyz + nsdsq*node + 2*nsd + 2);
+
+
+/* Create the rotation matrix */
+
+			for( i1 = 0; i1 < nsd; ++i1 )
 			{
-				fdum3=fdum1;
-				i2=2;
+			    rotate.f_shear[nsdsq*j + i1] =
+				*(fiber_xyz + nsdsq*node + i1);
+			    rotate.f_shear[nsdsq*j + 1*nsd + i1] =
+				*(fiber_xyz + nsdsq*node + 1*nsd + i1);
+			    rotate.f_shear[nsdsq*j + 2*nsd + i1] =
+				*(fiber_xyz + nsdsq*node + 2*nsd + i1);
 			}
-			if( fdum2 > fdum3) i2=3;
-			*(vec_dum+(i2-1))=1.0;
-			rotate.f_shear[nsdsq*j+2*nsd]=xl.hat[j];
-			rotate.f_shear[nsdsq*j+2*nsd+1]=xl.hat[npell*1+j];
-			rotate.f_shear[nsdsq*j+2*nsd+2]=xl.hat[npell*2+j];
-			check = normcrossX((rotate.f_shear+nsdsq*j+2*nsd),
-			    vec_dum,(rotate.f_shear+nsdsq*j+1*nsd));
-			if(!check) printf( "Problems with normcrossX \n");
-			check = normcrossX((rotate.f_shear+nsdsq*j+1*nsd),
-			    (rotate.f_shear+nsdsq*j+2*nsd),(rotate.f_shear+nsdsq*j));
-			if(!check) printf( "Problems with normcrossX \n");
 		}
 
 		memcpy(rotate_node.f_shear,rotate.f_shear,sorfs*sizeof(double));
@@ -230,94 +204,94 @@ int shKassemble(double *A, int *connect, double *coord, int *el_matl, double *fi
 /* The loop over i4 below calculates the 2 fiber points of the gaussian integration */
 
 		for( i4 = 0; i4 < num_ints; ++i4 )
-                {
+		{
 
 /* The loop over j below calculates the 2X2 points of the gaussian integration
    over the lamina for several quantities */
 
-                   for( j = 0; j < num_intb; ++j )
-                   {
-        	       	memset(B,0,soB*sof);
-        	       	memset(DB,0,soB*sof);
-        		memset(K_temp,0,neqlsq*sof);
+		   for( j = 0; j < num_intb; ++j )
+		   {
+			memset(B,0,soB*sof);
+			memset(DB,0,soB*sof);
+			memset(K_temp,0,neqlsq*sof);
 
 /* Assembly of the B matrix */
 
-                    	check =
+			check =
 			   shellB4pt((shg.bend+npell*(nsd+1)*num_intb*i4+npell*(nsd+1)*j),
-                    	   (shg.bend_z+npell*(nsd)*num_intb*i4+npell*(nsd)*j),
+			   (shg.bend_z+npell*(nsd)*num_intb*i4+npell*(nsd)*j),
 			   (znode+npell*i4),B,(rotate.l_bend+nsdsq*num_intb*i4+nsdsq*j),
 			   rotate.f_shear);
-                        if(!check) printf( "Problems with shellB4pt \n");
+			if(!check) printf( "Problems with shellB4pt \n");
 
-                       	if( integ_flag == 0 || integ_flag == 2 ) 
-		        {
+			if( integ_flag == 0 || integ_flag == 2 ) 
+			{
 /* Calculate the membrane shear terms in B using 1X1 point gaussian integration in lamina */
 
-                       	    check = shellB1ptM((shg.shear+npell*(nsd+1)*i4),
+			    check = shellB1ptM((shg.shear+npell*(nsd+1)*i4),
 				(B+(sdim-2)*neqel),
 				(rotate.l_shear+nsdsq*i4), rotate.f_shear);
-                       	    if(!check) printf( "Problems with shellB1pt \n");
+			    if(!check) printf( "Problems with shellB1pt \n");
 			}
 
-                       	if( integ_flag == 1 || integ_flag == 2 ) 
-		        {
+			if( integ_flag == 1 || integ_flag == 2 ) 
+			{
 /* Calculate the transverse shear terms in B using 1X1 point gaussian integration in lamina */
 
-                       	    check = shellB1ptT((shg.shear+npell*(nsd+1)*i4),
-                    	    	(shg.bend_z+npell*(nsd)*num_intb*i4+npell*(nsd)*j),
+			    check = shellB1ptT((shg.shear+npell*(nsd+1)*i4),
+				(shg.bend_z+npell*(nsd)*num_intb*i4+npell*(nsd)*j),
 				(znode+npell*i4),(B+(sdim-2)*neqel),
 				(rotate.l_shear+nsdsq*i4), rotate.f_shear);
-                       	    if(!check) printf( "Problems with shellB1pt \n");
+			    if(!check) printf( "Problems with shellB1pt \n");
 			}
 
-                    	for( i1 = 0; i1 < neqel; ++i1 )
-                    	{
-                        	*(DB+i1)=*(B+i1)*D11 +
+			for( i1 = 0; i1 < neqel; ++i1 )
+			{
+				*(DB+i1)=*(B+i1)*D11 +
 					*(B+neqel*1+i1)*D12;
-                        	*(DB+neqel*1+i1)=*(B+i1)*D21 +
+				*(DB+neqel*1+i1)=*(B+i1)*D21 +
 					*(B+neqel*1+i1)*D22;
-                        	*(DB+neqel*2+i1)=*(B+neqel*2+i1)*G1;
-                            	*(DB+neqel*3+i1)=*(B+neqel*3+i1)*G2;
-                            	*(DB+neqel*4+i1)=*(B+neqel*4+i1)*G3;
-		       	}
+				*(DB+neqel*2+i1)=*(B+neqel*2+i1)*G1;
+				*(DB+neqel*3+i1)=*(B+neqel*3+i1)*G2;
+				*(DB+neqel*4+i1)=*(B+neqel*4+i1)*G3;
+			}
 #if 0
-                	fprintf(oB,"\n\n\n");
-                	fprintf(oS,"\n\n\n");
-                	for( i3 = 0; i3 < 3; ++i3 )
-                	{
-                   	    fprintf(oB,"\n ");
-                   	    fprintf(oS,"\n ");
-                   	    for( i2 = 0; i2 < neqel; ++i2 )
-                   	    {
-                            	fprintf(oB,"%14.5e ",*(B+neqel*i3+i2));
-                            	fprintf(oS,"%14.5e ",*(DB+neqel*i3+i2));
-                   	    }
-                	}
+			fprintf(oB,"\n\n\n");
+			fprintf(oS,"\n\n\n");
+			for( i3 = 0; i3 < 3; ++i3 )
+			{
+			    fprintf(oB,"\n ");
+			    fprintf(oS,"\n ");
+			    for( i2 = 0; i2 < neqel; ++i2 )
+			    {
+				fprintf(oB,"%14.5e ",*(B+neqel*i3+i2));
+				fprintf(oS,"%14.5e ",*(DB+neqel*i3+i2));
+			    }
+			}
 #endif
 
 			wXdet = *(w+num_intb*i4+j)*(*(det+num_intb*i4+j));
 
-                    	check=matXT(K_temp, B, DB, neqel, neqel, sdim);
-                    	if(!check) printf( "Problems with matXT \n");
+			check=matXT(K_temp, B, DB, neqel, neqel, sdim);
+			if(!check) printf( "Problems with matXT \n");
 
-                    	for( i2 = 0; i2 < neqlsq; ++i2 )
-                    	{
-                           *(K_el+i2) += *(K_temp+i2)*wXdet;
-                    	}
-                   }
-                }
+			for( i2 = 0; i2 < neqlsq; ++i2 )
+			{
+			   *(K_el+i2) += *(K_temp+i2)*wXdet;
+			}
+		   }
+		}
 
-                for( j = 0; j < neqel; ++j )
-                {
-                        *(U_el + j) = *(U + *(dof_el+j));
-                }
+		for( j = 0; j < neqel; ++j )
+		{
+			*(U_el + j) = *(U + *(dof_el+j));
+		}
 
-                check = matX(force_el, K_el, U_el, neqel, 1, neqel);
-                if(!check) printf( "Problems with matX \n");
+		check = matX(force_el, K_el, U_el, neqel, 1, neqel);
+		if(!check) printf( "Problems with matX \n");
 
-                if(analysis_flag == 1)
-                {
+		if(analysis_flag == 1)
+		{
 
 /* Compute the equivalant nodal forces based on prescribed displacements */
 
@@ -341,7 +315,7 @@ int shKassemble(double *A, int *connect, double *coord, int *el_matl, double *fi
 				neqel, neqlsq, numel_K);
 			    if(!check) printf( "Problems with globalConjKassemble \n");
 			}
-                }
+		}
 		else
 		{
 /* Calculate the element reaction forces */
@@ -464,22 +438,6 @@ int shKassemble(double *A, int *connect, double *coord, int *el_matl, double *fi
 
 /* Calculate the principal straines */
 
-#if 0
-/* The code below assumed a plane state of stress which I now feel is incorrect.  So I
-   calculate all 3 principal stresses and strains.
-*/
-   
-				xxaddyy = .5*(strain[k].pt[i5].xx + strain[k].pt[i5].yy);
-				xxsubyy = .5*(strain[k].pt[i5].xx - strain[k].pt[i5].yy);
-				xysq = strain[k].pt[i5].xy*strain[k].pt[i5].xy;
-
-				strain[k].pt[i5].I = xxaddyy + sqrt( xxsubyy*xxsubyy
-					+ xysq);
-				strain[k].pt[i5].II = xxaddyy - sqrt( xxsubyy*xxsubyy
-					+ xysq);
-				/*printf("%14.6e %14.6e %14.6e\n",xxaddyy,xxsubyy,xysq);*/
-#endif
-#if 1
 				memset(invariant,0,nsd*sof);
 				xysq = strain[k].pt[i5].xy*strain[k].pt[i5].xy;
 				zxsq = strain[k].pt[i5].zx*strain[k].pt[i5].zx;
@@ -492,13 +450,12 @@ int shKassemble(double *A, int *connect, double *coord, int *el_matl, double *fi
 				*(invariant+2) = -
 				     2*strain[k].pt[i5].yz*strain[k].pt[i5].zx*strain[k].pt[i5].xy +
 				     yzsq*strain[k].pt[i5].xx + zxsq*strain[k].pt[i5].yy;
-		 
+				
 				check = cubic(invariant);
 
 				strain[k].pt[i5].I = *(invariant);
 				strain[k].pt[i5].II = *(invariant+1);
 				strain[k].pt[i5].III = *(invariant+2);
-#endif
 
 /* Add all the strains for a particular node from all the elements which share that node */
 
@@ -531,20 +488,6 @@ int shKassemble(double *A, int *connect, double *coord, int *el_matl, double *fi
 
 /* Calculate the principal stresses */
 
-#if 0
-/* The code below assumed a plane state of stress which I now feel is incorrect.  So I
-   calculate all 3 principal stresses and strains.
-*/
-				xxaddyy = .5*(stress[k].pt[i5].xx + stress[k].pt[i5].yy);
-				xxsubyy = .5*(stress[k].pt[i5].xx - stress[k].pt[i5].yy);
-				xysq = stress[k].pt[i5].xy*stress[k].pt[i5].xy;
-
-				stress[k].pt[i5].I = xxaddyy + sqrt( xxsubyy*xxsubyy
-					+ xysq);
-				stress[k].pt[i5].II = xxaddyy - sqrt( xxsubyy*xxsubyy
-					+ xysq);
-#endif
-#if 1
 				memset(invariant,0,nsd*sof);
 				xysq = stress[k].pt[i5].xy*stress[k].pt[i5].xy;
 				zxsq = stress[k].pt[i5].zx*stress[k].pt[i5].zx;
@@ -557,14 +500,12 @@ int shKassemble(double *A, int *connect, double *coord, int *el_matl, double *fi
 				*(invariant+2) = -
 				     2*stress[k].pt[i5].yz*stress[k].pt[i5].zx*stress[k].pt[i5].xy +
 				     yzsq*stress[k].pt[i5].xx + zxsq*stress[k].pt[i5].yy;
-		 
+
 				check = cubic(invariant);
 
 				stress[k].pt[i5].I = *(invariant);
 				stress[k].pt[i5].II = *(invariant+1);
 				stress[k].pt[i5].III = *(invariant+2);
-#endif
-
 
 /* Add all the stresses for a particular node from all the elements which share that node */
 
@@ -606,8 +547,8 @@ int shKassemble(double *A, int *connect, double *coord, int *el_matl, double *fi
 			++counter;
 		}
 	     }
-          }
-        }
+	  }
+	}
 	if(analysis_flag == 2)
 	{
 

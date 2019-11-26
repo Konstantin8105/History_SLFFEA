@@ -49,10 +49,10 @@ int quad3B(double *dcdx, double *shl, double *shg, double *B,
 	int i,i2,i2m1;
 	for( i = 0; i < EMneqel; ++i )
 	{
-                *(B+i)             = *(shg+npel*2+i);
+		*(B+i)             = *(shg+npel*2+i);
 
-        	*(gradB+i)         = *(shg+i);
-        	*(gradB+EMneqel*1+i) = *(shg+npel*1+i); 
+		*(gradB+i)         = *(shg+i);
+		*(gradB+EMneqel*1+i) = *(shg+npel*1+i); 
 	}
 
 /* The shl used to form Bedge comes from the shape function derivatives
@@ -63,46 +63,46 @@ int quad3B(double *dcdx, double *shl, double *shg, double *B,
 */
 
 #if 1
-        *(Bedge)           = *(dcdx)*(*(shl + 1))*(*(length));
-        *(Bedge + 1)       = *(dcdx)*(*(shl + 2))*(*(length + 1));
-        *(Bedge + 2)       = *(dcdx+2)*(*(shl + npel*1 + 3))*(*(length + 2));
-        *(Bedge + 3)       = *(dcdx+2)*(*(shl + npel*1 + 2))*(*(length + 3));
-        *(Bedge+EMneqel*1)   = *(dcdx+1)*(*(shl + 1))*(*(length));
-        *(Bedge+EMneqel*1+1) = *(dcdx+1)*(*(shl + 2))*(*(length + 1));
-        *(Bedge+EMneqel*1+2) = *(dcdx+3)*(*(shl + npel*1 + 3))*(*(length + 2));
-        *(Bedge+EMneqel*1+3) = *(dcdx+3)*(*(shl + npel*1 + 2))*(*(length + 3));
+	*(Bedge)           = *(dcdx)*(*(shl + 1))*(*(length));
+	*(Bedge + 1)       = *(dcdx)*(*(shl + 2))*(*(length + 1));
+	*(Bedge + 2)       = *(dcdx+2)*(*(shl + npel*1 + 3))*(*(length + 2));
+	*(Bedge + 3)       = *(dcdx+2)*(*(shl + npel*1 + 2))*(*(length + 3));
+	*(Bedge+EMneqel*1)   = *(dcdx+1)*(*(shl + 1))*(*(length));
+	*(Bedge+EMneqel*1+1) = *(dcdx+1)*(*(shl + 2))*(*(length + 1));
+	*(Bedge+EMneqel*1+2) = *(dcdx+3)*(*(shl + npel*1 + 3))*(*(length + 2));
+	*(Bedge+EMneqel*1+3) = *(dcdx+3)*(*(shl + npel*1 + 2))*(*(length + 3));
 
-        *(curlBedge)     =
+	*(curlBedge)     =
 		*(length)*(*(dcdx)*(*(dcdx+3))-*(dcdx+1)*(*(dcdx+2)))/4.0;
-        *(curlBedge + 1) =
+	*(curlBedge + 1) =
 		*(length + 1)*(*(dcdx+2)*(*(dcdx+1))-*(dcdx+3)*(*(dcdx)))/4.0;
-        *(curlBedge + 2) =
+	*(curlBedge + 2) =
 		*(length + 2)*(*(dcdx+2)*(*(dcdx+1))-*(dcdx+3)*(*(dcdx)))/4.0;
-        *(curlBedge + 3) =
+	*(curlBedge + 3) =
 		*(length + 3)*(*(dcdx)*(*(dcdx+3))-*(dcdx+1)*(*(dcdx+2)))/4.0;
 #endif
 
 #if 0
-        *(Bedge)           = *(dcdx)*(*(shl + 1))*(*(length));
-        *(Bedge + 1)       = *(dcdx+2)*(*(shl + npel*1 + 3))*(*(length + 1));
-        *(Bedge + 2)       = *(dcdx)*(*(shl + 2))*(*(length + 2));
-        *(Bedge + 3)       = *(dcdx+2)*(*(shl + npel*1 + 2))*(*(length + 3));
-        *(Bedge+EMneqel*1)   = *(dcdx+1)*(*(shl + 1))*(*(length));
-        *(Bedge+EMneqel*1+1) = *(dcdx+3)*(*(shl + npel*1 + 3))*(*(length + 1));
-        *(Bedge+EMneqel*1+2) = *(dcdx+1)*(*(shl + 2))*(*(length + 2));
-        *(Bedge+EMneqel*1+3) = *(dcdx+3)*(*(shl + npel*1 + 2))*(*(length + 3));
+	*(Bedge)           = *(dcdx)*(*(shl + 1))*(*(length));
+	*(Bedge + 1)       = *(dcdx+2)*(*(shl + npel*1 + 3))*(*(length + 1));
+	*(Bedge + 2)       = *(dcdx)*(*(shl + 2))*(*(length + 2));
+	*(Bedge + 3)       = *(dcdx+2)*(*(shl + npel*1 + 2))*(*(length + 3));
+	*(Bedge+EMneqel*1)   = *(dcdx+1)*(*(shl + 1))*(*(length));
+	*(Bedge+EMneqel*1+1) = *(dcdx+3)*(*(shl + npel*1 + 3))*(*(length + 1));
+	*(Bedge+EMneqel*1+2) = *(dcdx+1)*(*(shl + 2))*(*(length + 2));
+	*(Bedge+EMneqel*1+3) = *(dcdx+3)*(*(shl + npel*1 + 2))*(*(length + 3));
 
-        *(curlBedge)     =
+	*(curlBedge)     =
 		*(length)*(*(dcdx)*(*(dcdx+3))-*(dcdx+1)*(*(dcdx+2)))/4.0;
-        *(curlBedge + 1) =
+	*(curlBedge + 1) =
 		*(length + 1)*(*(dcdx+2)*(*(dcdx+1))-*(dcdx+3)*(*(dcdx)))/4.0;
-        *(curlBedge + 2) =
+	*(curlBedge + 2) =
 		*(length + 2)*(*(dcdx+2)*(*(dcdx+1))-*(dcdx+3)*(*(dcdx)))/4.0;
-        *(curlBedge + 3) =
+	*(curlBedge + 3) =
 		*(length + 3)*(*(dcdx)*(*(dcdx+3))-*(dcdx+1)*(*(dcdx+2)))/4.0;
 #endif
 
-        return 1;
+	return 1;
 }
 
 int quadB_mass(double *shg,double *B_mass)
@@ -111,17 +111,17 @@ int quadB_mass(double *shg,double *B_mass)
      This library function assembles the B_mass matrix in
      [B_mass trans][B_mass] for quad elements.
 
-                Updated 8/17/00
+		Updated 8/17/00
 */
 
-        int i,i2,i2m1,i2m2;
-        for( i = 0; i < npel; ++i )
-        {
-                i2      =ndof*i+1;
-                i2m1    =i2-1;
+	int i,i2,i2m1,i2m2;
+	for( i = 0; i < npel; ++i )
+	{
+		i2      =ndof*i+1;
+		i2m1    =i2-1;
 
-                *(B_mass+i2m1)       = *(shg+i);
-                *(B_mass+neqel*1+i2) = *(shg+i);
-        }
-        return 1;
+		*(B_mass+i2m1)       = *(shg+i);
+		*(B_mass+neqel*1+i2) = *(shg+i);
+	}
+	return 1;
 }

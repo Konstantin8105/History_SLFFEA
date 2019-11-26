@@ -5,7 +5,7 @@
         Updated 8/17/01
 
     SLFFEA source file
-    Version:  1.3
+    Version:  1.4
     Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
@@ -27,9 +27,9 @@
 #endif
 
 int teMemory( double **mem_double, int sofmf, int **mem_int, int sofmi,
-	MATL **matl, int nmat, XYZI **mem_XYZI, int sofmXYZI, STRAIN **strain,
-	STRAIN **strain_node, STRESS **stress, STRESS **stress_node,
-	int sofmSTRESS, int sofmSTRESS_node )
+	MATL **matl, int nmat, XYZI **mem_XYZI, int sofmXYZI, SDIM **strain,
+	SDIM **strain_node, SDIM **stress, SDIM **stress_node,
+	int sofmSDIM, int sofmSDIM_node )
 {
 /* For the doubles */
 	*mem_double=(double *)calloc(sofmf,sizeof(double));
@@ -48,36 +48,36 @@ int teMemory( double **mem_double, int sofmf, int **mem_int, int sofmi,
 		exit(1);
 	}
 
-/* For the STRESS doubles */
+/* For the SDIM doubles */
 
-	*stress=(STRESS *)calloc(sofmSTRESS,sizeof(STRESS));
+	*stress=(SDIM *)calloc(sofmSDIM,sizeof(SDIM));
 	if(!stress )
 	{
 		printf( "failed to allocate memory for stress doubles\n ");
 		exit(1);
 	}
 
-/* For the STRESS node doubles */
+/* For the SDIM node doubles */
 
-	*stress_node=(STRESS *)calloc(sofmSTRESS_node,sizeof(STRESS));
+	*stress_node=(SDIM *)calloc(sofmSDIM_node,sizeof(SDIM));
 	if(!stress_node )
 	{
 		printf( "failed to allocate memory for stress_node doubles\n ");
 		exit(1);
 	}
 
-/* For the STRAIN doubles */
+/* For the SDIM doubles */
 
-	*strain=(STRAIN *)calloc(sofmSTRESS,sizeof(STRAIN));
+	*strain=(SDIM *)calloc(sofmSDIM,sizeof(SDIM));
 	if(!strain )
 	{
 		printf( "failed to allocate memory for strain doubles\n ");
 		exit(1);
 	}
 
-/* For the STRAIN node doubles */
+/* For the SDIM node doubles */
 
-	*strain_node=(STRAIN *)calloc(sofmSTRESS_node,sizeof(STRAIN));
+	*strain_node=(SDIM *)calloc(sofmSDIM_node,sizeof(SDIM));
 	if(!strain_node )
 	{
 		printf( "failed to allocate memory for strain_node doubles\n ");
@@ -106,9 +106,9 @@ int teMemory( double **mem_double, int sofmf, int **mem_int, int sofmi,
 
 
 int teReGetMemory( double **mem_double, int sofmf, int **mem_int, int sofmi,
-	MATL **matl, int nmat, XYZI **mem_XYZI, int sofmXYZI, STRAIN **strain,
-	STRAIN **strain_node, STRESS **stress, STRESS **stress_node,
-	int sofmSTRESS, int sofmSTRESS_node )
+	MATL **matl, int nmat, XYZI **mem_XYZI, int sofmXYZI, SDIM **strain,
+	SDIM **strain_node, SDIM **stress, SDIM **stress_node,
+	int sofmSDIM, int sofmSDIM_node )
 {
 /* For the doubles */
 	*mem_double=(double *)realloc(*mem_double, sofmf*sizeof(double));
@@ -129,45 +129,45 @@ int teReGetMemory( double **mem_double, int sofmf, int **mem_int, int sofmi,
 	}
 	memset(*matl,0,nmat*sizeof(MATL));
 
-/* For the STRESS doubles */
+/* For the SDIM doubles */
 
-	*stress=(STRESS *)realloc(*stress, sofmSTRESS*sizeof(STRESS));
+	*stress=(SDIM *)realloc(*stress, sofmSDIM*sizeof(SDIM));
 	if(!stress )
 	{
 		printf( "failed to allocate memory for stress doubles\n ");
 		exit(1);
 	}
-	memset(*stress,0,sofmSTRESS*sizeof(STRESS));
+	memset(*stress,0,sofmSDIM*sizeof(SDIM));
 
-/* For the STRESS node doubles */
+/* For the SDIM node doubles */
 
-	*stress_node=(STRESS *)realloc(*stress_node, sofmSTRESS_node*sizeof(STRESS));
+	*stress_node=(SDIM *)realloc(*stress_node, sofmSDIM_node*sizeof(SDIM));
 	if(!stress_node )
 	{
 		printf( "failed to allocate memory for stress_node doubles\n ");
 		exit(1);
 	}
-	memset(*stress_node,0,sofmSTRESS_node*sizeof(STRESS));
+	memset(*stress_node,0,sofmSDIM_node*sizeof(SDIM));
 
-/* For the STRAIN doubles */
+/* For the SDIM doubles */
 
-	*strain=(STRAIN *)realloc(*strain, sofmSTRESS*sizeof(STRAIN));
+	*strain=(SDIM *)realloc(*strain, sofmSDIM*sizeof(SDIM));
 	if(!strain )
 	{
 		printf( "failed to allocate memory for strain doubles\n ");
 		exit(1);
 	}
-	memset(*strain,0,sofmSTRESS*sizeof(STRAIN));
+	memset(*strain,0,sofmSDIM*sizeof(SDIM));
 
-/* For the STRAIN node doubles */
+/* For the SDIM node doubles */
 
-	*strain_node=(STRAIN *)realloc(*strain_node, sofmSTRESS_node*sizeof(STRAIN));
+	*strain_node=(SDIM *)realloc(*strain_node, sofmSDIM_node*sizeof(SDIM));
 	if(!strain_node )
 	{
 		printf( "failed to allocate memory for strain_node doubles\n ");
 		exit(1);
 	}
-	memset(*strain_node,0,sofmSTRESS_node*sizeof(STRAIN));
+	memset(*strain_node,0,sofmSDIM_node*sizeof(SDIM));
 
 /* For the integers */
 	*mem_int=(int *)realloc(*mem_int, sofmi*sizeof(int));

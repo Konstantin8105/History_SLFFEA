@@ -1,7 +1,7 @@
 /* This program prints out the eigenvalue data from the Lanczos codes.
 
     SLFFEA source file
-    Version:  1.3
+    Version:  1.4
     Copyright (C) 1999, 2000, 2001, 2002  San Le
 
     The source code contained in this file is released under the
@@ -26,27 +26,27 @@ int T_print( double *T_diag, double *T_upper, int n, int num_eigen)
 
 	int i, j;
 
-        printf("This is the T matrix before QR decomposition \n");
-        for( i = 0; i < num_eigen; ++i )
-        {
-            printf( "%3d  ", i);
-            for( j = 0; j < i-1; ++j )
-            {
-                 printf( "%14.6e ",0.0);
+	printf("This is the T matrix before QR decomposition \n");
+	for( i = 0; i < num_eigen; ++i )
+	{
+	    printf( "%3d  ", i);
+	    for( j = 0; j < i-1; ++j )
+	    {
+		 printf( "%14.6e ",0.0);
 	    }
 	    if(i) printf( "%14.6e ",*(T_upper+ i-1));
-            printf( "%14.6e ",*(T_diag+i));
+	    printf( "%14.6e ",*(T_diag+i));
 	    if(i < num_eigen - 1)
-            {
-            	printf( "%14.6e ",*(T_upper+i));
+	    {
+		printf( "%14.6e ",*(T_upper+i));
 	    }
-            for( j = i+1; j < num_eigen-1; ++j )
-            {
-                 printf( "%14.6e ",0.0);
+	    for( j = i+1; j < num_eigen-1; ++j )
+	    {
+		 printf( "%14.6e ",0.0);
 	    }
-            printf( "\n");
-        }
-        printf( "\n");
+	    printf( "\n");
+	}
+	printf( "\n");
 
 	return 1;
 }
@@ -58,27 +58,27 @@ int T_eval_print( double *T_diag, double *T_upper, int n, int num_eigen)
 */
 	int i, j;
 
-        printf("This is the T matrix \n");
-        for( i = 0; i < num_eigen; ++i )
-        {
-            printf( "%3d  ", i);
-            for( j = 0; j < i-1; ++j )
-            {
-                 printf( "%14.6e ",0.0);
+	printf("This is the T matrix \n");
+	for( i = 0; i < num_eigen; ++i )
+	{
+	    printf( "%3d  ", i);
+	    for( j = 0; j < i-1; ++j )
+	    {
+		 printf( "%14.6e ",0.0);
 	    }
 	    if(i) printf( "%14.6e ",*(T_upper+ i-1));
-            printf( "%14.6e ",1.0/(*(T_diag+i)));
+	    printf( "%14.6e ",1.0/(*(T_diag+i)));
 	    if(i < num_eigen - 1)
-            {
-            	printf( "%14.6e ",*(T_upper+i));
+	    {
+		printf( "%14.6e ",*(T_upper+i));
 	    }
-            for( j = i+1; j < num_eigen-1; ++j )
-            {
-                 printf( "%14.6e ",0.0);
+	    for( j = i+1; j < num_eigen-1; ++j )
+	    {
+		 printf( "%14.6e ",0.0);
 	    }
-            printf( "\n");
-        }
-        printf( "\n");
+	    printf( "\n");
+	}
+	printf( "\n");
 
 	return 1;
 }
@@ -90,7 +90,7 @@ int T_evector_print(double *T_evector, int n, int num_eigen)
 */
 	int i, j;
 
-        printf( "\n");
+	printf( "\n");
 	printf("These are the eigenvectors of T\n");
 	for( i = 0; i < num_eigen; ++i )
 	{
@@ -98,9 +98,9 @@ int T_evector_print(double *T_evector, int n, int num_eigen)
 	    {
 		printf( "%14.6e ",*(T_evector + num_eigen*i + j));
 	    }
-            printf( "\n");
+	    printf( "\n");
 	}   
-        printf( "\n");
+	printf( "\n");
 
 	return 1;
 }
@@ -112,7 +112,7 @@ int Lanczos_vec_print(double *q, int n, int num_eigen)
 */
 	int i, j;
 
-        printf( "\n");
+	printf( "\n");
 	printf("These are the lanczos vectors\n");
 
 /* I'm actually writing out the transpose of how I'm storing it */
@@ -123,9 +123,9 @@ int Lanczos_vec_print(double *q, int n, int num_eigen)
 	    {
 		printf( "%14.6e ",*(q + i + n*j));
 	    }
-            printf( "\n");
+	    printf( "\n");
 	}   
-        printf( "\n");
+	printf( "\n");
 
 	return 1;
 }
@@ -140,16 +140,16 @@ int evector_print(double *ritz, int n, int num_eigen)
 */
 	int i, j;
 
-        printf( "\n");
+	printf( "\n");
 	for( i = 0; i < n; ++i )
 	{
 	    for( j = 0; j < num_eigen; ++j )
 	    {
 		printf( "%14.6e ",*(ritz + num_eigen*i + j));
 	    }
-            printf( "\n");
+	    printf( "\n");
 	}   
-        printf( "\n");
+	printf( "\n");
 
 	return 1;
 }

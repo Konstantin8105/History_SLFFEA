@@ -5,7 +5,7 @@
         Updated 6/4/00
 
     SLFFEA source file
-    Version:  1.3
+    Version:  1.4
     Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
@@ -22,7 +22,7 @@
 #include "plstruct.h"
 
 int plMemory( double **mem_double, int sofmf, int **mem_int, int sofmi, MATL **matl,
-	int nmat, ZPhiI **mem_ZPhiI, int sofmZPhiI, MDIM **mem_MDIM, SDIM **mem_SDIM,
+	int nmat, XYZPhiI **mem_XYZPhiI, int sofmXYZPhiI, MDIM **mem_MDIM, SDIM **mem_SDIM,
 	int sofmSDIM, CURVATURE **curve, MOMENT **moment, STRAIN **strain,
 	STRESS **stress, int sofmSTRESS )
 {
@@ -87,11 +87,11 @@ int plMemory( double **mem_double, int sofmf, int **mem_int, int sofmi, MATL **m
 		exit(1);
 	}
 
-/* For the ZPhiI integers */
-	*mem_ZPhiI=(ZPhiI *)calloc(sofmZPhiI,sizeof(ZPhiI));
-	if(!mem_ZPhiI )
+/* For the XYZPhiI integers */
+	*mem_XYZPhiI=(XYZPhiI *)calloc(sofmXYZPhiI,sizeof(XYZPhiI));
+	if(!mem_XYZPhiI )
 	{
-		printf( "failed to allocate memory for ZPhiI integers\n ");
+		printf( "failed to allocate memory for XYZPhiI integers\n ");
 		exit(1);
 	}
 
@@ -117,7 +117,7 @@ int plMemory( double **mem_double, int sofmf, int **mem_int, int sofmi, MATL **m
 }
 
 int plReGetMemory( double **mem_double, int sofmf, int **mem_int, int sofmi, MATL **matl,
-	int nmat, ZPhiI **mem_ZPhiI, int sofmZPhiI, MDIM **mem_MDIM, SDIM **mem_SDIM,
+	int nmat, XYZPhiI **mem_XYZPhiI, int sofmXYZPhiI, MDIM **mem_MDIM, SDIM **mem_SDIM,
 	int sofmSDIM, CURVATURE **curve, MOMENT **moment, STRAIN **strain,
 	STRESS **stress, int sofmSTRESS )
 {
@@ -189,14 +189,14 @@ int plReGetMemory( double **mem_double, int sofmf, int **mem_int, int sofmi, MAT
 	}
 	memset(*mem_int,0,sofmi*sizeof(int));
 
-/* For the ZPhiI integers */
-	*mem_ZPhiI=(ZPhiI *)realloc(*mem_ZPhiI, sofmZPhiI*sizeof(ZPhiI));
-	if(!mem_ZPhiI )
+/* For the XYZPhiI integers */
+	*mem_XYZPhiI=(XYZPhiI *)realloc(*mem_XYZPhiI, sofmXYZPhiI*sizeof(XYZPhiI));
+	if(!mem_XYZPhiI )
 	{
-		printf( "failed to allocate memory for ZPhiI integers\n ");
+		printf( "failed to allocate memory for XYZPhiI integers\n ");
 		exit(1);
 	}
-	memset(*mem_ZPhiI,0,sofmZPhiI*sizeof(ZPhiI));
+	memset(*mem_XYZPhiI,0,sofmXYZPhiI*sizeof(XYZPhiI));
 
 /* For the MDIM doubles */
 

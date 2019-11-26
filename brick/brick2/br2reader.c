@@ -2,11 +2,11 @@
     This library function reads in data for a finite element
     program which does analysis on a thermal brick element.
 
-		Updated 8/6/04
+		Updated 9/30/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -65,7 +65,7 @@ int br2reader( BOUND bc, int *connect, int *connect_film, double *coord, int *el
 	{
 	   fscanf( o1, "%d ",&dum);
 	   printf( "material (%3d) matl no., ther cond x, y, z, ther expan x, y, z,",dum);
-	   printf( " film coeff, E mod x, y, z and Poi.Rat. xy, xz, yz\n",dum);
+	   printf( " film coeff, Emod x, y, z and Poi.Rat. xy, xz, yz\n",dum);
 	   fscanf( o1, " %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf\n",
 		&matl[dum].thrml_cond.x, &matl[dum].thrml_cond.y, &matl[dum].thrml_cond.z,
 		&matl[dum].thrml_expn.x, &matl[dum].thrml_expn.y, &matl[dum].thrml_expn.z,
@@ -85,11 +85,11 @@ int br2reader( BOUND bc, int *connect, int *connect_film, double *coord, int *el
 	for( i = 0; i < numel; ++i )
 	{
 	   fscanf( o1,"%d ",&dum);
-	   printf( "connectivity for element (%4d) ",dum);
+	   printf( "connectivity for element (%6d) ",dum);
 	   for( j = 0; j < npel; ++j )
 	   {
 		fscanf( o1, "%d",(connect+npel*dum+j));
-		printf( "%4d ",*(connect+npel*dum+j));
+		printf( "%6d ",*(connect+npel*dum+j));
 	   }
 	   fscanf( o1,"%d\n",(el_matl+dum));
 	   printf( " with matl %3d\n",*(el_matl+dum));
@@ -100,11 +100,11 @@ int br2reader( BOUND bc, int *connect, int *connect_film, double *coord, int *el
 	for( i = 0; i < numel_film; ++i )
 	{
 	   fscanf( o1,"%d ",&dum);
-	   printf( "convection connectivity for surface (%4d) ",dum);
+	   printf( "convection connectivity for surface (%6d) ",dum);
 	   for( j = 0; j < npel_film; ++j )
 	   {
 		fscanf( o1, "%d",(connect_film+npel_film*dum+j));
-		printf( "%4d ",*(connect_film+npel_film*dum+j));
+		printf( "%6d ",*(connect_film+npel_film*dum+j));
 	   }
 	   fscanf( o1,"%d\n",(el_matl_film+dum));
 	   printf( " with matl %3d\n",*(el_matl_film+dum));
@@ -115,12 +115,12 @@ int br2reader( BOUND bc, int *connect, int *connect_film, double *coord, int *el
 	for( i = 0; i < numnp; ++i )
 	{
 	   fscanf( o1,"%d ",&dum);
-	   printf( "coordinate (%d) ",dum);
+	   printf( "coordinate (%6d) ",dum);
 	   printf( "coordinates ");
 	   for( j = 0; j < nsd; ++j )
 	   {
 		fscanf( o1, "%lf ",(coord+nsd*dum+j));
-		printf( "%9.6e ",*(coord+nsd*dum+j));
+		printf( "%14.6e ",*(coord+nsd*dum+j));
 	   }
 	   fscanf( o1,"\n");
 	   printf( "\n");
@@ -130,85 +130,90 @@ int br2reader( BOUND bc, int *connect, int *connect_film, double *coord, int *el
 
 	dum= 0;
 	fscanf( o1,"%d",&bc.fix[dum].x);
-	printf( "node (%4d) has an x prescribed displacement of: ",bc.fix[dum].x);
+	printf( "node (%6d) has an x prescribed displacement of: ",bc.fix[dum].x);
 	while( bc.fix[dum].x > -1 )
 	{
 		fscanf( o1,"%lf\n%d",(U+ndof*bc.fix[dum].x),
 			&bc.fix[dum+1].x);
 		printf( "%14.6e\n",*(U+ndof*bc.fix[dum].x));
-		printf( "node (%4d) has an x prescribed displacement of: ",
+		printf( "node (%6d) has an x prescribed displacement of: ",
 			bc.fix[dum+1].x);
 		++dum;
 	}
 	bc.num_fix[0].x=dum;
+	if(dum > numnp) printf( "too many prescribed displacements x\n");
 	fscanf( o1,"\n");
 	fgets( buf, BUFSIZ, o1 );
 	printf( "\n\n");
 
 	dum= 0;
 	fscanf( o1,"%d",&bc.fix[dum].y);
-	printf( "node (%4d) has an y prescribed displacement of: ",bc.fix[dum].y);
+	printf( "node (%6d) has an y prescribed displacement of: ",bc.fix[dum].y);
 	while( bc.fix[dum].y > -1 )
 	{
 		fscanf( o1,"%lf\n%d",(U+ndof*bc.fix[dum].y+1),
 			&bc.fix[dum+1].y);
 		printf( "%14.6e\n",*(U+ndof*bc.fix[dum].y+1));
-		printf( "node (%4d) has an y prescribed displacement of: ",
+		printf( "node (%6d) has an y prescribed displacement of: ",
 			bc.fix[dum+1].y);
 		++dum;
 	}
 	bc.num_fix[0].y=dum;
+	if(dum > numnp) printf( "too many prescribed displacements y\n");
 	fscanf( o1,"\n");
 	fgets( buf, BUFSIZ, o1 );
 	printf( "\n\n");
 
 	dum= 0;
 	fscanf( o1,"%d",&bc.fix[dum].z);
-	printf( "node (%4d) has an z prescribed displacement of: ",bc.fix[dum].z);
+	printf( "node (%6d) has an z prescribed displacement of: ",bc.fix[dum].z);
 	while( bc.fix[dum].z > -1 )
 	{
 		fscanf( o1,"%lf\n%d",(U+ndof*bc.fix[dum].z+2),
 			&bc.fix[dum+1].z);
 		printf( "%14.6e\n",*(U+ndof*bc.fix[dum].z+2));
-		printf( "node (%4d) has an z prescribed displacement of: ",
+		printf( "node (%6d) has an z prescribed displacement of: ",
 			bc.fix[dum+1].z);
 		++dum;
 	}
 	bc.num_fix[0].z=dum;
+	if(dum > numnp) printf( "too many prescribed displacements z\n");
 	fscanf( o1,"\n");
 	fgets( buf, BUFSIZ, o1 );
 	printf( "\n\n");
 
 	dum= 0;
 	fscanf( o1,"%d",&bc.T[dum]);
-	printf( "node (%4d) has a prescribed temperature of: ",bc.T[dum]);
+	printf( "node (%6d) has a prescribed temperature of: ",bc.T[dum]);
 	while( bc.T[dum] > -1 )
 	{
 		fscanf( o1,"%lf\n%d",(T+Tndof*bc.T[dum]),
 			&bc.T[dum+1]);
 		printf( "%14.6e\n",*(T+Tndof*bc.T[dum]));
-		printf( "node (%4d) has a prescribed temperature of: ",
+		printf( "node (%6d) has a prescribed temperature of: ",
 			bc.T[dum+1]);
 		++dum;
 	}
 	bc.num_T[0]=dum;
+	if(dum > numnp) printf( "too many prescribed temperatures\n");
 	fscanf( o1,"\n");
 	fgets( buf, BUFSIZ, o1 );
 	printf( "\n\n");
 
 	dum= 0;
 	fscanf( o1,"%d",&bc.TB[dum]);
-	printf( "node (%4d) has a bulk temperature of: ",bc.TB[dum]);
+	printf( "node (%6d) has a bulk temperature of: ",bc.TB[dum]);
 	while( bc.TB[dum] > -1 )
 	{
 		fscanf( o1,"%lf\n%d",(TB+Tndof*bc.TB[dum]),
 			&bc.TB[dum+1]);
 		printf( "%14.6e\n",*(TB+Tndof*bc.TB[dum]));
-		printf( "node (%4d) has a bulk temperature of: ",
+		printf( "node (%6d) has a bulk temperature of: ",
 			bc.TB[dum+1]);
 		++dum;
 	}
 	bc.num_TB[0]=dum;
+	if(dum > numnp) printf( "too many prescribed bulk temperatures\n");
 	fscanf( o1,"\n");
 	fgets( buf, BUFSIZ, o1 );
 	printf( "\n\n");
@@ -216,7 +221,7 @@ int br2reader( BOUND bc, int *connect, int *connect_film, double *coord, int *el
 	dum= 0;
 	printf("force vector for node: ");
 	fscanf( o1,"%d",&bc.force[dum]);
-	printf( "(%4d)",bc.force[dum]);
+	printf( "(%6d)",bc.force[dum]);
 	while( bc.force[dum] > -1 )
 	{
 	   for( j = 0; j < ndof; ++j )
@@ -229,9 +234,10 @@ int br2reader( BOUND bc, int *connect, int *connect_film, double *coord, int *el
 	   printf("force vector for node: ");
 	   ++dum;
 	   fscanf( o1,"%d",&bc.force[dum]);
-	   printf( "(%4d)",bc.force[dum]);
+	   printf( "(%6d)",bc.force[dum]);
 	}
 	bc.num_force[0]=dum;
+	if(dum > numnp) printf( "too many forces\n");
 	fscanf( o1,"\n");
 	fgets( buf, BUFSIZ, o1 );
 	printf( "\n\n");
@@ -239,7 +245,7 @@ int br2reader( BOUND bc, int *connect, int *connect_film, double *coord, int *el
 	dum= 0;
 	printf("heat Q for node: ");
 	fscanf( o1,"%d",&bc.Q[dum]);
-	printf( "(%4d)",bc.Q[dum]);
+	printf( "(%6d)",bc.Q[dum]);
 	while( bc.Q[dum] > -1 )
 	{
 	   for( j = 0; j < Tndof; ++j )
@@ -252,7 +258,7 @@ int br2reader( BOUND bc, int *connect, int *connect_film, double *coord, int *el
 	   printf("heat Q for node: ");
 	   ++dum;
 	   fscanf( o1,"%d",&bc.Q[dum]);
-	   printf( "(%4d)",bc.Q[dum]);
+	   printf( "(%6d)",bc.Q[dum]);
 	}
 	bc.num_Q[0]=dum;
 	fscanf( o1,"\n");
@@ -262,7 +268,7 @@ int br2reader( BOUND bc, int *connect, int *connect_film, double *coord, int *el
 	dum= 0;
 	printf("heat generation for node: ");
 	fscanf( o1,"%d",&bc.heat_node[dum]);
-	printf( "(%4d)",bc.heat_node[dum]);
+	printf( "(%6d)",bc.heat_node[dum]);
 	while( bc.heat_node[dum] > -1 )
 	{
 	   for( j = 0; j < Tndof; ++j )
@@ -275,7 +281,7 @@ int br2reader( BOUND bc, int *connect, int *connect_film, double *coord, int *el
 	   printf("heat generation for node: ");
 	   ++dum;
 	   fscanf( o1,"%d",&bc.heat_node[dum]);
-	   printf( "(%4d)",bc.heat_node[dum]);
+	   printf( "(%6d)",bc.heat_node[dum]);
 	}
 	bc.num_heat_node[0]=dum;
 	fscanf( o1,"\n");
@@ -285,7 +291,7 @@ int br2reader( BOUND bc, int *connect, int *connect_film, double *coord, int *el
 	dum= 0;
 	printf("heat generation for element: ");
 	fscanf( o1,"%d",&bc.heat_el[dum]);
-	printf( "(%4d)",bc.heat_el[dum]);
+	printf( "(%6d)",bc.heat_el[dum]);
 	while( bc.heat_el[dum] > -1 )
 	{
 	   fscanf( o1,"%lf ",(heat_el+bc.heat_el[dum]));
@@ -295,7 +301,7 @@ int br2reader( BOUND bc, int *connect, int *connect_film, double *coord, int *el
 	   printf("heat generation for element: ");
 	   ++dum;
 	   fscanf( o1,"%d",&bc.heat_el[dum]);
-	   printf( "(%4d)",bc.heat_el[dum]);
+	   printf( "(%6d)",bc.heat_el[dum]);
 	}
 	bc.num_heat_el[0]=dum;
 	fscanf( o1,"\n");
@@ -306,7 +312,7 @@ int br2reader( BOUND bc, int *connect, int *connect_film, double *coord, int *el
 	{
 	   printf("stress for node: ");
 	   fscanf( o1,"%d",&dum);
-	   printf( "(%4d)",dum);
+	   printf( "(%6d)",dum);
 	   while( dum > -1 )
 	   {
 		fscanf( o1,"%lf ",&stress_node[dum].xx);
@@ -325,7 +331,7 @@ int br2reader( BOUND bc, int *connect, int *connect_film, double *coord, int *el
 		printf( "\n");
 		printf("stress for node: ");
 		fscanf( o1,"%d",&dum);
-		printf( "(%4d)",dum);
+		printf( "(%6d)",dum);
 	   }
 	}
 	printf( "\n\n");
@@ -336,7 +342,7 @@ int br2reader( BOUND bc, int *connect, int *connect_film, double *coord, int *el
 	   printf( "\n\n");
 	   printf("stress for ele: ");
 	   fscanf( o4,"%d",&dum);
-	   printf( "(%4d)",dum);
+	   printf( "(%6d)",dum);
 	   while( dum > -1 )
 	   {
 		fscanf( o4,"%d",&dum2);
@@ -357,7 +363,7 @@ int br2reader( BOUND bc, int *connect, int *connect_film, double *coord, int *el
 		printf( "\n");
 		printf("stress for ele: ");
 		fscanf( o4,"%d",&dum);
-		printf( "(%4d)",dum);
+		printf( "(%6d)",dum);
 	   }
 	}
 	printf( "\n\n");

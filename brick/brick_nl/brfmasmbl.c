@@ -35,44 +35,37 @@ int brFMassemble(int *connect, double *coord, double *coordh, int *el_matl,
 	double *force, double *mass, MATL *matl, double *U) 
 	
 {
-        int i, i1, i2, i3, j, k, dof_el[neqel], sdof_el[npel*nsd];
+	int i, i1, i2, i3, j, k, dof_el[neqel], sdof_el[npel*nsd];
 	int check, node;
 	int matl_num;
 	double Emod, G, K, Pois;
-        double lamda, mu;
-        double B[soB], Bh[soB], DB[soB];
-        double K_temp[neqlsq], K_el[neqlsq];
+	double lamda, mu;
+	double B[soB], Bh[soB], DB[soB];
+	double K_temp[neqlsq], K_el[neqlsq];
 	double force_el[neqel], U_el[neqel];
-        double coord_el_trans[neqel], coordh_el_trans[neqel];
-        double det[num_int], deth[num_int], volume_el, wXdet;
-        double mass_el[neqel];
+	double coord_el_trans[neqel], coordh_el_trans[neqel];
+	double det[num_int], deth[num_int], volume_el, wXdet;
+	double mass_el[neqel];
 
 /*      initialize all variables  */
-        memset(mass,0,dof*sof);
-        memset(B,0,soB*sof);
-        memset(Bh,0,soB*sof);
+	memset(mass,0,dof*sof);
 
-        for( k = 0; k < numel; ++k )
-        {
-                matl_num = *(el_matl+k);
-                Emod = matl[matl_num].E;
-                Pois = matl[matl_num].nu;
+	for( k = 0; k < numel; ++k )
+	{
+		matl_num = *(el_matl+k);
+		Emod = matl[matl_num].E;
+		Pois = matl[matl_num].nu;
 
-                K=Emod/(1.0-2*Pois)/3.0;
-                G=Emod/(1.0+Pois)/2.0;
+		K=Emod/(1.0-2*Pois)/3.0;
+		G=Emod/(1.0+Pois)/2.0;
 
 		volume_el = 0.0;
 
-        	lamda = Emod*Pois/((1.0+Pois)*(1.0-2.0*Pois));
-        	mu = Emod/(1.0+Pois)/2.0;
+		lamda = Emod*Pois/((1.0+Pois)*(1.0-2.0*Pois));
+		mu = Emod/(1.0+Pois)/2.0;
 
-/* Zero out the Element stiffness and mass matrices */
-
-        	memset(K_el,0,neqlsq*sof);
-        	memset(mass_el,0,neqel*sof);
-
-                for( j = 0; j < npel; ++j )
-                {
+		for( j = 0; j < npel; ++j )
+		{
 			node = *(connect+npel*k+j);
 
 			*(sdof_el+nsd*j) = nsd*node;
@@ -87,14 +80,14 @@ int brFMassemble(int *connect, double *coord, double *coordh, int *el_matl,
 
 /* Create the coordh and coordh_trans vector for one element */
 
-                        *(coordh_el_trans+j) = *(coordh+nsd*node);
-                        *(coordh_el_trans+npel*1+j) = *(coordh+nsd*node+1);
-                        *(coordh_el_trans+npel*2+j) = *(coordh+nsd*node+2);
+			*(coordh_el_trans+j) = *(coordh+nsd*node);
+			*(coordh_el_trans+npel*1+j) = *(coordh+nsd*node+1);
+			*(coordh_el_trans+npel*2+j) = *(coordh+nsd*node+2);
 
 			*(dof_el+ndof*j) = ndof*node;
 			*(dof_el+ndof*j+1) = ndof*node+1;
 			*(dof_el+ndof*j+2) = ndof*node+2;
-                }
+		}
 
 /* Assembly of the shg matrix for each integration point at 1/2 time */
 
@@ -107,31 +100,39 @@ int brFMassemble(int *connect, double *coord, double *coordh, int *el_matl,
 /* The loop over j below calculates the 8 points of the gaussian integration
    for several quantities */
 
-                for( j = 0; j < num_int; ++j )
-                {
+/* Zero out the Element stiffness and mass matrices */
+
+		memset(K_el,0,neqlsq*sof);
+		memset(mass_el,0,neqel*sof);
+
+		for( j = 0; j < num_int; ++j )
+		{
+		    memset(B,0,soB*sof);
+		    memset(Bh,0,soB*sof);
+		    memset(K_temp,0,neqlsq*sof);
 
 /* Assembly of the Bh matrix at 1/2 time */
 
-                    check = brickB((shgh+npel*(nsd+1)*j),Bh);
-                    if(!check) printf( "Problems with brickB \n");
+		    check = brickB((shgh+npel*(nsd+1)*j),Bh);
+		    if(!check) printf( "Problems with brickB \n");
 
 /* Assembly of the B matrix at full time */
 
-                    check = brickB((shg+npel*(nsd+1)*j),B);
-                    if(!check) printf( "Problems with brickB \n");
+		    check = brickB((shg+npel*(nsd+1)*j),B);
+		    if(!check) printf( "Problems with brickB \n");
 
-                    for( i1 = 0; i1 < neqel; ++i1 )
-                    {
-                        *(DB+i1) = *(Bh+i1)*(lamda+2.0*mu)+*(Bh+neqel*1+i1)*lamda+
-                                *(Bh+neqel*2+i1)*lamda;
-                        *(DB+neqel*1+i1) = *(Bh+i1)*lamda+*(Bh+neqel*1+i1)*(lamda+2.0*mu)+
-                                *(Bh+neqel*2+i1)*lamda;
-                        *(DB+neqel*2+i1) = *(Bh+i1)*lamda+*(Bh+neqel*1+i1)*lamda+
-                                *(Bh+neqel*2+i1)*(lamda+2.0*mu);
-                        *(DB+neqel*3+i1) = *(Bh+neqel*3+i1)*mu;
-                        *(DB+neqel*4+i1) = *(Bh+neqel*4+i1)*mu;
-                        *(DB+neqel*5+i1) = *(Bh+neqel*5+i1)*mu;
-                    }
+		    for( i1 = 0; i1 < neqel; ++i1 )
+		    {
+			*(DB+i1) = *(Bh+i1)*(lamda+2.0*mu)+*(Bh+neqel*1+i1)*lamda+
+				*(Bh+neqel*2+i1)*lamda;
+			*(DB+neqel*1+i1) = *(Bh+i1)*lamda+*(Bh+neqel*1+i1)*(lamda+2.0*mu)+
+				*(Bh+neqel*2+i1)*lamda;
+			*(DB+neqel*2+i1) = *(Bh+i1)*lamda+*(Bh+neqel*1+i1)*lamda+
+				*(Bh+neqel*2+i1)*(lamda+2.0*mu);
+			*(DB+neqel*3+i1) = *(Bh+neqel*3+i1)*mu;
+			*(DB+neqel*4+i1) = *(Bh+neqel*4+i1)*mu;
+			*(DB+neqel*5+i1) = *(Bh+neqel*5+i1)*mu;
+		    }
 
 		    wXdet = *(w+j)*(*(det+j));
 
@@ -139,13 +140,13 @@ int brFMassemble(int *connect, double *coord, double *coordh, int *el_matl,
 
 		    volume_el += wXdet;
 
-                    check=matXT(K_temp, B, DB, neqel, neqel, sdim);
-                    if(!check) printf( "Problems with matXT\n");
-                    for( i2 = 0; i2 < neqlsq; ++i2 )
-                    {
-                          *(K_el+i2) += *(K_temp+i2)*wXdet;
-                    }
-                }
+		    check=matXT(K_temp, B, DB, neqel, neqel, sdim);
+		    if(!check) printf( "Problems with matXT\n");
+		    for( i2 = 0; i2 < neqlsq; ++i2 )
+		    {
+			  *(K_el+i2) += *(K_temp+i2)*wXdet;
+		    }
+		}
 
 		for( j = 0; j < neqel; ++j )
 		{
@@ -163,20 +164,20 @@ int brFMassemble(int *connect, double *coord, double *coordh, int *el_matl,
 		}
 
 /* Creating the mass Matrix */
-                for( i3 = 0; i3 < neqel; ++i3 )
-                {
+		for( i3 = 0; i3 < neqel; ++i3 )
+		{
 		   *(mass_el+i3) = 100.0*(*(K_el+neqel*i3+i3));
-                }
-                for( j = 0; j < npel; ++j )
-                {
-                    *(mass+*(dof_el+ndof*j)) += *(mass_el + ndof*j);
-                    *(mass+*(dof_el+ndof*j+1)) += *(mass_el + ndof*j + 1);
-                    *(mass+*(dof_el+ndof*j+2)) += *(mass_el + ndof*j + 2);
 		}
-        }
+		for( j = 0; j < npel; ++j )
+		{
+		    *(mass+*(dof_el+ndof*j)) += *(mass_el + ndof*j);
+		    *(mass+*(dof_el+ndof*j+1)) += *(mass_el + ndof*j + 1);
+		    *(mass+*(dof_el+ndof*j+2)) += *(mass_el + ndof*j + 2);
+		}
+	}
 	/*for( i = 0; i < dof ; ++i )
 	{
 		printf( " force %4d %16.4e \n",i,*(force+i));
 	}*/
-        return 1;
+	return 1;
 }

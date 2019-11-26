@@ -3,11 +3,11 @@
     a wedge element at the nodal points.   It is streamlined by removal
     of the zero terms.
 
-        Updated 11/19/01
+        Updated 9/4/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -30,11 +30,11 @@ int westress_shg(double *det, int el, double *shl_node2, double *shg, double *xl
        JACOBIAN DETERMINANTS FOR AN EIGHT-NODE HEXAHEDRAL ELEMENT
 
    *(xl+npel*(0,1,2)+*(node_r+2*k+(0,1))) = GLOBAL COORDINATES CORRESPONDING TO
-					     NONZERO SHAPE FUNCTION dN/dr
+                                            NONZERO SHAPE FUNCTION dN/dr
    *(xl+npel*(0,1,2)+*(node_s+2*k+(0,1))) = GLOBAL COORDINATES CORRESPONDING TO
-					      NONZERO SHAPE FUNCTION dN/ds
+                                            NONZERO SHAPE FUNCTION dN/ds
    *(xl+npel*(0,1,2)+*(node_xi+2*k+(0,1))) = GLOBAL COORDINATES CORRESPONDING TO
-					       NONZERO SHAPE FUNCTION dN/dxi
+                                             NONZERO SHAPE FUNCTION dN/dxi
        *(det+k)  = JACOBIAN DETERMINANT
        *(shl_node2+2*nsd*k+i) = LOCAL ("XI") DERIVATIVE OF SHAPE FUNCTION
        *(shl_node2+2*nsd*k+2*1+i) = LOCAL ("ETA") DERIVATIVE OF SHAPE FUNCTION
@@ -56,69 +56,70 @@ int westress_shg(double *det, int el, double *shl_node2, double *shg, double *xl
 
        shl_node2 = derivative of shape function dN/dc evaluated at nodal point
        node_r[] = only nonzero shape function number at particular node
-		for dN/dr
+                  for dN/dr
        node_s[] = only nonzero shape function number at particular node
-		for dN/ds
+                  for dN/ds
        node_xi[] = only nonzero shape function number at particular node
-		for dN/dxi
+                   for dN/dxi
 
-		1111
-			Updated 11/19/01 */
+                1111
+                        Updated 9/4/06
+*/
 
-        int node_r[] = {0,1,0,1,0,1,3,4,3,4,3,4};
-        int node_s[] = {0,2,0,2,0,2,3,5,3,5,3,5};
-        int node_xi[]= {0,3,1,4,2,5,0,3,1,4,2,5};
+	int node_r[] = {0,1,0,1,0,1,3,4,3,4,3,4};
+	int node_s[] = {0,2,0,2,0,2,3,5,3,5,3,5};
+	int node_xi[]= {0,3,1,4,2,5,0,3,1,4,2,5};
 
-        double xs[9],temp[9],col1[nsd],col2[nsd],temp1,temp2;
+	double xs[9],temp[9],col1[nsd],col2[nsd],temp1,temp2;
 	int check,i,j,k;
 
 	memset(shg,0,sosh*sof);
 
-        for( k = 0; k < npel; ++k )
+	for( k = 0; k < npel; ++k )
 	{
 
 /* The jacobian, dx/dc, is calculated below */
 
-           for( j = 0; j < nsd; ++j )
+	   for( j = 0; j < nsd; ++j )
 	   {
-	    	*(xs+nsd*j) = 
-	           *(shl_node2+2*nsd*k)*(*(xl+npel*j+*(node_r+2*k))) +
-	           *(shl_node2+2*nsd*k+1)*(*(xl+npel*j+*(node_r+2*k+1)));
-	    	*(xs+nsd*j+1) = 
-	           *(shl_node2+2*nsd*k+2*1)*(*(xl+npel*j+*(node_s+2*k))) +
-	           *(shl_node2+2*nsd*k+2*1+1)*(*(xl+npel*j+*(node_s+2*k+1)));
-	    	*(xs+nsd*j+2) = 
-	           *(shl_node2+2*nsd*k+2*2)*(*(xl+npel*j+*(node_xi+2*k))) +
-	           *(shl_node2+2*nsd*k+2*2+1)*(*(xl+npel*j+*(node_xi+2*k+1)));
+		*(xs+nsd*j) = 
+		   *(shl_node2+2*nsd*k)*(*(xl+npel*j+*(node_r+2*k))) +
+		   *(shl_node2+2*nsd*k+1)*(*(xl+npel*j+*(node_r+2*k+1)));
+		*(xs+nsd*j+1) = 
+		   *(shl_node2+2*nsd*k+2*1)*(*(xl+npel*j+*(node_s+2*k))) +
+		   *(shl_node2+2*nsd*k+2*1+1)*(*(xl+npel*j+*(node_s+2*k+1)));
+		*(xs+nsd*j+2) = 
+		   *(shl_node2+2*nsd*k+2*2)*(*(xl+npel*j+*(node_xi+2*k))) +
+		   *(shl_node2+2*nsd*k+2*2+1)*(*(xl+npel*j+*(node_xi+2*k+1)));
 	   }
 
-           *(temp)=*(xs+4)*(*(xs+8))-*(xs+7)*(*(xs+5));
-           *(temp+3)=*(xs+6)*(*(xs+5))-*(xs+3)*(*(xs+8));
+	   *(temp)=*(xs+4)*(*(xs+8))-*(xs+7)*(*(xs+5));
+	   *(temp+3)=*(xs+6)*(*(xs+5))-*(xs+3)*(*(xs+8));
 	   *(temp+6)=*(xs+3)*(*(xs+7))-*(xs+6)*(*(xs+4));
 
-           *(det+k)=*(xs)*(*(temp))+*(xs+1)*(*(temp+3))+*(xs+2)*(*(temp+6));
-           /*printf("%d %f\n", k, *(det+k));*/
+	   *(det+k)=*(xs)*(*(temp))+*(xs+1)*(*(temp+3))+*(xs+2)*(*(temp+6));
+	   /*printf("%d %f\n", k, *(det+k));*/
 
-           if(*(det+k) <= 0.0 ) 
+	   if(*(det+k) <= 0.0 ) 
 	   {
-                printf("the element (%6d) is inverted: %f %d\n", el,*(det+k),k);
+		printf("the element (%6d) is inverted: %f %d\n", el,*(det+k),k);
 		return 1;
 	   }
 
 /* The inverse of the jacobian, dc/dx, is calculated below */
 
-           *(temp+1)=*(xs+7)*(*(xs+2))-*(xs+1)*(*(xs+8));
-           *(temp+4)=*(xs)*(*(xs+8))-*(xs+6)*(*(xs+2));
-           *(temp+7)=*(xs+6)*(*(xs+1))-*(xs)*(*(xs+7));
-           *(temp+2)=*(xs+1)*(*(xs+5))-*(xs+4)*(*(xs+2));
-           *(temp+5)=*(xs+3)*(*(xs+2))-*(xs)*(*(xs+5));
-           *(temp+8)=*(xs)*(*(xs+4))-*(xs+3)*(*(xs+1));
+	   *(temp+1)=*(xs+7)*(*(xs+2))-*(xs+1)*(*(xs+8));
+	   *(temp+4)=*(xs)*(*(xs+8))-*(xs+6)*(*(xs+2));
+	   *(temp+7)=*(xs+6)*(*(xs+1))-*(xs)*(*(xs+7));
+	   *(temp+2)=*(xs+1)*(*(xs+5))-*(xs+4)*(*(xs+2));
+	   *(temp+5)=*(xs+3)*(*(xs+2))-*(xs)*(*(xs+5));
+	   *(temp+8)=*(xs)*(*(xs+4))-*(xs+3)*(*(xs+1));
 
-           for( j = 0; j < nsd; ++j )
+	   for( j = 0; j < nsd; ++j )
 	   {
-        	for( i = 0; i < nsd; ++i )
-        	{
-    		   *(xs+nsd*i+j)=*(temp+nsd*i+j)/(*(det+k));
+		for( i = 0; i < nsd; ++i )
+		{
+		   *(xs+nsd*i+j)=*(temp+nsd*i+j)/(*(det+k));
 		}
 	   }
 
@@ -164,6 +165,6 @@ int westress_shg(double *det, int el, double *shl_node2, double *shg, double *xl
 	   *(shg+npel*(nsd+1)*k+npel*2+*(node_xi+2*k+1)) +=
 		*(shl_node2+6*k+2*2+1)*(*(xs+8));
 	}
-        return 1; 
+	return 1; 
 }
 

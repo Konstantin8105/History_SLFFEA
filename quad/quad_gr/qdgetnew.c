@@ -2,11 +2,11 @@
     This program reads in the new input file and prepares it
     for graphical display.
   
-   			Last Update 4/27/05
+	          Last Update 12/4/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -36,41 +36,44 @@
 
 /******** Data management and calculations ********/
 
-void qdforce_vectors0(int , BOUND , double *, XYF *);
+void force_vectors0(int , BOUND , double *, XYZF *);
 
-void qddisp_vectors0(int , BOUND , double *);
+void disp_vectors0(int , BOUND , double *);
 
 void agvMakeAxesList(GLuint);
 
-int qdset( BOUND , int *, double *, XYF *, SDIM *, ISTRAIN *,
+int qdset( BOUND , int *, double *, XYZF *, SDIM *, ISTRAIN *,
 	SDIM *, ISTRESS *, double *, int *);
 
-int qdparameter( double *, SDIM *, SDIM *, double * );
+int parameter2( double *, SDIM *, SDIM *, double * );
 
-int qdReGetMemory2_gr( XYF **, int );
+int ReGetMemory2_gr( XYZF **, int );
 
-int qdreader_gr( FILE *, SDIM *, SDIM *);
+int qdnormal_vectors (int *, double *, NORM * );
+
+int reader_gr2( FILE *, SDIM *, SDIM *);
 
 int qdreader( BOUND, int *, double *, int *, double *, MATL *, char *,
 	FILE *, STRESS *, SDIM *, double *);
 
-int qdReGetMemory_gr( ISTRAIN **, ISTRESS **, int );
+int ReGetMemory_gr( ISTRAIN **, ISTRESS **, int, NORM **, int );
 
-int qdReGetMemory( double **, int, int **, int, MATL **, int , XYI **,
-        int, SDIM **, int, STRAIN **, STRESS **, int );
+int ReGetMemory( double **, int, int **, int, MATL **, int , XYZI **, int,
+	SDIM **, int, STRAIN **, STRESS **, int );
 
-int filecheck( char *, char *, FILE **, FILE **, FILE **, char * );
+int filecheck( char *, char *, FILE **, FILE **, FILE **, char *, int );
 
 /******************************* GLOBAL VARIABLES **************************/
 
 /****** FEA globals ******/
 extern int dof, sdof, nmat, nmode, numel, numnp, plane_stress_flag;
-extern int stress_read_flag, element_stress_read_flag;
-extern XYI *mem_XYI;
-extern XYF *mem_XYF;
+extern int stress_read_flag, element_stress_read_flag, flag_3D;
+extern XYZI *mem_XYZI;
+extern XYZF *mem_XYZF;
 extern int *mem_int;
 extern double *mem_double;
 extern SDIM *mem_SDIM;
+extern NORM *mem_NORM;
 extern double *coord, *coord0;
 extern double *U;
 extern int *connecter;
@@ -88,13 +91,14 @@ extern SDIM *strain_node;
 extern ISTRESS *stress_color;
 extern ISTRAIN *strain_color;
 extern int *U_color, *el_matl_color;
+extern NORM *norm, *norm0;
 extern MATL *matl_crtl;
 
 /* Global variables for drawing the axes */
 extern GLuint AxesList, DispList, ForceList;   /* Display lists */
 
 /* Global variables for drawing the force vectors */
-extern XYF *force_vec, *force_vec0;
+extern XYZF *force_vec, *force_vec0;
 
 /****** For drawing the Mesh Window ******/
 extern double coord_rescale;
@@ -105,14 +109,15 @@ extern double amplify_factor;
 
 int qdGetNewMesh(void)
 {
-        int i, j, check;
-        char *ccheck;
+	int i, j, check;
+	char *ccheck;
 	int dum, dum1, dum2, dum3, dum4;
-        double fpointx, fpointy;
+	double fpointx, fpointy, fpointz;
 	int sofmi, sofmf, sofmSTRESS, sofmISTRESS, sofmSTRAIN,
-		sofmXYI, sofmXYF, sofmSDIM, ptr_inc;
-        char name[30], name2[30], oqd_exten[4], buf[ BUFSIZ ];
-        FILE *o1, *o2, *o3;
+		sofmXYZI, sofmXYZF, sofmSDIM, sofmNORM, ptr_inc;
+	char name[30], name2[30], oqd_exten[4], buf[ BUFSIZ ];
+	int oqd_exten_length = 4;
+	FILE *o1, *o2, *o3;
 
 /* Delete the old display lists */
 
@@ -127,7 +132,7 @@ int qdGetNewMesh(void)
 
 	memset(name,0,30*sizeof(char));
 	memset(name2,0,30*sizeof(char));
-	memset(oqd_exten,0,4*sizeof(char));
+	memset(oqd_exten,0,oqd_exten_length*sizeof(char));
 
 /* Initialize old variables */
 
@@ -141,108 +146,122 @@ int qdGetNewMesh(void)
 	node_choice = 0;
 	ele_choice = 0;
 
-	ccheck = strncpy(oqd_exten,".oqd",4);
+	ccheck = strncpy(oqd_exten,".oqd",oqd_exten_length);
 	if(!ccheck) printf( " Problems with strncpy \n");
 
-        printf("What is the name of the input file containing the \n");
-        printf("quad structural data? \n");
-        scanf( "%30s",name2);
+	printf("What is the name of the input file containing the \n");
+	printf("quad structural data? (example: qdinc)\n");
+	scanf( "%30s",name2);
 
 /*   o1 contains all the structural data for input
      o3 contains all the structural data for postprocessing
      o2 is used to determine the existance of input and post files
 */
-        o2 = fopen( name2,"r" );
-        if(o2 == NULL ) {
-                printf("Can't find file %30s\n", name2);
-                exit(1);
-        }
-        /*printf( "%3d %30s\n ",name2_length,name2);*/
+	o2 = fopen( name2,"r" );
+	if(o2 == NULL ) {
+		printf("Can't find file %30s\n", name2);
+		exit(1);
+	}
+	/*printf( "%3d %30s\n ",name2_length,name2);*/
 
-        fgets( buf, BUFSIZ, o2 );
-        fscanf( o2, "%d %d %d %d %d\n ",&numel,&numnp,&nmat,&nmode,&plane_stress_flag);
-        dof=numnp*ndof;
+	fgets( buf, BUFSIZ, o2 );
+	fscanf( o2, "%d %d %d %d %d\n ",&numel,&numnp,&nmat,&nmode,&plane_stress_flag);
+	dof=numnp*ndof;
 	sdof=numnp*nsd;
 	nmode = abs(nmode);
 
 /* Begin exmaining and checking for the existence of data files */
 
-	check = filecheck( name, name2, &o1, &o2, &o3, oqd_exten );
+	check = filecheck( name, name2, &o1, &o2, &o3, oqd_exten, oqd_exten_length );
 	if(!check) printf( " Problems with filecheck \n");
 
 	if( input_flag )
 	{
-        	fgets( buf, BUFSIZ, o1 );
-        	fscanf( o1, "%d %d %d %d %d\n ",&dum,&dum1,&dum2,&dum3,&dum4);
-        	printf( "%d %d %d %d %d\n ",dum,dum1,dum2,dum3,dum4);
-                /*printf( "name %30s\n ",name);*/
+		fgets( buf, BUFSIZ, o1 );
+		fscanf( o1, "%d %d %d %d %d\n ",&dum,&dum1,&dum2,&dum3,&dum4);
+		printf( "%d %d %d %d %d\n ",dum,dum1,dum2,dum3,dum4);
+		/*printf( "name %30s\n ",name);*/
 	}
 	if( post_flag )
 	{
-        	fgets( buf, BUFSIZ, o3 );
-        	fscanf( o3, "%d %d %d %d %d\n ",&dum,&dum1,&dum2,&dum3,&dum4);
-        	printf( "%d %d %d %d %d\n ",dum,dum1,dum2,dum3,dum4);
-                /*printf( "out %30s\n ",out);*/
+		fgets( buf, BUFSIZ, o3 );
+		fscanf( o3, "%d %d %d %d %d\n ",&dum,&dum1,&dum2,&dum3,&dum4);
+		printf( "%d %d %d %d %d\n ",dum,dum1,dum2,dum3,dum4);
+		/*printf( "out %30s\n ",out);*/
 	}
 
 /*   Begin allocation of meomory */
 
 /* For the doubles */
-        sofmf=2*sdof+2*dof;
+	sofmf=2*sdof+2*dof;
 
 /* For the integers */
-        sofmi= numel*npel+numel+numnp+1+1+dof;
+	sofmi= numel*npel+numel+numnp+1+1+dof;
 
-/* For the XYI integers */
-        sofmXYI=numnp+1+1;
+/* For the XYZI integers */
+	sofmXYZI=numnp+1+1;
 
 /* For the SDIM doubles */
 	sofmSDIM = 2*numnp;
 
 /* For the STRESS */
-        sofmSTRESS=1;
+	sofmSTRESS=1;
 
 /* For the ISTRESS */
-        sofmISTRESS=numel;
+	sofmISTRESS=numel;
 
-	check = qdReGetMemory( &mem_double, sofmf, &mem_int, sofmi, &matl, nmat,
-		&mem_XYI, sofmXYI, &mem_SDIM, sofmSDIM, &strain, &stress,
+/* For the NORMS */
+	sofmNORM=numel;
+	if( input_flag && post_flag ) sofmNORM=2*numel;
+	printf( " hhh %d %d %d %d %d %d \n", sofmf, sofmi, nmat, sofmXYZI, sofmSDIM, sofmNORM );
+
+	check = ReGetMemory( &mem_double, sofmf, &mem_int, sofmi, &matl, nmat,
+		&mem_XYZI, sofmXYZI, &mem_SDIM, sofmSDIM, &strain, &stress,
 		sofmSTRESS );
-	if(!check) printf( " Problems with qdReGetMemory \n");
+	if(!check) printf( " Problems with ReGetMemory \n");
+	printf( " hhh %d \n", sofmNORM);
 
-	check = qdReGetMemory_gr( &strain_color, &stress_color, sofmISTRESS );
-	if(!check) printf( " Problems with qdReGetMemory_gr \n");
+	check = ReGetMemory_gr( &strain_color, &stress_color, sofmISTRESS, &mem_NORM,
+		sofmNORM );
+	if(!check) printf( " Problems with ReGetMemory_gr \n");
+	printf( " hhh %d \n", sofmNORM);
 
 /* For the doubles */
-                                        ptr_inc=0;
-        coord=(mem_double+ptr_inc);     ptr_inc += sdof;
-        coord0=(mem_double+ptr_inc);    ptr_inc += sdof;
-        force=(mem_double+ptr_inc);     ptr_inc += dof;
-        U=(mem_double+ptr_inc);         ptr_inc += dof;
+	                                ptr_inc=0;
+	coord=(mem_double+ptr_inc);     ptr_inc += sdof;
+	coord0=(mem_double+ptr_inc);    ptr_inc += sdof;
+	force=(mem_double+ptr_inc);     ptr_inc += dof;
+	U=(mem_double+ptr_inc);         ptr_inc += dof;
 
 /* For the materials */
 
 	matl_crtl = matl;
 
 /* For the integers */
-                                                ptr_inc = 0;
-        connecter=(mem_int+ptr_inc);            ptr_inc += numel*npel;
-        el_matl=(mem_int+ptr_inc);              ptr_inc += numel;
-        bc.force =(mem_int+ptr_inc);            ptr_inc += numnp+1;
-        bc.num_force=(mem_int+ptr_inc);         ptr_inc += 1;
-        U_color=(mem_int+ptr_inc);              ptr_inc += dof;
+	                                        ptr_inc = 0;
+	connecter=(mem_int+ptr_inc);            ptr_inc += numel*npel;
+	el_matl=(mem_int+ptr_inc);              ptr_inc += numel;
+	bc.force =(mem_int+ptr_inc);            ptr_inc += numnp+1;
+	bc.num_force=(mem_int+ptr_inc);         ptr_inc += 1;
+	U_color=(mem_int+ptr_inc);              ptr_inc += dof;
 
 	el_matl_color = el_matl;
 
-/* For the XYI integers */
-                                          	ptr_inc = 0;
-        bc.fix =(mem_XYI+ptr_inc);       	ptr_inc += numnp+1;
-        bc.num_fix=(mem_XYI+ptr_inc);    	ptr_inc += 1;
+/* For the XYZI integers */
+	                                         ptr_inc = 0;
+	bc.fix =(mem_XYZI+ptr_inc);              ptr_inc += numnp+1;
+	bc.num_fix=(mem_XYZI+ptr_inc);           ptr_inc += 1;
 
 /* For the SDIM doubles */
-                                                ptr_inc = 0;
+	                                        ptr_inc = 0;
 	stress_node=(mem_SDIM+ptr_inc);         ptr_inc += numnp;
 	strain_node=(mem_SDIM+ptr_inc);         ptr_inc += numnp;
+
+/* For the NORM doubles */
+	                                        ptr_inc = 0;
+	norm =(mem_NORM+ptr_inc);
+	if( input_flag && post_flag )           ptr_inc += numel;
+	norm0 =(mem_NORM+ptr_inc);              ptr_inc += numel;
 
 /* If there is no post file, then set coord to coord0 */
 
@@ -266,43 +285,66 @@ int qdGetNewMesh(void)
 	element_stress_read_flag = 0;
 	if( post_flag )
 	{
-        	check = qdreader( bc, connecter, coord, el_matl, force, matl, name,
+		check = qdreader( bc, connecter, coord, el_matl, force, matl, name,
 			o3, stress, stress_node, U);
-        	if(!check) printf( " Problems with qdreader \n");
+		if(!check) printf( " Problems with qdreader \n");
 		stress_read_flag = 0;
 
-        	check = qdreader_gr( o3, strain_node, stress_node);
-        	if(!check) printf( " Problems with qdreader_gr \n");
+/* In femqd.c, the line below is just the opposite where bc.num_fix[0].z = numnp for 2-D
+   problems.  But I have to set it to zero here for 2-D problems because I don't want to
+   draw prescribed displacements in z for 2-D problems.
+*/
+		if(!flag_3D) bc.num_fix[0].z = 0;
+
+		check = reader_gr2( o3, strain_node, stress_node);
+		if(!check) printf( " Problems with reader_gr2 \n");
 	}
 	if( input_flag )
 	{
-        	check = qdreader( bc, connecter, coord0, el_matl, force, matl, name,
+		check = qdreader( bc, connecter, coord0, el_matl, force, matl, name,
 			o1, stress, stress_node, U);
-        	if(!check) printf( " Problems with qdreader \n");
+		if(!check) printf( " Problems with qdreader \n");
+
+/* See above relating to the line below.  */
+
+		if(!flag_3D) bc.num_fix[0].z = 0;
+
 	}
 
-/* For the XYF doubles */
-        sofmXYF=2*bc.num_force[0];
+	if( post_flag )
+	{
+		check = qdnormal_vectors(connecter, coord, norm );
+		if(!check) printf( " Problems with qdnormal_vectors \n");
+	}
+
+	if( input_flag )
+	{
+		check = qdnormal_vectors(connecter, coord0, norm0 );
+		if(!check) printf( " Problems with qdnormal_vectors \n");
+	}
+
+/* For the XYZF doubles */
+	sofmXYZF=2*bc.num_force[0];
 /*
-   This is allocated seperately from qdReGetMemory_gr because we need to know the
+   This is allocated seperately from ReGetMemory_gr because we need to know the
    number of force vectors read from qdreader and stored in bc.num_force[0].
 */
 
-	check = qdReGetMemory2_gr( &mem_XYF, sofmXYF );
-	if(!check) printf( " Problems with qdReGetMemory2_gr \n");
+	check = ReGetMemory2_gr( &mem_XYZF, sofmXYZF );
+	if(!check) printf( " Problems with ReGetMemory2_gr \n");
 
-                                               ptr_inc = 0;
-        force_vec =(mem_XYF+ptr_inc);          ptr_inc += bc.num_force[0];
-        force_vec0 =(mem_XYF+ptr_inc);         ptr_inc += bc.num_force[0];
+	                                        ptr_inc = 0;
+	force_vec =(mem_XYZF+ptr_inc);          ptr_inc += bc.num_force[0];
+	force_vec0 =(mem_XYZF+ptr_inc);         ptr_inc += bc.num_force[0];
 
 /* Search for extreme values */
  
 /* In mesh viewer, search for extreme values of nodal points, displacements
-   and stresss and strains to obtain viewing parameters and make color
+   and stress and strains to obtain viewing parameters and make color
    assignments.  Also initialize variables */
 
-	check = qdparameter( coord, strain_node, stress_node, U );
-        if(!check) printf( " Problems with qdparameter \n");
+	check = parameter2( coord, strain_node, stress_node, U );
+	if(!check) printf( " Problems with parameter2 \n");
 
 /* Rescale undeformed coordinates */
 
@@ -314,6 +356,7 @@ int qdGetNewMesh(void)
 		{
 			*(coord0+nsd*i) /= coord_rescale;
 			*(coord0+nsd*i+1) /= coord_rescale;
+			*(coord0+nsd*i+2) /= coord_rescale;
 		}
 	   }
 	}
@@ -322,8 +365,9 @@ int qdGetNewMesh(void)
 	{
 	    for ( i = 0; i < numnp; ++i)
 	    {
-	    	*(coord0 + nsd*i) = *(coord + nsd*i) - *(U + ndof*i);
-	    	*(coord0 + nsd*i + 1) = *(coord + nsd*i + 1) - *(U + ndof*i + 1);
+		*(coord0 + nsd*i) = *(coord + nsd*i) - *(U + ndof*i);
+		*(coord0 + nsd*i + 1) = *(coord + nsd*i + 1) - *(U + ndof*i + 1);
+		*(coord0 + nsd*i + 2) = *(coord + nsd*i + 2) - *(U + ndof*i + 2);
 	    }
 	}
 
@@ -331,8 +375,8 @@ int qdGetNewMesh(void)
 		strain_color, stress_node, stress_color, U, U_color );
 	if(!check) printf( " Problems with qdset \n");
 
-  	AxesList = glGenLists(1);
-  	agvMakeAxesList(AxesList);
+	AxesList = glGenLists(1);
+	agvMakeAxesList(AxesList);
 
 	if( input_flag )
 	{
@@ -340,19 +384,21 @@ int qdGetNewMesh(void)
 /* create display list for displacement and force grapics vectors
    on undeformed mesh*/
 
-  	    DispList = glGenLists(1);
-  	    qddisp_vectors0(DispList, bc, coord0);
+	    DispList = glGenLists(1);
+	    disp_vectors0(DispList, bc, coord0);
 
-            for( i = 0; i < bc.num_force[0]; ++i)
-            {
+	    for( i = 0; i < bc.num_force[0]; ++i)
+	    {
 		fpointx = *(coord0+nsd*bc.force[i]);
 		fpointy = *(coord0+nsd*bc.force[i] + 1);
+		fpointz = *(coord0+nsd*bc.force[i] + 2);
 		force_vec[i].x = fpointx - force_vec0[i].x;
 		force_vec[i].y = fpointy - force_vec0[i].y;
-            }
+		force_vec[i].z = fpointz - force_vec0[i].z;
+	    }
     
-  	    ForceList = glGenLists(1);
-  	    qdforce_vectors0(ForceList, bc, coord0, force_vec);
+	    ForceList = glGenLists(1);
+	    force_vectors0(ForceList, bc, coord0, force_vec);
     
 	}
 
@@ -360,13 +406,15 @@ int qdGetNewMesh(void)
 	{
 /* create force grapics vectors for deformed mesh*/
 
-            for( i = 0; i < bc.num_force[0]; ++i)
-            {
+	    for( i = 0; i < bc.num_force[0]; ++i)
+	    {
 		fpointx = *(coord+nsd*bc.force[i]);
 		fpointy = *(coord+nsd*bc.force[i] + 1);
+		fpointz = *(coord+nsd*bc.force[i] + 2);
 		force_vec[i].x = fpointx - force_vec0[i].x;
 		force_vec[i].y = fpointy - force_vec0[i].y;
-            }
+		force_vec[i].z = fpointz - force_vec0[i].z;
+	    }
 	}
 	return 1;
 }

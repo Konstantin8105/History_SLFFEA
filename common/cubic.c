@@ -9,7 +9,7 @@
 		Updated 5/3/02
 
     SLFFEA source file
-    Version:  1.3
+    Version:  1.4
     Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
@@ -31,7 +31,7 @@
 
 int cubic(double *coef)
 {
-        int i, j, k;
+	int i, j, k;
 	double a, b, c, Q, Q3, rt2Q, R, theta, maxroot, midroot, minroot,
 		b2, c2, quad, signb, power, scale, scalesq,
 		maga, magb, magc, fdum, fdum1, fdum2, fdum3, ratio;
@@ -64,8 +64,8 @@ int cubic(double *coef)
 	maga = fabs(a);
 	magb = fabs(b+maga*maga*SMALLER);
 	magc = fabs(c+maga*magb*SMALLER);
-        /*printf("a, b, c, scale, power %e %e %e %e %e\n", a, b, c, scale, power);
-        printf("maga, magb, magc %e %e %e \n", maga, magb, magc);*/
+	/*printf("a, b, c, scale, power %e %e %e %e %e\n", a, b, c, scale, power);
+	printf("maga, magb, magc %e %e %e \n", maga, magb, magc);*/
 
 	Q = (a*a - 3.0*b)/9.0;
 
@@ -81,7 +81,7 @@ int cubic(double *coef)
 	Q3 = Q*Q*Q;
 	rt2Q = sqrt(Q);
 	R = (2.0*a*a*a - 9.0*a*b+27.0*c)/54.0;
-        /*printf("Q,Q3,rt2Q,R %e %e %e %e \n", Q,Q3,rt2Q,R);*/
+	/*printf("Q,Q3,rt2Q,R %e %e %e %e \n", Q,Q3,rt2Q,R);*/
 
 	if( Q3 + SMALL < R*R )
 	{
@@ -90,12 +90,12 @@ int cubic(double *coef)
 	}
 
 	ratio = R/sqrt(Q3);
-        if( fabs(ratio) > 1.0 )
-        {
-                ratio /= fabs(ratio);
-        }
+	if( fabs(ratio) > 1.0 )
+	{
+		ratio /= fabs(ratio);
+	}
 	theta = acos(ratio);
-        /*printf("theta %e \n", theta);*/
+	/*printf("theta %e \n", theta);*/
 
 	*(coef) = -2.0*rt2Q*cos(theta/3.0) - a/3;
 	*(coef+1) = -2.0*rt2Q*cos((theta+2*PI)/3.0) - a/3;

@@ -121,3 +121,25 @@ should ideally be continuous across element boundaries, and therefore their loca
 stresses and strains should be continuous as well.  If someone has more insight into
 this, please email me to discuss it.
 
+------------------------------------------------------------------------------------------------
+Node Angles
+
+While displacements are given in global coordinates, the angles at each node are 
+rotations about the local x and y fiber basis.  This fact is given in Hughes, page
+389 and the ANSYS manual, page 12-12.  When I calculate the element stiffness
+matrix for each element, I create the local coordinate system at each node by first
+finding the local z fiber direction.  Because local z is based on caluclationg
+the vector pointing from the bottom node to its corresponding top node, local z will
+be the same for each node during every element stiffness matrix calculation.  Based
+on the algorithm to find the local x and y basis vectors, these will also be the same
+for each element stiffness.  Because this algorithm tries to create a local basis
+which is as close as possible to the global x, y, z directions, I had been treating
+the rotations as if they were rotating in the global x and y directions which meant
+that I had these rotations only affecting the global x and y deformed coordinates. 
+But with SLFFEA-1.4, I do the necessarry transformation to truly find how these local x and
+y rotations look in the global x, y, and z system.  This will mainly affect the value
+of the coordinates after deformation.
+
+It should be noted that, in contrast,  rotations for the beam are given in global coordinates.
+
+

@@ -14,11 +14,11 @@
       Kohneke, Peter, *ANSYS User's Manual for Revision 5.0,
          Vol IV Theory, Swanson Analysis Systems Inc., 1992.
 
-	                Updated 11/2/06
+	        Updated 11/2/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -57,7 +57,7 @@ int brshg( double *, int, double *, double *, double *);
 
 int dotX(double *, double *, double *, int);
 
-int brBoundary( double *, BOUND );
+int Boundary( double *, BOUND );
 
 int br2Boundary( double *, BOUND );
 
@@ -70,7 +70,7 @@ int brTConjPassemble(double *A, int *connect, int *connect_film, double *coord,
 	                Updated 11/2/06
 */
 
-        int i, i1, i2, j, k, Tdof_el[Tneqel], TBdof_el[TBneqel],
+	int i, i1, i2, j, k, Tdof_el[Tneqel], TBdof_el[TBneqel],
 		sdof_el[npel*nsd];
 	int check, node;
 	int matl_num, matl_num_film;
@@ -80,9 +80,9 @@ int brTConjPassemble(double *A, int *connect, int *connect_film, double *coord,
 	double B_T[soB], B_TB[TBsoB], DB[soB];
 	double K_temp[Tneqlsq], K_el[Tneqlsq];
 	double T_el[Tneqel], TB_el[Tneqel];
-        double coord_el_trans[npel*nsd];
+	double coord_el_trans[npel*nsd];
 	double det[num_int], dArea[num_int_film], wXdet, wXdArea;
-        double P_el[Tneqel], PB_el[TBneqel];
+	double P_el[Tneqel], PB_el[TBneqel];
 
 
 	memset(P_global_CG,0,Tdof*sof);
@@ -90,11 +90,11 @@ int brTConjPassemble(double *A, int *connect, int *connect_film, double *coord,
 /* This loop uses the pre-assembled element stiffness matrices to find
    P_global_CG */
 
-        for( k = 0; k < Tnumel_K; ++k )
-        {
+	for( k = 0; k < Tnumel_K; ++k )
+	{
 
-                for( j = 0; j < npel; ++j )
-                {
+		for( j = 0; j < npel; ++j )
+		{
 			node = *(connect+npel*k+j);
 
 			*(Tdof_el+Tndof*j) = Tndof*node;
@@ -110,18 +110,18 @@ int brTConjPassemble(double *A, int *connect, int *connect_film, double *coord,
 		check = matX(P_el, (A+k*Tneqlsq), T_el, Tneqel, 1, Tneqel);
 		if(!check) printf( "Problems with matX \n");
 
-                for( j = 0; j < Tneqel; ++j )
-                {
-                	*(P_global_CG+*(Tdof_el+j)) += *(P_el+j);
+		for( j = 0; j < Tneqel; ++j )
+		{
+			*(P_global_CG+*(Tdof_el+j)) += *(P_el+j);
 		}
 	}
 
 /* This loop re-calculates the remaining element stiffness matrices
 before calculating P_global_CG */
 
-        for( k = Tnumel_K; k < numel; ++k )
-        {
-                matl_num = *(el_matl+k);
+	for( k = Tnumel_K; k < numel; ++k )
+	{
+		matl_num = *(el_matl+k);
 
 		thrml_cond.x = matl[matl_num].thrml_cond.x;
 		thrml_cond.y = matl[matl_num].thrml_cond.y;
@@ -156,40 +156,40 @@ before calculating P_global_CG */
 /* The loop over j below calculates the 8 points of the gaussian integration 
    for several quantities */
 
-                memset(K_el,0,Tneqlsq*sof);
-                memset(T_el,0,Tneqel*sof);
+		memset(K_el,0,Tneqlsq*sof);
+		memset(T_el,0,Tneqel*sof);
 
-                for( j = 0; j < num_int; ++j )
-                {
-                    memset(B_T,0,TsoB*sof);
-                    memset(DB,0,TsoB*sof);
-                    memset(K_temp,0,Tneqlsq*sof);
+		for( j = 0; j < num_int; ++j )
+		{
+		    memset(B_T,0,TsoB*sof);
+		    memset(DB,0,TsoB*sof);
+		    memset(K_temp,0,Tneqlsq*sof);
 
 /* Assembly of the B matrix */
 
 		    check = brickB_T((shg+npel*(nsd+1)*j),B_T);
-                    if(!check) printf( "Problems with brickB_T \n");
+		    if(!check) printf( "Problems with brickB_T \n");
 
-                    for( i1 = 0; i1 < Tneqel; ++i1 )
+		    for( i1 = 0; i1 < Tneqel; ++i1 )
 		    {
-		    	*(DB+i1) = *(B_T+i1)*thrml_cond.x;
-		    	*(DB+Tneqel*1+i1) = *(B_T+Tneqel*1+i1)*thrml_cond.y;
-		    	*(DB+Tneqel*2+i1) = *(B_T+Tneqel*2+i1)*thrml_cond.z;
+			*(DB+i1) = *(B_T+i1)*thrml_cond.x;
+			*(DB+Tneqel*1+i1) = *(B_T+Tneqel*1+i1)*thrml_cond.y;
+			*(DB+Tneqel*2+i1) = *(B_T+Tneqel*2+i1)*thrml_cond.z;
 		    }
 
 		    wXdet = *(w+j)*(*(det+j));
 
-                    check = matXT(K_temp, B_T, DB, Tneqel, Tneqel, Tdim);
-                    if(!check) printf( "error \n");
+		    check = matXT(K_temp, B_T, DB, Tneqel, Tneqel, Tdim);
+		    if(!check) printf( "error \n");
 
 /* Compute the element diffusion conductivity matrix.  Look at the [Ktb] matrix
    on page 6-6 of the ANSYS manual.
 */
-                    for( i2 = 0; i2 < Tneqlsq; ++i2 )
-                    {
-                          *(K_el+i2) += *(K_temp+i2)*wXdet;
-                    }
-                }
+		    for( i2 = 0; i2 < Tneqlsq; ++i2 )
+		    {
+			  *(K_el+i2) += *(K_temp+i2)*wXdet;
+		    }
+		}
 
 /* Assembly of the global P matrix */
 
@@ -198,25 +198,25 @@ before calculating P_global_CG */
 			*(T_el + j) = *(T + *(Tdof_el+j));
 		}
 
-                check = matX(P_el, K_el, T_el, Tneqel, 1, Tneqel);
-                if(!check) printf( "Problems with matX \n");
+		check = matX(P_el, K_el, T_el, Tneqel, 1, Tneqel);
+		if(!check) printf( "Problems with matX \n");
 
-                for( j = 0; j < Tneqel; ++j )
-                {
-                	*(P_global_CG+*(Tdof_el+j)) += *(P_el+j);
+		for( j = 0; j < Tneqel; ++j )
+		{
+			*(P_global_CG+*(Tdof_el+j)) += *(P_el+j);
 		}
-        }
+	}
 
 /* This loop uses the pre-assembled surface element stiffness matrices to find
    P_global_CG */
 
-        if(TBnumel_K)
-        {
-            for( k = 0; k < numel_film; ++k )
-            {
+	if(TBnumel_K)
+	{
+	    for( k = 0; k < numel_film; ++k )
+	    {
 
-                for( j = 0; j < npel_film; ++j )
-                {
+		for( j = 0; j < npel_film; ++j )
+		{
 			node = *(connect_film+npel_film*k+j);
 
 			*(TBdof_el+Tndof*j) = Tndof*node;
@@ -233,9 +233,9 @@ before calculating P_global_CG */
 			TB_el, TBneqel, 1, TBneqel);
 		if(!check) printf( "Problems with matX \n");
 
-                for( j = 0; j < TBneqel; ++j )
-                {
-                	*(P_global_CG+*(TBdof_el+j)) += *(P_el+j);
+		for( j = 0; j < TBneqel; ++j )
+		{
+			*(P_global_CG+*(TBdof_el+j)) += *(P_el+j);
 		}
 	    }
 	}
@@ -243,46 +243,46 @@ before calculating P_global_CG */
 	{
 	    for( k = 0; k < numel_film; ++k )
 	    {
-                matl_num_film = *(el_matl_film+k);
+		matl_num_film = *(el_matl_film+k);
 		film_const = matl[matl_num_film].film;
 
 /* Create the coord_el transpose vector for one element */
 
-                for( j = 0; j < npel_film; ++j )
-                {
+		for( j = 0; j < npel_film; ++j )
+		{
 			node = *(connect_film+npel_film*k+j);
 
-                	*(sdof_el+nsd*j) = nsd*node;
-                	*(sdof_el+nsd*j+1) = nsd*node+1;
-                	*(sdof_el+nsd*j+2) = nsd*node+2;
+			*(sdof_el+nsd*j) = nsd*node;
+			*(sdof_el+nsd*j+1) = nsd*node+1;
+			*(sdof_el+nsd*j+2) = nsd*node+2;
 
-                        *(coord_el_trans+j)=*(coord+*(sdof_el+nsd*j));
-                        *(coord_el_trans+npel_film*1+j)=*(coord+*(sdof_el+nsd*j+1));
-                        *(coord_el_trans+npel_film*2+j)=*(coord+*(sdof_el+nsd*j+2));
+			*(coord_el_trans+j)=*(coord+*(sdof_el+nsd*j));
+			*(coord_el_trans+npel_film*1+j)=*(coord+*(sdof_el+nsd*j+1));
+			*(coord_el_trans+npel_film*2+j)=*(coord+*(sdof_el+nsd*j+2));
 
-                	*(TBdof_el+Tndof*j) = Tndof*node;
+			*(TBdof_el+Tndof*j) = Tndof*node;
 		}
 
-                memset(TB_el,0,TBneqel*sof);
+		memset(TB_el,0,TBneqel*sof);
 
 		for( j = 0; j < TBneqel; ++j )
-                {
+		{
 			*(TB_el + j) = *(T + *(TBdof_el+j));  /* This is correct, T not TB */
 		}
 
 		check = brshface( dArea, k, shl_film, coord_el_trans);
 		if(!check) printf( "Problems with brshface \n");
 
-                memset(K_el,0,TBneqlsq*sof);
+		memset(K_el,0,TBneqlsq*sof);
 
-                for( j = 0; j < num_int_film; ++j )
-                {
-                   memset(B_TB,0,TBneqel*sof);
-                   memset(DB,0,TBneqel*sof);
-                   memset(K_temp,0,TBneqlsq*sof);
+		for( j = 0; j < num_int_film; ++j )
+		{
+		   memset(B_TB,0,TBneqel*sof);
+		   memset(DB,0,TBneqel*sof);
+		   memset(K_temp,0,TBneqlsq*sof);
 
 		   check = brickB_T2((shl_film+npel_film*nsd*j+npel_film*2),B_TB);
-                   if(!check) printf( "Problems with brickB_T2 \n");
+		   if(!check) printf( "Problems with brickB_T2 \n");
 
 		   *(DB) = *(B_TB)*film_const;
 		   *(DB+1) = *(B_TB+1)*film_const;
@@ -291,31 +291,31 @@ before calculating P_global_CG */
 
 		   wXdArea = *(w+j)*(*(dArea+j));
 
-                   check = matXT(K_temp, B_TB, DB, TBneqel, TBneqel, 1);
-                   if(!check) printf( "error \n");
+		   check = matXT(K_temp, B_TB, DB, TBneqel, TBneqel, 1);
+		   if(!check) printf( "error \n");
 
 /* Compute the element convection surface conductivity matrix.  Look at the [Ktc] matrix
    on page 6-6 of the ANSYS manual.
 */
-                   for( i2 = 0; i2 < TBneqlsq; ++i2 )
-                   {
-                       *(K_el+i2) += *(K_temp+i2)*wXdArea;
-                   }
+		   for( i2 = 0; i2 < TBneqlsq; ++i2 )
+		   {
+		       *(K_el+i2) += *(K_temp+i2)*wXdArea;
+		   }
 		}
 
 /* Assembly of the global P matrix */
 
-        	check = matX(P_el, K_el, TB_el, TBneqel, 1, TBneqel);
-        	if(!check) printf( "Problems with matX \n");
+		check = matX(P_el, K_el, TB_el, TBneqel, 1, TBneqel);
+		if(!check) printf( "Problems with matX \n");
 
-        	for( j = 0; j < TBneqel; ++j )
-        	{
-            	    *(P_global_CG+*(TBdof_el+j)) += *(P_el+j);
+		for( j = 0; j < TBneqel; ++j )
+		{
+		    *(P_global_CG+*(TBdof_el+j)) += *(P_el+j);
 		}
 	    }
 	}
 
-        return 1;
+	return 1;
 }
 
 int br2ConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *matl,
@@ -324,9 +324,9 @@ int br2ConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL 
 /* This function assembles the P_global_CG matrix for the displacement calculation by
    taking the product [K_el]*[U_el].  Some of the [K_el] is stored in [A].
 
-			Updated 9/25/01
+                        Updated 9/25/01
 */
-        int i, i1, i2, j, k, dof_el[neqel], sdof_el[npel*nsd];
+	int i, i1, i2, j, k, dof_el[neqel], sdof_el[npel*nsd];
 	int check, node;
 	int matl_num;
 	XYZF Emod, alpha;
@@ -337,23 +337,23 @@ int br2ConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL 
 	double B[soB], DB[soB];
 	double K_temp[neqlsq], K_el[neqlsq];
 	double U_el[neqel];
-        double coord_el_trans[npel*nsd], 
+	double coord_el_trans[npel*nsd], 
 		yzsq, zxsq, xzsq, xysq, xxyy, xzyz, xzxy, yzxy;
 	double det[num_int], wXdet;
-        double P_el[neqel];
+	double P_el[neqel];
 
 
 	memset(P_global_CG,0,dof*sof);
 
-        for( k = 0; k < numel_K; ++k )
-        {
-                for( j = 0; j < npel; ++j )
-                {
+	for( k = 0; k < numel_K; ++k )
+	{
+		for( j = 0; j < npel; ++j )
+		{
 			node = *(connect+npel*k+j);
 
-                	*(dof_el+ndof*j) = ndof*node;
-                	*(dof_el+ndof*j+1) = ndof*node+1;
-                	*(dof_el+ndof*j+2) = ndof*node+2;
+			*(dof_el+ndof*j) = ndof*node;
+			*(dof_el+ndof*j+1) = ndof*node+1;
+			*(dof_el+ndof*j+2) = ndof*node+2;
 		}
 
 /* Assembly of the global P matrix */
@@ -363,23 +363,23 @@ int br2ConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL 
 			*(U_el + j) = *(U + *(dof_el+j));
 		}
 
-                check = matX(P_el, (A+k*neqlsq), U_el, neqel, 1, neqel);
-                if(!check) printf( "Problems with matX \n");
+		check = matX(P_el, (A+k*neqlsq), U_el, neqel, 1, neqel);
+		if(!check) printf( "Problems with matX \n");
 
-                for( j = 0; j < neqel; ++j )
-                {
-                	*(P_global_CG+*(dof_el+j)) += *(P_el+j);
+		for( j = 0; j < neqel; ++j )
+		{
+			*(P_global_CG+*(dof_el+j)) += *(P_el+j);
 		}
 	}
 
-        for( k = numel_K; k < numel; ++k )
-        {
+	for( k = numel_K; k < numel; ++k )
+	{
 
-                matl_num = *(el_matl+k);
+		matl_num = *(el_matl+k);
 
-                Emod.x = matl[matl_num].E.x;
-                Emod.y = matl[matl_num].E.y;
-                Emod.z = matl[matl_num].E.z;
+		Emod.x = matl[matl_num].E.x;
+		Emod.y = matl[matl_num].E.y;
+		Emod.z = matl[matl_num].E.z;
 
 		Pois.xy = matl[matl_num].nu.xy;
 		Pois.xz = matl[matl_num].nu.xz;
@@ -435,21 +435,21 @@ int br2ConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL 
 
 /* Create the coord_el transpose vector for one element */
 
-                for( j = 0; j < npel; ++j )
-                {
+		for( j = 0; j < npel; ++j )
+		{
 			node = *(connect+npel*k+j);
 
-                	*(sdof_el+nsd*j) = nsd*node;
-                	*(sdof_el+nsd*j+1) = nsd*node+1;
-                	*(sdof_el+nsd*j+2) = nsd*node+2;
+			*(sdof_el+nsd*j) = nsd*node;
+			*(sdof_el+nsd*j+1) = nsd*node+1;
+			*(sdof_el+nsd*j+2) = nsd*node+2;
 
-                        *(coord_el_trans+j)=*(coord+*(sdof_el+nsd*j));
-                        *(coord_el_trans+npel*1+j)=*(coord+*(sdof_el+nsd*j+1));
-                        *(coord_el_trans+npel*2+j)=*(coord+*(sdof_el+nsd*j+2));
+			*(coord_el_trans+j)=*(coord+*(sdof_el+nsd*j));
+			*(coord_el_trans+npel*1+j)=*(coord+*(sdof_el+nsd*j+1));
+			*(coord_el_trans+npel*2+j)=*(coord+*(sdof_el+nsd*j+2));
 
-                	*(dof_el+ndof*j) = ndof*node;
-                	*(dof_el+ndof*j+1) = ndof*node+1;
-                	*(dof_el+ndof*j+2) = ndof*node+2;
+			*(dof_el+ndof*j) = ndof*node;
+			*(dof_el+ndof*j+1) = ndof*node+1;
+			*(dof_el+ndof*j+2) = ndof*node+2;
 		}
 
 /* Assembly of the shg matrix for each integration point */
@@ -462,45 +462,45 @@ int br2ConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL 
    for several quantities */
 
 		memset(U_el,0,neqel*sof);
-                memset(K_el,0,neqlsq*sof);
+		memset(K_el,0,neqlsq*sof);
 
-                for( j = 0; j < num_int; ++j )
-                {
+		for( j = 0; j < num_int; ++j )
+		{
 
-                    memset(B,0,soB*sof);
-                    memset(DB,0,soB*sof);
-                    memset(K_temp,0,neqlsq*sof);
+		    memset(B,0,soB*sof);
+		    memset(DB,0,soB*sof);
+		    memset(K_temp,0,neqlsq*sof);
 
 /* Assembly of the B matrix */
 
 		    check = brickB((shg+npel*(nsd+1)*j),B);
-                    if(!check) printf( "Problems with brickB \n");
+		    if(!check) printf( "Problems with brickB \n");
 
-                    for( i1 = 0; i1 < neqel; ++i1 )
+		    for( i1 = 0; i1 < neqel; ++i1 )
 		    {
-		    	*(DB+i1) = *(B+i1)*D11+
+			*(DB+i1) = *(B+i1)*D11+
 				*(B+neqel*1+i1)*D12+
 				*(B+neqel*2+i1)*D13;
-		    	*(DB+neqel*1+i1) = *(B+i1)*D21+
+			*(DB+neqel*1+i1) = *(B+i1)*D21+
 				*(B+neqel*1+i1)*D22+
 				*(B+neqel*2+i1)*D23;
-		    	*(DB+neqel*2+i1) = *(B+i1)*D31+
+			*(DB+neqel*2+i1) = *(B+i1)*D31+
 				*(B+neqel*1+i1)*D32+
 				*(B+neqel*2+i1)*D33;
-		    	*(DB+neqel*3+i1) = *(B+neqel*3+i1)*G.xy;
-		    	*(DB+neqel*4+i1) = *(B+neqel*4+i1)*G.xz;
-		    	*(DB+neqel*5+i1) = *(B+neqel*5+i1)*G.yz; 
+			*(DB+neqel*3+i1) = *(B+neqel*3+i1)*G.xy;
+			*(DB+neqel*4+i1) = *(B+neqel*4+i1)*G.xz;
+			*(DB+neqel*5+i1) = *(B+neqel*5+i1)*G.yz; 
 		    }
 
 		    wXdet = *(w+j)*(*(det+j));
 
-                    check = matXT(K_temp, B, DB, neqel, neqel, sdim);
-                    if(!check) printf( "Problems with matXT \n");
-                    for( i2 = 0; i2 < neqlsq; ++i2 )
-                    {
-                          *(K_el+i2) += *(K_temp+i2)*wXdet;
-                    }
-                }
+		    check = matXT(K_temp, B, DB, neqel, neqel, sdim);
+		    if(!check) printf( "Problems with matXT \n");
+		    for( i2 = 0; i2 < neqlsq; ++i2 )
+		    {
+			  *(K_el+i2) += *(K_temp+i2)*wXdet;
+		    }
+		}
 
 /* Assembly of the global P matrix */
 
@@ -509,16 +509,16 @@ int br2ConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL 
 			*(U_el + j) = *(U + *(dof_el+j));
 		}
 
-                check = matX(P_el, K_el, U_el, neqel, 1, neqel);
-                if(!check) printf( "Problems with matX \n");
+		check = matX(P_el, K_el, U_el, neqel, 1, neqel);
+		if(!check) printf( "Problems with matX \n");
 
-                for( j = 0; j < neqel; ++j )
-                {
-                	*(P_global_CG+*(dof_el+j)) += *(P_el+j);
+		for( j = 0; j < neqel; ++j )
+		{
+			*(P_global_CG+*(dof_el+j)) += *(P_el+j);
 		}
-        }
+	}
 
-        return 1;
+	return 1;
 }
 
 int brTConjGrad(double *A, BOUND bc, int *connect, int *connect_film, double *coord,
@@ -567,7 +567,7 @@ int brTConjGrad(double *A, BOUND bc, int *connect, int *connect_film, double *co
 	memset(r,0,Tdof*sof);
 	memset(z,0,Tdof*sof);
 
-        for( j = 0; j < Tdof; ++j )
+	for( j = 0; j < Tdof; ++j )
 	{
 		*(TK_diag + j) += SMALL;
 		*(r+j) = *(Q+j);
@@ -595,10 +595,10 @@ int brTConjGrad(double *A, BOUND bc, int *connect, int *connect_film, double *co
 	counter = 0;
 	check = dotX(&fdum, r, z, Tdof);
 
-        printf("\n iteration %3d iteration max %3d \n", iteration, iteration_max);
+	printf("\n iteration %3d iteration max %3d \n", iteration, iteration_max);
 	/*for( iteration = 0; iteration < iteration_max; ++iteration )*/
 	while(fdum2 > tolerance && counter < iteration_max)
-        {
+	{
 		printf( "\n %3d %14.6e \n",counter, fdum2);
 		check = brTConjPassemble( A, connect, connect_film, coord, el_matl,
 			el_matl_film, matl, P_global_CG, p);
@@ -607,7 +607,7 @@ int brTConjGrad(double *A, BOUND bc, int *connect, int *connect_film, double *co
 		if(!check) printf( " Problems with br2Boundary \n");
 		check = dotX(&alpha2, p, P_global_CG, Tdof);	
 		alpha = fdum/(SMALL + alpha2);
-        	for( j = 0; j < Tdof; ++j )
+		for( j = 0; j < Tdof; ++j )
 		{
 		    /*printf( "%4d %14.5e  %14.5e  %14.5e  %14.5e  %14.5e %14.5e\n",j,alpha,
 				beta,*(T+j),*(r+j),*(P_global_CG+j),*(p+j));*/
@@ -620,9 +620,9 @@ int brTConjGrad(double *A, BOUND bc, int *connect, int *connect_film, double *co
 		beta = fdum2/(SMALL + fdum);
 		fdum = fdum2;
 	
-        	for( j = 0; j < Tdof; ++j )
-        	{
-       		    /*printf("\n  %3d %12.7f  %14.5f ",j,*(T+j),*(P_global_CG+j));*/
+		for( j = 0; j < Tdof; ++j )
+		{
+		    /*printf("\n  %3d %12.7f  %14.5f ",j,*(T+j),*(P_global_CG+j));*/
 		    *(p+j) = *(z+j)+beta*(*(p+j));
 		}
 		check = br2Boundary (p, bc);
@@ -632,9 +632,9 @@ int brTConjGrad(double *A, BOUND bc, int *connect, int *connect_film, double *co
 	}
 	if(counter > iteration_max - 1 )
 	{
-            	printf( "\nMaximum iterations %4d reached.  Residual is: %16.8e\n",
+		printf( "\nMaximum iterations %4d reached.  Residual is: %16.8e\n",
 			counter,fdum2);
-            	printf( "Problem may not have converged during Conj. Grad. for temp.\n");
+		printf( "Problem may not have converged during Conj. Grad. for temp.\n");
 	}
 /*
 The lines below are for testing the quality of the calculation:
@@ -651,7 +651,7 @@ The lines below are for testing the quality of the calculation:
 
 	free(mem_double);
 
-        return 1;
+	return 1;
 }
 
 int br2ConjGrad(double *A, BOUND bc, int *connect, double *coord, int *el_matl,
@@ -662,7 +662,7 @@ int br2ConjGrad(double *A, BOUND bc, int *connect, double *coord, int *el_matl,
    displacements.  It also makes the call to br2ConjPassemble to get the
    product of [A]*[p].
 
-			Updated 1/7/03
+                        Updated 1/24/06
 
    It is taken from the algorithm 10.3.1 given in "Matrix Computations",
    by Golub, page 534.
@@ -688,7 +688,7 @@ int br2ConjGrad(double *A, BOUND bc, int *connect, double *coord, int *el_matl,
 
 	                                        ptr_inc = 0;
 	p=(mem_double+ptr_inc);                 ptr_inc += dof;
-	P_global_CG=(mem_double+ptr_inc);          ptr_inc += dof;
+	P_global_CG=(mem_double+ptr_inc);       ptr_inc += dof;
 	r=(mem_double+ptr_inc);                 ptr_inc += dof;
 	z=(mem_double+ptr_inc);                 ptr_inc += dof;
 
@@ -699,18 +699,18 @@ int br2ConjGrad(double *A, BOUND bc, int *connect, double *coord, int *el_matl,
 	memset(r,0,dof*sof);
 	memset(z,0,dof*sof);
 
-        for( j = 0; j < dof; ++j )
+	for( j = 0; j < dof; ++j )
 	{
 		*(K_diag + j) += SMALL;
 		*(r+j) = *(force+j);
 		*(z + j) = *(r + j)/(*(K_diag + j));
 		*(p+j) = *(z+j);
 	}
-	check = brBoundary (r, bc);
-	if(!check) printf( " Problems with brBoundary \n");
+	check = Boundary (r, bc);
+	if(!check) printf( " Problems with Boundary \n");
 
-	check = brBoundary (p, bc);
-	if(!check) printf( " Problems with brBoundary \n");
+	check = Boundary (p, bc);
+	if(!check) printf( " Problems with Boundary \n");
 
 	alpha = 0.0;
 	alpha2 = 0.0;
@@ -722,19 +722,19 @@ int br2ConjGrad(double *A, BOUND bc, int *connect, double *coord, int *el_matl,
 	printf("\n iteration %3d iteration max %3d \n", iteration, iteration_max);
 	/*for( iteration = 0; iteration < iteration_max; ++iteration )*/
 	while(fdum2 > tolerance && counter < iteration_max )
-        {
+	{
 
 		printf( "\n %3d %16.8e\n",counter, fdum2);
 		check = br2ConjPassemble( A, connect, coord, el_matl, matl, P_global_CG, p);
 		if(!check) printf( " Problems with br2ConjPassemble \n");
-		check = brBoundary (P_global_CG, bc);
-		if(!check) printf( " Problems with brBoundary \n");
+		check = Boundary (P_global_CG, bc);
+		if(!check) printf( " Problems with Boundary \n");
 		check = dotX(&alpha2, p, P_global_CG, dof);	
 		alpha = fdum/(SMALL + alpha2);
 
-        	for( j = 0; j < dof; ++j )
+		for( j = 0; j < dof; ++j )
 		{
-            	    /*printf( "%4d %14.5e  %14.5e  %14.5e  %14.5e  %14.5e %14.5e\n",j,alpha,
+		    /*printf( "%4d %14.5e  %14.5e  %14.5e  %14.5e  %14.5e %14.5e\n",j,alpha,
 			beta,*(U+j),*(r+j),*(P_global_CG+j),*(p+j));*/
 		    *(U+j) += alpha*(*(p+j));
 		    *(r+j) -=  alpha*(*(P_global_CG+j));
@@ -745,13 +745,13 @@ int br2ConjGrad(double *A, BOUND bc, int *connect, double *coord, int *el_matl,
 		beta = fdum2/(SMALL + fdum);
 		fdum = fdum2;
 		
-        	for( j = 0; j < dof; ++j )
-        	{
-       		    /*printf("\n  %3d %12.7f  %14.5f ",j,*(U+j),*(P_global_CG+j));*/
+		for( j = 0; j < dof; ++j )
+		{
+		    /*printf("\n  %3d %12.7f  %14.5f ",j,*(U+j),*(P_global_CG+j));*/
 		    *(p+j) = *(z+j)+beta*(*(p+j));
 		}
-		check = brBoundary (p, bc);
-		if(!check) printf( " Problems with brBoundary \n");
+		check = Boundary (p, bc);
+		if(!check) printf( " Problems with Boundary \n");
 
 		++counter;
 	}

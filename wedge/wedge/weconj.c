@@ -6,11 +6,11 @@
     which allocates the memory and goes through the steps of the algorithm.
     These go with the calculation of displacement.
 
-		Updated 1/7/03
+	        Updated 1/24/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -43,7 +43,7 @@ int weshg( double *, int, double *, double *, double *);
 
 int dotX(double *, double *, double *, int);
 
-int weBoundary( double *, BOUND );
+int Boundary( double *, BOUND );
 
 
 int weConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *matl,
@@ -52,9 +52,9 @@ int weConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *
 /* This function assembles the P_global_CG matrix for the displacement calculation by
    taking the product [K_el]*[U_el].  Some of the [K_el] is stored in [A].
 
-			Updated 12/18/02
+                        Updated 12/18/02
 */
-        int i, i1, i2, j, k, dof_el[neqel], sdof_el[npel*nsd];
+	int i, i1, i2, j, k, dof_el[neqel], sdof_el[npel*nsd];
 	int check, node;
 	int matl_num;
 	double Emod, Pois, G;
@@ -64,23 +64,23 @@ int weConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *
 	double B[soB], DB[soB];
 	double K_temp[neqlsq], K_el[neqlsq];
 	double U_el[neqel];
-        double coord_el_trans[npel*nsd];
+	double coord_el_trans[npel*nsd];
 	double det[num_int], wXdet;
-        double P_el[neqel];
+	double P_el[neqel];
 
 
 	memset(P_global_CG,0,dof*sof);
 
-        for( k = 0; k < numel_K; ++k )
-        {
+	for( k = 0; k < numel_K; ++k )
+	{
 
-                for( j = 0; j < npel; ++j )
-                {
+		for( j = 0; j < npel; ++j )
+		{
 			node = *(connect+npel*k+j);
 
-                	*(dof_el+ndof*j) = ndof*node;
-                	*(dof_el+ndof*j+1) = ndof*node+1;
-                	*(dof_el+ndof*j+2) = ndof*node+2;
+			*(dof_el+ndof*j) = ndof*node;
+			*(dof_el+ndof*j+1) = ndof*node+1;
+			*(dof_el+ndof*j+2) = ndof*node+2;
 		}
 
 
@@ -91,17 +91,17 @@ int weConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *
 			*(U_el + j) = *(U + *(dof_el+j));
 		}
 
-                check = matX(P_el, (A+k*neqlsq), U_el, neqel, 1, neqel);
-                if(!check) printf( "Problems with matX \n");
+		check = matX(P_el, (A+k*neqlsq), U_el, neqel, 1, neqel);
+		if(!check) printf( "Problems with matX \n");
 
-                for( j = 0; j < neqel; ++j )
-                {
-                	*(P_global_CG+*(dof_el+j)) += *(P_el+j);
+		for( j = 0; j < neqel; ++j )
+		{
+			*(P_global_CG+*(dof_el+j)) += *(P_el+j);
 		}
 	}
 
-        for( k = numel_K; k < numel; ++k )
-        {
+	for( k = numel_K; k < numel; ++k )
+	{
 		matl_num = *(el_matl+k);
 		Emod = matl[matl_num].E;
 		Pois = matl[matl_num].nu;
@@ -121,7 +121,7 @@ int weConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *
 
 		G = mu;
 
-        	/*printf("lamda, mu, Emod, Pois  %f %f %f %f \n", lamda, mu, Emod, Pois);*/
+		/*printf("lamda, mu, Emod, Pois  %f %f %f %f \n", lamda, mu, Emod, Pois);*/
 
 /* Create the coord_el transpose vector for one element */
 
@@ -153,34 +153,34 @@ int weConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *
    for several quantities */
 
 		memset(U_el,0,neqel*sof);
-                memset(K_el,0,neqlsq*sof);
+		memset(K_el,0,neqlsq*sof);
 
-                for( j = 0; j < num_int; ++j )
-                {
+		for( j = 0; j < num_int; ++j )
+		{
 
-                    memset(B,0,soB*sof);
-                    memset(DB,0,soB*sof);
-                    memset(K_temp,0,neqlsq*sof);
+		    memset(B,0,soB*sof);
+		    memset(DB,0,soB*sof);
+		    memset(K_temp,0,neqlsq*sof);
 
 /* Assembly of the B matrix */
 
 		    check = wedgeB((shg+npel*(nsd+1)*j),B);
-                    if(!check) printf( "Problems with wedgeB \n");
+		    if(!check) printf( "Problems with wedgeB \n");
 
-                    for( i1 = 0; i1 < neqel; ++i1 )
+		    for( i1 = 0; i1 < neqel; ++i1 )
 		    {
-		    	*(DB+i1) = *(B+i1)*D11+
+			*(DB+i1) = *(B+i1)*D11+
 				*(B+neqel*1+i1)*D12+
 				*(B+neqel*2+i1)*D13;
-		    	*(DB+neqel*1+i1) = *(B+i1)*D21+
+			*(DB+neqel*1+i1) = *(B+i1)*D21+
 				*(B+neqel*1+i1)*D22+
 				*(B+neqel*2+i1)*D23;
-		    	*(DB+neqel*2+i1) = *(B+i1)*D31+
+			*(DB+neqel*2+i1) = *(B+i1)*D31+
 				*(B+neqel*1+i1)*D32+
 				*(B+neqel*2+i1)*D33;
-		    	*(DB+neqel*3+i1) = *(B+neqel*3+i1)*G;
-		    	*(DB+neqel*4+i1) = *(B+neqel*4+i1)*G;
-		    	*(DB+neqel*5+i1) = *(B+neqel*5+i1)*G; 
+			*(DB+neqel*3+i1) = *(B+neqel*3+i1)*G;
+			*(DB+neqel*4+i1) = *(B+neqel*4+i1)*G;
+			*(DB+neqel*5+i1) = *(B+neqel*5+i1)*G; 
 		    }
 
 /* A factor of 0.5 is needed to do the integration.  See Eq. 3.I.34 in 
@@ -188,14 +188,14 @@ int weConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *
 */
 		    wXdet = 0.5*(*(w+j))*(*(det+j));
 
-                    check=matXT(K_temp, B, DB, neqel, neqel, sdim);
-                    if(!check) printf( "Problems with matXT \n");
-                    for( i2 = 0; i2 < neqlsq; ++i2 )
-                    {
-                        *(K_el+i2) += *(K_temp+i2)*wXdet;
-                    }
+		    check=matXT(K_temp, B, DB, neqel, neqel, sdim);
+		    if(!check) printf( "Problems with matXT \n");
+		    for( i2 = 0; i2 < neqlsq; ++i2 )
+		    {
+			*(K_el+i2) += *(K_temp+i2)*wXdet;
+		    }
 
-                }
+		}
 
 /* Assembly of the global P matrix */
 
@@ -204,16 +204,16 @@ int weConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *
 			*(U_el + j) = *(U + *(dof_el+j));
 		}
 
-                check = matX(P_el, K_el, U_el, neqel, 1, neqel);
-                if(!check) printf( "Problems with matX \n");
+		check = matX(P_el, K_el, U_el, neqel, 1, neqel);
+		if(!check) printf( "Problems with matX \n");
 
-                for( j = 0; j < neqel; ++j )
-                {
-                	*(P_global_CG+*(dof_el+j)) += *(P_el+j);
+		for( j = 0; j < neqel; ++j )
+		{
+			*(P_global_CG+*(dof_el+j)) += *(P_el+j);
 		}
-        }
+	}
 
-        return 1;
+	return 1;
 }
 
 
@@ -225,7 +225,7 @@ int weConjGrad(double *A, BOUND bc, int *connect, double *coord, int *el_matl,
    displacements.  It also makes the call to weConjPassemble to get the
    product of [A]*[p].
 
-			Updated 1/7/03
+                        Updated 1/24/06
 
    It is taken from the algorithm 10.3.1 given in "Matrix Computations",
    by Golub, page 534.
@@ -262,18 +262,18 @@ int weConjGrad(double *A, BOUND bc, int *connect, double *coord, int *el_matl,
 	memset(r,0,dof*sof);
 	memset(z,0,dof*sof);
 
-        for( j = 0; j < dof; ++j )
+	for( j = 0; j < dof; ++j )
 	{
 		*(K_diag + j) += SMALL;
 		*(r+j) = *(force+j);
 		*(z + j) = *(r + j)/(*(K_diag + j));
 		*(p+j) = *(z+j);
 	}
-	check = weBoundary (r, bc);
-	if(!check) printf( " Problems with weBoundary \n");
+	check = Boundary (r, bc);
+	if(!check) printf( " Problems with Boundary \n");
 
-	check = weBoundary (p, bc);
-	if(!check) printf( " Problems with weBoundary \n");
+	check = Boundary (p, bc);
+	if(!check) printf( " Problems with Boundary \n");
 
 	alpha = 0.0;
 	alpha2 = 0.0;
@@ -285,16 +285,16 @@ int weConjGrad(double *A, BOUND bc, int *connect, double *coord, int *el_matl,
 	printf("\n iteration %3d iteration max %3d \n", iteration, iteration_max);
 	/*for( iteration = 0; iteration < iteration_max; ++iteration )*/
 	while(fdum2 > tolerance && counter < iteration_max )
-        {
+	{
 
 		printf( "\n %3d %16.8e\n",counter, fdum2);
 		check = weConjPassemble( A, connect, coord, el_matl, matl, P_global_CG, p);
 		if(!check) printf( " Problems with weConjPassemble \n");
-		check = weBoundary (P_global_CG, bc);
-		if(!check) printf( " Problems with weBoundary \n");
+		check = Boundary (P_global_CG, bc);
+		if(!check) printf( " Problems with Boundary \n");
 		check = dotX(&alpha2, p, P_global_CG, dof);	
 		alpha = fdum/(SMALL + alpha2);
-        	for( j = 0; j < dof; ++j )
+		for( j = 0; j < dof; ++j )
 		{
 		    /*printf( "%4d %14.5e  %14.5e  %14.5e  %14.5e  %14.5e %14.5e\n",j,alpha,
 			beta,*(U+j),*(r+j),*(P_global_CG+j),*(p+j));*/
@@ -307,18 +307,18 @@ int weConjGrad(double *A, BOUND bc, int *connect, double *coord, int *el_matl,
 		beta = fdum2/(SMALL + fdum);
 		fdum = fdum2;
 		
-        	for( j = 0; j < dof; ++j )
-        	{
+		for( j = 0; j < dof; ++j )
+		{
 		    /*printf("\n  %3d %12.7f  %14.5f ",j,*(U+j),*(P_global_CG+j));*/
 		    /*printf( "%4d %14.5f  %14.5f  %14.5f  %14.5f %14.5f\n",j,alpha,
 			*(U+j),*(r+j),*(P_global_CG+j),*(force+j));
 		    printf( "%4d %14.8f  %14.8f  %14.8f  %14.8f %14.8f\n",j,
-			*(U+j)*bet,*(r+j)*bet,*(P_global_CG+j)*alp/(*(mass+j)),
-			*(force+j)*alp/(*(mass+j)));*/
+			*(U+j)*beta,*(r+j)*beta,*(P_global_CG+j)*alpha,
+			*(force+j)*alpha);*/
 		    *(p+j) = *(z+j)+beta*(*(p+j));
 		}
-		check = weBoundary (p, bc);
-		if(!check) printf( " Problems with weBoundary \n");
+		check = Boundary (p, bc);
+		if(!check) printf( " Problems with Boundary \n");
 
 		++counter;
 	}

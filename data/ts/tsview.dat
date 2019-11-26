@@ -1,20 +1,20 @@
                             node
                           min  max       min            max
-displacement Ux            0     0     0.000000e+00   0.000000e+00
-displacement Uy            0     0     0.000000e+00   0.000000e+00
-displacement Uz            0     0     0.000000e+00   0.000000e+00
+displacement Ux           92    97    -1.299064e-03   1.299064e-03
+displacement Uy           95    90    -1.340612e-03   1.340612e-03
+displacement Uz           26   210    -2.668381e-05   1.810265e-04
 
                         el. gauss pt.
                         min       max         min           max
-stress xx                0  0     0  0    0.000000e+00   0.000000e+00
+stress xx               66  0    41  0   -6.565368e+02   6.345732e+02
 
-strain xx                0  0     0  0    0.000000e+00   0.000000e+00
+strain xx               66  0    41  0   -2.188456e-05   2.115244e-05
 
 Orthographic viewport parameters(right, left, top, bootom, near, far)
-   1.000165e+00  -1.000015e+00   1.000165e+00  -1.000015e+00   2.003300e-01   1.000000e+03
+   2.200000e+00  -2.200000e+00   2.258733e+00  -2.141267e+00   1.300020e+00   1.000000e+03
 Perspective viewport parameters( mesh width and height)
     320    320
 Step sizes in x, y, z
-   9.000000e-06   9.000000e-06   4.800720e-01
+   1.200000e-01   1.141267e-01   7.200043e-01
 Amplification size
-   5.000000e+18
+   7.459280e+02

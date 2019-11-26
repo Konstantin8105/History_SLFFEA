@@ -6,11 +6,11 @@
     which allocates the memory and goes through the steps of the algorithm.
     These go with the calculation of displacement.
 
-		Updated 1/7/03
+                 Updated 11/8/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -38,28 +38,28 @@ int matXT(double *, double *, double *, int, int, int);
 
 int dotX(double *, double *, double *, int);
 
-int tsBoundary( double *, BOUND );
+int Boundary( double *, BOUND );
 
 
-int tsConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *matl,
-	double *P_global_CG, double *U)
+int tsConjPassemble(double *A, int *connect, double *coord, int *el_matl, double *length,
+	double *local_xyz, MATL *matl, double *P_global_CG, double *U)
 {
 /* This function assembles the P_global_CG matrix for the displacement calculation by
    taking the product [K_el]*[U_el].  Some of the [K_el] is stored in [A].
 
-			Updated 1/23/03
+                        Updated 11/7/06
 */
-        int i, i1, i2, j, k, dof_el[neqel];
+	int i, i1, i2, j, k, dof_el[neqel];
 	int check, node, node0, node1;
 	int matl_num;
 	double Emod, area, EmodXarea, wXjacob;
 	double fdum, fdum2;
-	double L, Lx, Ly, Lz, Lsq;
+	double L, Lsq;
 	double B[soB], DB[soB], jacob;
 	double K_temp[npel*neqel], K_el[neqlsq], K_local[npelsq], rotate[npel*neqel];
 	double U_el[neqel];
 	double x[num_int], w[num_int];
-        double P_el[neqel];
+	double P_el[neqel];
 
 
 	memset(P_global_CG,0,dof*sof);
@@ -87,12 +87,12 @@ int tsConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *
 			*(U_el + j) = *(U + *(dof_el+j));
 		}
 
-                check = matX(P_el, (A+k*neqlsq), U_el, neqel, 1, neqel);
-                if(!check) printf( "Problems with matX \n");
+		check = matX(P_el, (A+k*neqlsq), U_el, neqel, 1, neqel);
+		if(!check) printf( "Problems with matX \n");
 
-                for( j = 0; j < neqel; ++j )
-                {
-                	*(P_global_CG+*(dof_el+j)) += *(P_el+j);
+		for( j = 0; j < neqel; ++j )
+		{
+			*(P_global_CG+*(dof_el+j)) += *(P_el+j);
 		}
 	}
 
@@ -105,13 +105,10 @@ int tsConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *
 
 		node0 = *(connect+k*npel);
 		node1 = *(connect+k*npel+1);
-		Lx = *(coord+nsd*node1) - *(coord+nsd*node0);
-		Ly = *(coord+nsd*node1+1) - *(coord+nsd*node0+1);
-		Lz = *(coord+nsd*node1+2) - *(coord+nsd*node0+2);
 
-		Lsq = Lx*Lx+Ly*Ly+Lz*Lz;
-		L = sqrt(Lsq);
-		Lx /= L; Ly /= L; Lz /= L;
+		L = *(length + k);
+		Lsq = L*L;
+
 		jacob = L/2.0;
 
 /* Assembly of the rotation matrix.  This is taken from equation 5.42 on page 69 of:
@@ -121,12 +118,13 @@ int tsConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *
 */
 
 		memset(rotate,0,npel*neqel*sof);
-		*(rotate) = Lx;
-		*(rotate+1) = Ly;
-		*(rotate+2) = Lz;
-		*(rotate+9) = Lx;
-		*(rotate+10) = Ly;
-		*(rotate+11) = Lz;
+
+		*(rotate)    = *(local_xyz + nsdsq*k);
+		*(rotate+1)  = *(local_xyz + nsdsq*k + 1);
+		*(rotate+2)  = *(local_xyz + nsdsq*k + 2);
+		*(rotate+9)  = *(local_xyz + nsdsq*k);
+		*(rotate+10) = *(local_xyz + nsdsq*k + 1);
+		*(rotate+11) = *(local_xyz + nsdsq*k + 2);
 
 /* defining the components of an element vector */
 
@@ -139,9 +137,9 @@ int tsConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *
 
 		memset(U_el,0,neqel*sof);
 		memset(K_el,0,neqlsq*sof);
+		memset(K_temp,0,npel*neqel*sof);
 		memset(B,0,soB*sof);
 		memset(DB,0,soB*sof);
-		memset(K_temp,0,npel*neqel*sof);
 		memset(K_local,0,npel*npel*sof);
 
 /* Assembly of the local stiffness matrix */
@@ -192,14 +190,15 @@ int tsConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *
 
 
 int tsConjGrad(double *A, BOUND bc, int *connect, double *coord, int *el_matl,
-	double *force, double *K_diag, MATL *matl, double *U)
+	double *force, double *K_diag, double *length, double *local_xyz,
+	MATL *matl, double *U)
 {
 /* This function does memory allocation and uses the conjugate gradient
    method to solve the linear system arising from the calculation of
    displacements.  It also makes the call to tsConjPassemble to get the
    product of [A]*[p].
 
-			Updated 1/7/03
+                        Updated 1/24/06
 
    It is taken from the algorithm 10.3.1 given in "Matrix Computations",
    by Golub, page 534.
@@ -236,18 +235,18 @@ int tsConjGrad(double *A, BOUND bc, int *connect, double *coord, int *el_matl,
 	memset(r,0,dof*sof);
 	memset(z,0,dof*sof);
 
-        for( j = 0; j < dof; ++j )
+	for( j = 0; j < dof; ++j )
 	{
 		*(K_diag + j) += SMALL;
 		*(r+j) = *(force+j);
 		*(z + j) = *(r + j)/(*(K_diag + j));
 		*(p+j) = *(z+j);
 	}
-	check = tsBoundary (r, bc);
-	if(!check) printf( " Problems with tsBoundary \n");
+	check = Boundary (r, bc);
+	if(!check) printf( " Problems with Boundary \n");
 
-	check = tsBoundary (p, bc);
-	if(!check) printf( " Problems with tsBoundary \n");
+	check = Boundary (p, bc);
+	if(!check) printf( " Problems with Boundary \n");
 
 	alpha = 0.0;
 	alpha2 = 0.0;
@@ -259,17 +258,18 @@ int tsConjGrad(double *A, BOUND bc, int *connect, double *coord, int *el_matl,
 	printf("\n iteration %3d iteration max %3d \n", iteration, iteration_max);
 	/*for( iteration = 0; iteration < iteration_max; ++iteration )*/
 	while(fdum2 > tolerance && counter < iteration_max )
-        {
+	{
 
 		printf( "\n %3d %16.8e\n",counter, fdum2);
-		check = tsConjPassemble( A, connect, coord, el_matl, matl, P_global_CG, p);
+		check = tsConjPassemble( A, connect, coord, el_matl, length, local_xyz,
+			matl, P_global_CG, p);
 		if(!check) printf( " Problems with tsConjPassemble \n");
-		check = tsBoundary (P_global_CG, bc);
-		if(!check) printf( " Problems with tsBoundary \n");
+		check = Boundary (P_global_CG, bc);
+		if(!check) printf( " Problems with Boundary \n");
 		check = dotX(&alpha2, p, P_global_CG, dof);	
 		alpha = fdum/(SMALL + alpha2);
 
-        	for( j = 0; j < dof; ++j )
+		for( j = 0; j < dof; ++j )
 		{
 		    /*printf( "%4d %14.5e  %14.5e  %14.5e  %14.5e  %14.5e %14.5e\n",j,alpha,
 			beta,*(U+j),*(r+j),*(P_global_CG+j),*(p+j));*/
@@ -282,18 +282,18 @@ int tsConjGrad(double *A, BOUND bc, int *connect, double *coord, int *el_matl,
 		beta = fdum2/(SMALL + fdum);
 		fdum = fdum2;
 	
-        	for( j = 0; j < dof; ++j )
-        	{
+		for( j = 0; j < dof; ++j )
+		{
 		    /*printf("\n  %3d %12.7f  %14.5f ",j,*(U+j),*(P_global_CG+j));*/
 		    /*printf( "%4d %14.5f  %14.5f  %14.5f  %14.5f %14.5f\n",j,alpha,
 			*(U+j),*(r+j),*(P_global_CG+j),*(force+j));
 		    printf( "%4d %14.8f  %14.8f  %14.8f  %14.8f %14.8f\n",j,
-			*(U+j)*bet,*(r+j)*bet,*(P_global_CG+j)*alp/(*(mass+j)),
-			*(force+j)*alp/(*(mass+j)));*/
+			*(U+j)*beta,*(r+j)*beta,*(P_global_CG+j)*alpha,
+			*(force+j)*alpha);*/
 		    *(p+j) = *(z+j)+beta*(*(p+j));
 		}
-		check = tsBoundary (p, bc);
-		if(!check) printf( " Problems with tsBoundary \n");
+		check = Boundary (p, bc);
+		if(!check) printf( " Problems with Boundary \n");
 
 		++counter;
 	}
@@ -311,7 +311,8 @@ The lines below are for testing the quality of the calculation:
 */
 
 /*
-	check = tsConjPassemble( A, connect, coord, el_matl, matl, P_global_CG, U);
+	check = tsConjPassemble( A, connect, coord, el_matl, length, local_xyz, matl,
+		P_global_CG, U);
 	if(!check) printf( " Problems with tsConjPassemble \n");
 
 	for( j = 0; j < dof; ++j )

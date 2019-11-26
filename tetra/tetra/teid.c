@@ -1,12 +1,12 @@
 /*
     This utility function assembles the id array for a finite 
-    element program which does analysis on a 4 node tetrahedral
-    element. 
+    element program which does analysis on a 6 node tetrahedral
+    element 
 
 		Updated 6/20/02
 
     SLFFEA source file
-    Version:  1.3
+    Version:  1.4
     Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
@@ -31,7 +31,7 @@ extern int dof, neqn;
 int teformid( BOUND bc, int *id)
 {
 /* Assembly of the id array(the matrix which determines
-   the degree of feedom by setting fixed nodes = -1) */
+   the degree of feedom by setting assigning fixed nodes = -1) */
 
 	int i, counter;
 

@@ -4,7 +4,7 @@
 	Updated 4/6/00
 
     SLFFEA source file
-    Version:  1.3
+    Version:  1.4
     Copyright (C) 1999, 2000  San Le 
 
     The source code contained in this file is released under the
@@ -19,19 +19,19 @@
 #include "../brick/brconst.h"
 
 typedef struct {
-        double xy,yx,zx,xz,yz,zy;
+	double xy,yx,zx,xz,yz,zy;
 } ORTHO;
 
 typedef struct {
-        double xx,yy,zz,xy,zx,yz,I,II,III;
+	double xx,yy,zz,xy,zx,yz,I,II,III;
 } SDIM;
 
 typedef struct {
-        double x, y, z;
+	double x, y, z;
 } XYZF;
 
 typedef struct {
-        int x, y, z;
+	int x, y, z;
 } XYZI;
 
 typedef struct {
@@ -55,16 +55,16 @@ typedef struct {
 
 typedef struct {
 	double film;
-        XYZF E;
-        ORTHO nu;
+	XYZF E;
+	ORTHO nu;
 	XYZF thrml_cond;
 	XYZF thrml_expn;
 } MATL;
 
 typedef struct {
-        SDIM pt[num_int];
+	SDIM pt[num_int];
 } STRESS;
 
 typedef struct {
-        SDIM pt[num_int];
+	SDIM pt[num_int];
 } STRAIN;

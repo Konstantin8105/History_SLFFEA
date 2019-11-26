@@ -6,7 +6,7 @@
      "The Finite Element Method" by Thomas Hughes, page 780.
 
      SLFFEA source file
-     Version:  1.3
+     Version:  1.4
      Copyright (C) 1999, 2000, 2001, 2002  San Le
 
      The source code contained in this file is released under the
@@ -19,7 +19,7 @@
 #include <math.h>
 #include "shconst.h"
 
-int dotX(double *,double *, double *, int );
+int dotX(double *, double *, double *, int );
 
 int shellB4pt(double *shg, double *shg_z, double *znode, double *B, 
 	double *rotate_l, double *rotate_f)
@@ -36,11 +36,11 @@ int shellB4pt(double *shg, double *shg_z, double *znode, double *B,
 	double dNdxl1,dNdxl2,dNdxl3,dNzdxl1,dNzdxl2,dNzdxl3;
 	for( i = 0; i < npell; ++i )
 	{
-        	i2      =ndof*i+4;
-        	i2m1    =i2-1;
-        	i2m2    =i2-2;
-        	i2m3    =i2-3;
-        	i2m4    =i2-4;
+		i2      =ndof*i+4;
+		i2m1    =i2-1;
+		i2m2    =i2-2;
+		i2m3    =i2-3;
+		i2m4    =i2-4;
 
 /* calculate derivatives in local x,y,z */
 
@@ -72,46 +72,46 @@ int shellB4pt(double *shg, double *shg_z, double *znode, double *B,
 		*(w3)*= -1;
 		check = dotX((w3+1),(rotate_l+nsd*2),(rotate_f+nsdsq*i),nsd);
 
-        	*(B+i2m4) = *(rotate_l)*dNdxl1;
-        	*(B+i2m3) = *(rotate_l+1)*dNdxl1;
-        	*(B+i2m2) = *(rotate_l+2)*dNdxl1;
-        	*(B+i2m1) = *(w1)*dNzdxl1;
-        	*(B+i2)   = *(w1+1)*dNzdxl1;
+		*(B+i2m4) = *(rotate_l)*dNdxl1;
+		*(B+i2m3) = *(rotate_l+1)*dNdxl1;
+		*(B+i2m2) = *(rotate_l+2)*dNdxl1;
+		*(B+i2m1) = *(w1)*dNzdxl1;
+		*(B+i2)   = *(w1+1)*dNzdxl1;
 
-        	*(B+neqel*1+i2m4) = *(rotate_l+nsd*1)*dNdxl2;
-        	*(B+neqel*1+i2m3) = *(rotate_l+nsd*1+1)*dNdxl2;
-        	*(B+neqel*1+i2m2) = *(rotate_l+nsd*1+2)*dNdxl2;
-        	*(B+neqel*1+i2m1) = *(w2)*dNzdxl2;
-        	*(B+neqel*1+i2)   = *(w2+1)*dNzdxl2; 
+		*(B+neqel*1+i2m4) = *(rotate_l+nsd*1)*dNdxl2;
+		*(B+neqel*1+i2m3) = *(rotate_l+nsd*1+1)*dNdxl2;
+		*(B+neqel*1+i2m2) = *(rotate_l+nsd*1+2)*dNdxl2;
+		*(B+neqel*1+i2m1) = *(w2)*dNzdxl2;
+		*(B+neqel*1+i2)   = *(w2+1)*dNzdxl2; 
 
-        	*(B+neqel*2+i2m4) = *(rotate_l)*dNdxl2+
+		*(B+neqel*2+i2m4) = *(rotate_l)*dNdxl2+
 			*(rotate_l+nsd*1)*dNdxl1;
-        	*(B+neqel*2+i2m3) = *(rotate_l+1)*dNdxl2+
+		*(B+neqel*2+i2m3) = *(rotate_l+1)*dNdxl2+
 			*(rotate_l+nsd*1+1)*dNdxl1;
-        	*(B+neqel*2+i2m2) = *(rotate_l+2)*dNdxl2+
+		*(B+neqel*2+i2m2) = *(rotate_l+2)*dNdxl2+
 			*(rotate_l+nsd*1+2)*dNdxl1;
-        	*(B+neqel*2+i2m1) = *(w1)*dNzdxl2+*(w2)*dNzdxl1;
-        	*(B+neqel*2+i2)   = *(w1+1)*dNzdxl2+*(w2+1)*dNzdxl1; 
+		*(B+neqel*2+i2m1) = *(w1)*dNzdxl2+*(w2)*dNzdxl1;
+		*(B+neqel*2+i2)   = *(w1+1)*dNzdxl2+*(w2+1)*dNzdxl1; 
 
-        	*(B+neqel*3+i2m4) = *(rotate_l+nsd*2)*dNdxl1+
+		*(B+neqel*3+i2m4) = *(rotate_l+nsd*2)*dNdxl1+
 			*(rotate_l)*dNdxl3;
-        	*(B+neqel*3+i2m3) = *(rotate_l+nsd*2+1)*dNdxl1+
+		*(B+neqel*3+i2m3) = *(rotate_l+nsd*2+1)*dNdxl1+
 			*(rotate_l+1)*dNdxl3;
-        	*(B+neqel*3+i2m2) = *(rotate_l+nsd*2+2)*dNdxl1+
+		*(B+neqel*3+i2m2) = *(rotate_l+nsd*2+2)*dNdxl1+
 			*(rotate_l+2)*dNdxl3;
-        	*(B+neqel*3+i2m1) = *(w3)*dNzdxl1+*(w1)*dNzdxl3;
-        	*(B+neqel*3+i2)   = *(w3+1)*dNzdxl1+*(w1+1)*dNzdxl3; 
+		*(B+neqel*3+i2m1) = *(w3)*dNzdxl1+*(w1)*dNzdxl3;
+		*(B+neqel*3+i2)   = *(w3+1)*dNzdxl1+*(w1+1)*dNzdxl3; 
 
-        	*(B+neqel*4+i2m4) = *(rotate_l+nsd*1)*dNdxl3+
+		*(B+neqel*4+i2m4) = *(rotate_l+nsd*1)*dNdxl3+
 			*(rotate_l+nsd*2)*dNdxl2;
-        	*(B+neqel*4+i2m3) = *(rotate_l+nsd*1+1)*dNdxl3+
+		*(B+neqel*4+i2m3) = *(rotate_l+nsd*1+1)*dNdxl3+
 			*(rotate_l+nsd*2+1)*dNdxl2;
-        	*(B+neqel*4+i2m2) = *(rotate_l+nsd*1+2)*dNdxl3+
+		*(B+neqel*4+i2m2) = *(rotate_l+nsd*1+2)*dNdxl3+
 			*(rotate_l+nsd*2+2)*dNdxl2;
-        	*(B+neqel*4+i2m1) = *(w2)*dNzdxl3+*(w3)*dNzdxl2;
-        	*(B+neqel*4+i2)   = *(w2+1)*dNzdxl3+*(w3+1)*dNzdxl2;
+		*(B+neqel*4+i2m1) = *(w2)*dNzdxl3+*(w3)*dNzdxl2;
+		*(B+neqel*4+i2)   = *(w2+1)*dNzdxl3+*(w3+1)*dNzdxl2;
 	}
-        return 1;
+	return 1;
 }
 
 int shellB1ptM(double *shg, double *B, double *rotate_l, double *rotate_f)
@@ -128,11 +128,11 @@ int shellB1ptM(double *shg, double *B, double *rotate_l, double *rotate_f)
 	double vec_dum[nsd],dNdxl1,dNdxl2,dNdxl3;
 	for( i = 0; i < npell; ++i )
 	{
-        	i2      =ndof*i+4;
-        	i2m1    =i2-1;
-        	i2m2    =i2-2;
-        	i2m3    =i2-3;
-        	i2m4    =i2-4;
+		i2      =ndof*i+4;
+		i2m1    =i2-1;
+		i2m2    =i2-2;
+		i2m3    =i2-3;
+		i2m4    =i2-4;
 
 /* calculate derivatives in local x,y,z */
 
@@ -143,14 +143,14 @@ int shellB1ptM(double *shg, double *B, double *rotate_l, double *rotate_f)
 		check = dotX(&dNdxl2,(rotate_l+nsd*1),vec_dum,nsd);
 		check = dotX(&dNdxl3,(rotate_l+nsd*2),vec_dum,nsd);
 
-        	*(B+i2m4) = *(rotate_l)*dNdxl2+
+		*(B+i2m4) = *(rotate_l)*dNdxl2+
 			*(rotate_l+nsd*1)*dNdxl1;
-        	*(B+i2m3) = *(rotate_l+1)*dNdxl2+
+		*(B+i2m3) = *(rotate_l+1)*dNdxl2+
 			*(rotate_l+nsd*1+1)*dNdxl1;
-        	*(B+i2m2) = *(rotate_l+2)*dNdxl2+
+		*(B+i2m2) = *(rotate_l+2)*dNdxl2+
 			*(rotate_l+nsd*1+2)*dNdxl1;
 	}
-        return 1;
+	return 1;
 }
 
 int shellB1ptT(double *shg, double *shg_z, double *znode, double *B, double *rotate_l, 
@@ -169,11 +169,11 @@ int shellB1ptT(double *shg, double *shg_z, double *znode, double *B, double *rot
 	double dNdxl1,dNdxl2,dNdxl3,dNzdxl1,dNzdxl2,dNzdxl3;
 	for( i = 0; i < npell; ++i )
 	{
-        	i2      =ndof*i+4;
-        	i2m1    =i2-1;
-        	i2m2    =i2-2;
-        	i2m3    =i2-3;
-        	i2m4    =i2-4;
+		i2      =ndof*i+4;
+		i2m1    =i2-1;
+		i2m2    =i2-2;
+		i2m3    =i2-3;
+		i2m4    =i2-4;
 
 /* calculate derivatives in local x,y,z */
 
@@ -205,26 +205,26 @@ int shellB1ptT(double *shg, double *shg_z, double *znode, double *B, double *rot
 		*(w3)*= -1;
 		check = dotX((w3+1),(rotate_l+nsd*2),(rotate_f+nsdsq*i),nsd);
 
-        	*(B+neqel*0+i2m4) = *(rotate_l+nsd*2)*dNdxl1+
+		*(B+neqel*0+i2m4) = *(rotate_l+nsd*2)*dNdxl1+
 			*(rotate_l)*dNdxl3;
-        	*(B+neqel*0+i2m3) = *(rotate_l+nsd*2+1)*dNdxl1+
+		*(B+neqel*0+i2m3) = *(rotate_l+nsd*2+1)*dNdxl1+
 			*(rotate_l+1)*dNdxl3;
-        	*(B+neqel*0+i2m2) = *(rotate_l+nsd*2+2)*dNdxl1+
+		*(B+neqel*0+i2m2) = *(rotate_l+nsd*2+2)*dNdxl1+
 			*(rotate_l+2)*dNdxl3;
-        	*(B+neqel*0+i2m1) = *(w3)*dNzdxl1+*(w1)*dNzdxl3;
-        	*(B+neqel*0+i2)   = *(w3+1)*dNzdxl1+*(w1+1)*dNzdxl3;
+		*(B+neqel*0+i2m1) = *(w3)*dNzdxl1+*(w1)*dNzdxl3;
+		*(B+neqel*0+i2)   = *(w3+1)*dNzdxl1+*(w1+1)*dNzdxl3;
 
-        	*(B+neqel*1+i2m4) = *(rotate_l+nsd*1)*dNdxl3+
+		*(B+neqel*1+i2m4) = *(rotate_l+nsd*1)*dNdxl3+
 			*(rotate_l+nsd*2)*dNdxl2;
-        	*(B+neqel*1+i2m3) = *(rotate_l+nsd*1+1)*dNdxl3+
+		*(B+neqel*1+i2m3) = *(rotate_l+nsd*1+1)*dNdxl3+
 			*(rotate_l+nsd*2+1)*dNdxl2;
-        	*(B+neqel*1+i2m2) = *(rotate_l+nsd*1+2)*dNdxl3+
+		*(B+neqel*1+i2m2) = *(rotate_l+nsd*1+2)*dNdxl3+
 			*(rotate_l+nsd*2+2)*dNdxl2;
-        	*(B+neqel*1+i2m1) = *(w2)*dNzdxl3+*(w3)*dNzdxl2;
-        	*(B+neqel*1+i2)   = *(w2+1)*dNzdxl3+*(w3+1)*dNzdxl2;
+		*(B+neqel*1+i2m1) = *(w2)*dNzdxl3+*(w3)*dNzdxl2;
+		*(B+neqel*1+i2)   = *(w2+1)*dNzdxl3+*(w3+1)*dNzdxl2;
 
 	}
-        return 1;
+	return 1;
 }
 
 
@@ -234,39 +234,39 @@ int shellB_mass(double *shg, double *znode, double *B, double *rotate_f)
      This library function assembles the B_mass matrix in
      [B_mass trans][B_mass] for shell elements.
 
-                Updated 9/5/00
+		Updated 9/5/00
 */
 	int i,i2,i2m1,i2m2,i2m3,i2m4;
 	double N,Nz;
 	for( i = 0; i < npell; ++i )
 	{
-        	i2      =ndof*i+4;
-        	i2m1    =i2-1;
-        	i2m2    =i2-2;
-        	i2m3    =i2-3;
-        	i2m4    =i2-4;
+		i2      =ndof*i+4;
+		i2m1    =i2-1;
+		i2m2    =i2-2;
+		i2m3    =i2-3;
+		i2m4    =i2-4;
 
 		N = *(shg+i);
 		Nz = *(shg+i)*(*(znode+i));
 
-        	*(B+i2m4) = N;
-        	*(B+i2m3) = 0.0;
-        	*(B+i2m2) = 0.0;
-        	*(B+i2m1) = - *(rotate_f+nsdsq*i+nsd*1)*Nz;
-        	*(B+i2)   = *(rotate_f+nsdsq*i)*Nz;
+		*(B+i2m4) = N;
+		*(B+i2m3) = 0.0;
+		*(B+i2m2) = 0.0;
+		*(B+i2m1) = - *(rotate_f+nsdsq*i+nsd*1)*Nz;
+		*(B+i2)   = *(rotate_f+nsdsq*i)*Nz;
 
-        	*(B+neqel*1+i2m4) = 0.0;
-        	*(B+neqel*1+i2m3) = N;
-        	*(B+neqel*1+i2m2) = 0.0;
-        	*(B+neqel*1+i2m1) = - *(rotate_f+nsdsq*i+nsd*1+1)*Nz;
-        	*(B+neqel*1+i2)   = *(rotate_f+nsdsq*i+1)*Nz; 
+		*(B+neqel*1+i2m4) = 0.0;
+		*(B+neqel*1+i2m3) = N;
+		*(B+neqel*1+i2m2) = 0.0;
+		*(B+neqel*1+i2m1) = - *(rotate_f+nsdsq*i+nsd*1+1)*Nz;
+		*(B+neqel*1+i2)   = *(rotate_f+nsdsq*i+1)*Nz; 
 
-        	*(B+neqel*2+i2m4) = 0.0;
-        	*(B+neqel*2+i2m3) = 0.0;
-        	*(B+neqel*2+i2m2) = N;
-        	*(B+neqel*2+i2m1) = - *(rotate_f+nsdsq*i+nsd*1+2)*Nz;
-        	*(B+neqel*2+i2)   = *(rotate_f+nsdsq*i+2)*Nz; 
+		*(B+neqel*2+i2m4) = 0.0;
+		*(B+neqel*2+i2m3) = 0.0;
+		*(B+neqel*2+i2m2) = N;
+		*(B+neqel*2+i2m1) = - *(rotate_f+nsdsq*i+nsd*1+2)*Nz;
+		*(B+neqel*2+i2)   = *(rotate_f+nsdsq*i+2)*Nz; 
 	}
-        return 1;
+	return 1;
 }
 

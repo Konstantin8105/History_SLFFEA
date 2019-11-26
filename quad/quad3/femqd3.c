@@ -69,7 +69,7 @@ int analysis_flag, dof, sdof, EMdof, modal_flag, neqn, EMneqn, nmat, nmode, nume
 	numel, numnp, plane_stress_flag, sof, stress_read_flag;
 int static_flag, B_matrix_store, Bzz_matrix_store,
 	eigen_print_flag, stress_read_flag, element_stress_read_flag,
-        element_stress_print_flag, gauss_stress_flag;
+	element_stress_print_flag, gauss_stress_flag;
 
 int LU_decomp_flag, Bzz_LU_decomp_flag, numel_EM, numel_P, numnp_LUD_max;
 int iteration_max, iteration_const, iteration;
@@ -80,64 +80,64 @@ double dcdx[nsdsq*num_int], shg[sosh], shg_node[sosh], shl[sosh], shl_node[sosh]
 
 int main(int argc, char** argv)
 {
-        int i, j, k;
-        int *id, *lm, *idiag, check, name_length, counter, MemoryCounter;
-        XYI *mem_XYI;
-        int *mem_int, sofmAtt, sofmAttpBzz, sofmBzz, sofmB, sofmTOTAL, sofmi,
+	int i, j, k;
+	int *id, *lm, *idiag, check, name_length, counter, MemoryCounter;
+	XYI *mem_XYI;
+	int *mem_int, sofmAtt, sofmAttpBzz, sofmBzz, sofmB, sofmTOTAL, sofmi,
 		sofmf, sofmSTRESS, sofmXYI, sofmSDIM, ptr_inc;
-        MATL *matl;
-        double *mem_double;
-        double fpointx, fpointy, fpointz;
-        int *connect, *edge_connect, *el_edge_connect, *el_matl, dum;
-        double *coord, *force, *U, *EMedge, *EMnode, *Arean,
+	MATL *matl;
+	double *mem_double;
+	double fpointx, fpointy, fpointz;
+	int *connect, *edge_connect, *el_edge_connect, *el_matl, dum;
+	double *coord, *force, *U, *EMedge, *EMnode, *Arean,
 		*node_counter, *edge_counter, *vector_dum;
-        double *Att, *Btt, *Btz, *Bzt, *Bzz, *TOTAL;
+	double *Att, *Btt, *Btz, *Bzt, *Bzz, *TOTAL;
 	double *Att_diag, *Bzz_diag, *ritz;
 	EIGEN *eigen;
 	int num_eigen;
-        char name[30], buf[ BUFSIZ ];
+	char name[30], buf[ BUFSIZ ];
 	char name_mode[30], *ccheck;
-        FILE *o1, *o2;
-        BOUND bc;
-        STRESS *stress;
-        STRAIN *strain;
+	FILE *o1, *o2;
+	BOUND bc;
+	STRESS *stress;
+	STRAIN *strain;
 	SDIM *stress_node, *strain_node, *mem_SDIM;
-        double g, fdum, fdum2, length;
+	double g, fdum, fdum2, length;
 	int node1, node2;
-        long timec;
-        long timef;
+	long timec;
+	long timef;
 	int  mem_case, mem_case_B;
 	double RAM_max, RAM_usable, RAM_needed, MEGS;
 
-        sof = sizeof(double);
+	sof = sizeof(double);
 
 /* Create local shape funcions at gauss points */
 
 	g = 2.0/sq3;
-        check = qdshl( g, shl, w );
-        if(!check) printf( " Problems with qdshl \n");
+	check = qdshl( g, shl, w );
+	if(!check) printf( " Problems with qdshl \n");
 
 /* Create local shape funcions at nodal points */
 
 	g = 2.0;
-        check = qdshl( g, shl_node, w );
-        if(!check) printf( " Problems with qdshl \n");
+	check = qdshl( g, shl_node, w );
+	if(!check) printf( " Problems with qdshl \n");
 
 /* Create local streamlined shape funcion matrix at nodal points */
 
-        check = qdshl_node2(shl_node2);
-        if(!check) printf( " Problems with qdshl_node2 \n");
+	check = qdshl_node2(shl_node2);
+	if(!check) printf( " Problems with qdshl_node2 \n");
 
 	memset(name,0,30*sizeof(char));
 	
-    	printf("What is the name of the file containing the \n");
-    	printf("quad structural data? \n");
-    	scanf( "%30s",name);
+	printf("What is the name of the file containing the \n");
+	printf("quad structural data? (example: e1)\n");
+	scanf( "%30s",name);
 
 /*   o1 contains all the structural quad data  */
 /*   o2 contains input parameters */
 
-        o1 = fopen( name,"r" );
+	o1 = fopen( name,"r" );
 	o2 = fopen( "qd3input","r" );
 
 	if(o1 == NULL ) {
@@ -146,39 +146,39 @@ int main(int argc, char** argv)
 	}
 
 	if( o2 == NULL ) {
-	        printf("Can't find file qd3input\n");
-	        tolerance = 1.e-13;
-	        iteration_max = 2000;
-	        RAM_max = 160.0;
-	        element_stress_read_flag = 0;
-	        element_stress_print_flag = 0;
-	        gauss_stress_flag = 0;
+		printf("Can't find file qd3input\n");
+		tolerance = 1.e-13;
+		iteration_max = 2000;
+		RAM_max = 160.0;
+		element_stress_read_flag = 0;
+		element_stress_print_flag = 0;
+		gauss_stress_flag = 0;
 		eigen_print_flag = 0;
 	}
 	else
 	{
-	        fgets( buf, BUFSIZ, o2 );
-	        fscanf( o2, "%lf\n ",&tolerance);
-	        fgets( buf, BUFSIZ, o2 );
-	        fscanf( o2, "%d\n ",&iteration_max);
-	        fgets( buf, BUFSIZ, o2 );
-	        fscanf( o2, "%lf\n ",&RAM_max);
-	        fgets( buf, BUFSIZ, o2 );
-	        fscanf( o2, "%d\n ",&element_stress_read_flag);
-	        fgets( buf, BUFSIZ, o2 );
-	        fscanf( o2, "%d\n ",&element_stress_print_flag);
-	        fgets( buf, BUFSIZ, o2 );
-	        fscanf( o2, "%d\n ",&gauss_stress_flag);
+		fgets( buf, BUFSIZ, o2 );
+		fscanf( o2, "%lf\n ",&tolerance);
+		fgets( buf, BUFSIZ, o2 );
+		fscanf( o2, "%d\n ",&iteration_max);
+		fgets( buf, BUFSIZ, o2 );
+		fscanf( o2, "%lf\n ",&RAM_max);
+		fgets( buf, BUFSIZ, o2 );
+		fscanf( o2, "%d\n ",&element_stress_read_flag);
+		fgets( buf, BUFSIZ, o2 );
+		fscanf( o2, "%d\n ",&element_stress_print_flag);
+		fgets( buf, BUFSIZ, o2 );
+		fscanf( o2, "%d\n ",&gauss_stress_flag);
 		fgets( buf, BUFSIZ, o2 );
 		fscanf( o2, "%d\n ",&eigen_print_flag);
 	}
 
-        fgets( buf, BUFSIZ, o1 );
-        fscanf( o1, "%d %d %d %d %d %d\n ",
+	fgets( buf, BUFSIZ, o1 );
+	fscanf( o1, "%d %d %d %d %d %d\n ",
 		&numed, &numel, &numnp, &nmat, &nmode, &plane_stress_flag);
-        dof=numnp*ndof;
+	dof=numnp*ndof;
 	sdof=numnp*nsd;
-        EMdof=numed*edof;  
+	EMdof=numed*edof;  
 
 	numnp_LUD_max = 1125;
 
@@ -200,8 +200,8 @@ int main(int argc, char** argv)
 /* Enough RAM to store all element Att and Bzz matrices for conjugate
    gradient
 */
-	        numel_EM = numel;
-	        numel_P = 0;
+		numel_EM = numel;
+		numel_P = 0;
 	}
 	else
 	{
@@ -232,25 +232,25 @@ int main(int argc, char** argv)
    for the Lanczos Method as well.
 */
 
-	        num_eigen = (int)(2.0*nmode);
-	        num_eigen = MIN(nmode + 8, num_eigen);
-	        num_eigen = MIN(dof, num_eigen);
-	        static_flag = 0;
-	        modal_flag = 1;
+		num_eigen = (int)(2.0*nmode);
+		num_eigen = MIN(nmode + 8, num_eigen);
+		num_eigen = MIN(dof, num_eigen);
+		static_flag = 0;
+		modal_flag = 1;
 	}
 
 #if 0
-        LU_decomp_flag = 0;
-        Bzz_LU_decomp_flag = 0;
+	LU_decomp_flag = 0;
+	Bzz_LU_decomp_flag = 0;
 #endif
 
 
 /*   Begin allocation of meomory */
 
-        MemoryCounter = 0;
+	MemoryCounter = 0;
 
 /* For the doubles */
-        sofmf=sdof + 3*dof + EMdof + dof + 2*numel + numnp + numed + 2*EMdof;
+	sofmf=sdof + 3*dof + EMdof + dof + 2*numel + numnp + numed + 2*EMdof;
 	if(modal_flag)
 	{
 		sofmf = sdof + 3*dof + EMdof + dof + 2*numel + numnp + numed +
@@ -276,7 +276,7 @@ int main(int argc, char** argv)
 	printf( "\n Memory requrement for SDIM doubles is %15d bytes\n",MemoryCounter);
 
 /* For the STRESS */
-        sofmSTRESS=numel;
+	sofmSTRESS=numel;
 	MemoryCounter += sofmSTRESS*sizeof(STRESS) + sofmSTRESS*sizeof(STRAIN);
 	printf( "\n Memory requrement for STRESS doubles is %15d bytes\n",MemoryCounter);
 
@@ -285,15 +285,15 @@ int main(int argc, char** argv)
 	if(!check) printf( " Problems with qd3Memory \n");
 
 /* For the doubles */
-                                                ptr_inc=0;
-        coord=(mem_double+ptr_inc);    	        ptr_inc += sdof;
+	                                        ptr_inc=0;
+	coord=(mem_double+ptr_inc);             ptr_inc += sdof;
 	vector_dum=(mem_double+ptr_inc);        ptr_inc += dof;
-        force=(mem_double+ptr_inc);             ptr_inc += dof;
-        U=(mem_double+ptr_inc);                 ptr_inc += dof;
-        EMedge=(mem_double+ptr_inc);            ptr_inc += EMdof;
-        EMnode=(mem_double+ptr_inc);            ptr_inc += dof;
-        Arean=(mem_double+ptr_inc);             ptr_inc += numel;
-        Area0=(mem_double+ptr_inc);             ptr_inc += numel;
+	force=(mem_double+ptr_inc);             ptr_inc += dof;
+	U=(mem_double+ptr_inc);                 ptr_inc += dof;
+	EMedge=(mem_double+ptr_inc);            ptr_inc += EMdof;
+	EMnode=(mem_double+ptr_inc);            ptr_inc += dof;
+	Arean=(mem_double+ptr_inc);             ptr_inc += numel;
+	Area0=(mem_double+ptr_inc);             ptr_inc += numel;
 	node_counter=(mem_double+ptr_inc);      ptr_inc += numnp;
 	edge_counter=(mem_double+ptr_inc);      ptr_inc += numed;
 	Att_diag=(mem_double+ptr_inc);          ptr_inc += EMdof;
@@ -322,9 +322,9 @@ int main(int argc, char** argv)
 	bc.num_force=(mem_int+ptr_inc);         ptr_inc += 1;
 
 /* For the XYI integers */
-					  ptr_inc = 0; 
-	bc.fix =(mem_XYI+ptr_inc);        ptr_inc += numnp+1;
-	bc.num_fix=(mem_XYI+ptr_inc);     ptr_inc += 1;
+	                                        ptr_inc = 0; 
+	bc.fix =(mem_XYI+ptr_inc);              ptr_inc += numnp+1;
+	bc.num_fix=(mem_XYI+ptr_inc);           ptr_inc += 1;
 
 /* For the SDIM doubles */
 	                                        ptr_inc = 0;
@@ -349,46 +349,46 @@ int main(int argc, char** argv)
 	stress_read_flag = 1;
 	check = qd3reader( bc, connect, edge_connect, el_edge_connect, coord, el_matl,
 		force, matl, name, o1, stress, stress_node, EMedge);
-        if(!check) printf( " Problems with qd3reader \n");
+	if(!check) printf( " Problems with qd3reader \n");
 
-        printf(" \n\n");
+	printf(" \n\n");
 
-        check = qd3formid( bc, id );
-        if(!check) printf( " Problems with qd3formid \n");
+	check = qd3formid( bc, id );
+	if(!check) printf( " Problems with qd3formid \n");
 
-        printf( "\n This is the id matrix \n");
-        for( i = 0; i < numed; ++i )
-        {
-                printf("\n edge(%4d)",i);
-                for( j = 0; j < edof; ++j )
-                {
-                        printf(" %4d  ",*(id+edof*i+j));
-                }
-        }
+	printf( "\n This is the id matrix \n");
+	for( i = 0; i < numed; ++i )
+	{
+		printf("\n edge(%4d)",i);
+		for( j = 0; j < edof; ++j )
+		{
+			printf(" %4d  ",*(id+edof*i+j));
+		}
+	}
 
 	check = formlm( el_edge_connect, id, lm, edof, epel, numel );
-        if(!check) printf( " Problems with formlm \n");
+	if(!check) printf( " Problems with formlm \n");
 
-        printf( "\n\n This is the lm matrix \n");
-        for( i = 0; i < numel; ++i )
-        {
+	printf( "\n\n This is the lm matrix \n");
+	for( i = 0; i < numel; ++i )
+	{
 	    printf("\n element(%4d)",i);
-            for( j = 0; j < EMneqel; ++j )
-            {
-                printf( "%5d   ",*(lm+EMneqel*i+j));
-            }
-        }
-        printf( "\n");
+	    for( j = 0; j < EMneqel; ++j )
+	    {
+		printf( "%5d   ",*(lm+EMneqel*i+j));
+	    }
+	}
+	printf( "\n");
 
 	check = diag( idiag, lm, edof, EMneqn, epel, numel);
-        if(!check) printf( " Problems with diag \n");
+	if(!check) printf( " Problems with diag \n");
 
-        printf( "\n\n This is the idiag matrix \n");
-        for( j = 0; j < EMneqn; ++j )
-        {
-            printf( "\n EMdof %5d   %5d",j,*(idiag+j));
-        }
-        printf( "\n");
+	printf( "\n\n This is the idiag matrix \n");
+	for( j = 0; j < EMneqn; ++j )
+	{
+	    printf( "\n EMdof %5d   %5d",j,*(idiag+j));
+	}
+	printf( "\n");
 
 /*   allocate meomory for Att and Bzz, the global Att and Bzz matrices.  There
      are 2 possibilities:
@@ -398,7 +398,7 @@ int main(int argc, char** argv)
 
      2) Use standard Linear Algebra with LU decomposition and skyline storage
 	for Att global stiffness matrix.  Use Conjugate Gradient for Bzz
-        storing all element stiffness matrices.
+	storing all element stiffness matrices.
 
      3) Use the Conjugate Gradient method with storage of all element
 	Att and Bzz matrices.
@@ -410,7 +410,7 @@ int main(int argc, char** argv)
 
 	if(LU_decomp_flag)
 	{
-	        sofmAtt = *(idiag+EMneqn-1)+1;  /* case 1 or 2 */
+		sofmAtt = *(idiag+EMneqn-1)+1;  /* case 1 or 2 */
 	}
 
 	if( sofmAtt*sof > (int)RAM_usable )
@@ -432,13 +432,13 @@ int main(int argc, char** argv)
 
 		sofmBzz = numel*EMneqlsq;  /* case 3 */
 		Bzz_matrix_store = 1;
-	        mem_case = 3;
+		mem_case = 3;
 		fdum = RAM_usable - (double)(sof*(sofmAtt + sofmBzz));
 		if(fdum < 0.0)
 		{
 		    sofmBzz = 0;      /* case 4 */
-	    	    mem_case = 4;
-	    	    Bzz_matrix_store = 0;
+		    mem_case = 4;
+		    Bzz_matrix_store = 0;
 		}
 	    }
 	    LU_decomp_flag = 0;
@@ -458,7 +458,7 @@ int main(int argc, char** argv)
 		fdum = RAM_usable - (double)(sof*(sofmAtt + sofmBzz));
 		if(fdum < 0.0)
 		{
-	    	    Bzz_LU_decomp_flag = 0;
+		    Bzz_LU_decomp_flag = 0;
 
 /* Check to see if there is enough memory to store all element Bzz matrices
    for Conjugate Gradient */
@@ -471,7 +471,7 @@ int main(int argc, char** argv)
 		    {
 			sofmBzz = 0;      /* case 4 */
 			mem_case = 4;
-	    		Bzz_matrix_store = 0;
+			Bzz_matrix_store = 0;
 		    }
 		}
 	    }
@@ -481,45 +481,45 @@ int main(int argc, char** argv)
    for Conjugate Gradient */
 
 		sofmBzz = numel*EMneqlsq;  /* case 2 */
-	    	Bzz_matrix_store = 1;
+		Bzz_matrix_store = 1;
 		mem_case = 2;
 		fdum = RAM_usable - (double)(sof*(sofmAtt + sofmBzz));
 		if(fdum < 0.0)
 		{
 		    sofmBzz = 0;      /* case 4 */
 		    mem_case = 4;
-	    	    Bzz_matrix_store = 0;
+		    Bzz_matrix_store = 0;
 		}
 	    }
 	}
 
 	printf( "\n We are in case %3d\n\n", mem_case);
 	switch (mem_case) {
-	        case 1:
-	                printf( " LU decomposition for both\n\n");
-	        break;
-	        case 2:
-	                printf( " LU decomposition for Att\n\n");
-	                printf( " Conjugate gradient for Bzz\n\n");
-	                printf( " with all element Bzz matrices stored\n\n");
-	        break;
-	        case 3:
-	                printf( " Conjugate gradient for Att \n\n");
-	                printf( " with numel element Att matrices stored\n\n");
-	                printf( " and numel element Bzz matrices stored\n\n");
-	        break;
-	        case 4:
-	                printf( " Conjugate gradient for Att \n\n");
-	                printf( " with numel_EM element Att matrices stored\n\n");
-	                printf( " and no element Bzz matrices stored\n\n");
-	        break;
+		case 1:
+			printf( " LU decomposition for both\n\n");
+		break;
+		case 2:
+			printf( " LU decomposition for Att\n\n");
+			printf( " Conjugate gradient for Bzz\n\n");
+			printf( " with all element Bzz matrices stored\n\n");
+		break;
+		case 3:
+			printf( " Conjugate gradient for Att \n\n");
+			printf( " with numel element Att matrices stored\n\n");
+			printf( " and numel element Bzz matrices stored\n\n");
+		break;
+		case 4:
+			printf( " Conjugate gradient for Att \n\n");
+			printf( " with numel_EM element Att matrices stored\n\n");
+			printf( " and no element Bzz matrices stored\n\n");
+		break;
 	}
 
 /* determine how much memory is needed and available for the Btt, Btz, Bzt matrices. 
    We want enough memory to store all element matrices of Btt, Btz, Bzt
 */
 
-	sofmAttpBzz = sofmAtt + sofmBzz;              /* B case 2 */
+	sofmAttpBzz = sofmAtt + sofmBzz;	      /* B case 2 */
 	sofmB = 0;
 	B_matrix_store = 0;
 	mem_case_B = 2;
@@ -536,19 +536,19 @@ int main(int argc, char** argv)
 			mem_case_B = 1;
 	}
 
-        printf( "\n We are in B case %3d\n\n", mem_case_B);
-        switch (mem_case_B) {
-            case 1:
-        	printf( "\n all element Btt, Btz, Bzt matrices stored \n\n");
-            break;
-            case 2:
-        	printf( "\n no storage of element Btt, Btz, Bzt matrices \n\n");
-            break;
-        }
+	printf( "\n We are in B case %3d\n\n", mem_case_B);
+	switch (mem_case_B) {
+	    case 1:
+		printf( "\n all element Btt, Btz, Bzt matrices stored \n\n");
+	    break;
+	    case 2:
+		printf( "\n no storage of element Btt, Btz, Bzt matrices \n\n");
+	    break;
+	}
 
 	MemoryCounter += sofmTOTAL*sizeof(double);
 	printf( "\n Memory requrement for electric field calc. with %15d doubles is %15d bytes\n",
-	        sofmAtt, MemoryCounter);
+		sofmAtt, MemoryCounter);
 	MEGS = ((double)(MemoryCounter))/MB;
 	printf( "\n Which is %16.4e MB\n", MEGS);
 	printf( "\n This is numel, numel_EM, numel_P %5d %5d %5d\n", numel, numel_EM, numel_P);
@@ -563,13 +563,13 @@ int main(int argc, char** argv)
 		sofmTOTAL = 5;
 		sofmAtt = 1;
 		sofmB = 1;
-	}        
+	}	
 
 	TOTAL = (double *)calloc(sofmTOTAL,sizeof(double));
 	if(!TOTAL )
 	{
-	        printf( "failed to allocate memory for TOTAL double\n ");
-	        exit(1);
+		printf( "failed to allocate memory for TOTAL double\n ");
+		exit(1);
 	}
 
 #if 1
@@ -604,22 +604,22 @@ int main(int argc, char** argv)
 
 	analysis_flag = 1;
 	memset(TOTAL,0,sofmTOTAL*sof);
-        check = qd3Kassemble(Att, Btt, Btz, Bzt, Bzz, connect, edge_connect, el_edge_connect,
+	check = qd3Kassemble(Att, Btt, Btz, Bzt, Bzz, connect, edge_connect, el_edge_connect,
 		coord, el_matl, force, id, idiag, Att_diag, Bzz_diag, lm, matl, edge_counter,
 		strain, strain_node, stress, stress_node, EMedge, EMnode, Arean);
-        if(!check) printf( " Problems with qd3Kassembler \n");
+	if(!check) printf( " Problems with qd3Kassembler \n");
 
-        for( j = 0; j < numel*EMneqlsq; ++j )
-        {
-            printf( "\n EMdof %5d   %14.5f %14.5f %14.5f",j,*(Btt+j),*(Bzt+j),*(Btz+j));
-        }
+	for( j = 0; j < numel*EMneqlsq; ++j )
+	{
+	    printf( "\n EMdof %5d   %14.5f %14.5f %14.5f",j,*(Btt+j),*(Bzt+j),*(Btz+j));
+	}
 /*
-        printf( "\n\n This is the force matrix \n");
-        for( j = 0; j < neqn; ++j )
-        {
-            printf( "\ndof %5d   %14.5f",j,*(force+j));
-        }
-        printf(" \n");
+	printf( "\n\n This is the force matrix \n");
+	for( j = 0; j < neqn; ++j )
+	{
+	    printf( "\ndof %5d   %14.5f",j,*(force+j));
+	}
+	printf(" \n");
 */
 #if 0
 	if(modal_flag)
@@ -659,10 +659,10 @@ int main(int argc, char** argv)
 		if(!check) printf( " Problems with decomp \n");
 	}
 
-        for( i = 0; i < *(idiag+EMneqn-1)+1; ++i )
-        {
-                printf( "\n Att[%3i] = %12.5e  Btt[%3i] = %12.5e",i,*(Att+i),i,*(Bzz+i));
-        }
+	for( i = 0; i < *(idiag+EMneqn-1)+1; ++i )
+	{
+		printf( "\n Att[%3i] = %12.5e  Btt[%3i] = %12.5e",i,*(Att+i),i,*(Bzz+i));
+	}
 	printf(" \n");
 
 #if 0
@@ -730,8 +730,8 @@ int main(int argc, char** argv)
 		}
 	    }
 
-	    printf( "\n\n               These are the updated coordinates \n");
-	    printf( "\n                  x               y \n");
+	    printf( "\n\n              These are the updated coordinates \n");
+	    printf( "\n        x               y \n");
 
 	    for( i = 0; i < numnp; ++i )
 	    {
@@ -745,7 +745,7 @@ int main(int argc, char** argv)
 		force, id, matl, name, strain, strain_node, stress, stress_node, EMedge, EMnode);
 	    if(!check) printf( " Problems with qd3writer \n");
 
-        }
+	}
 #endif
 
 #if 1
@@ -889,7 +889,7 @@ int main(int argc, char** argv)
 	}
 #endif
 
-    	timec = clock();
+	timec = clock();
 	printf("\n\n elapsed CPU = %lf\n\n",( (double)timec)/800.);
 
 	free(strain);

@@ -2,10 +2,10 @@
    Control Display Window for a shell.  It also gives you the
    structure of how the text is placed.
 
-              Updated 9/26/06
+              Updated 9/22/06
 
     SLFFEA source file
-    Version:  1.3
+    Version:  1.4
     Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
 
     The source code contained in this file is released under the

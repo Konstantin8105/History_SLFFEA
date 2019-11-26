@@ -1,5 +1,5 @@
 # SLFFEA Makefile
-# Version:  1.3
+# Version:  1.4
 # Copyright (C) 1999, 2000  San Le (slffea@yahoo.com)
 # http://slffea.com/
 #
@@ -40,6 +40,7 @@ all: bm bmp
 bm: fembeam.o \
 		bmmemory.o \
 		bmreader.o \
+		bmlocal_vec.o \
 		bmsort.o \
 		bmid.o \
 		bmshape.o \
@@ -57,6 +58,7 @@ bm: fembeam.o \
 	$(CC) -o bm fembeam.o \
 		bmmemory.o \
 		bmreader.o \
+		bmlocal_vec.o \
 		bmsort.o \
 		bmid.o \
 		bmshape.o \
@@ -108,6 +110,9 @@ bmid.o: bmid.c
 
 bmsort.o: bmsort.c
 	$(CC) -c bmsort.c
+
+bmlocal_vec.o: bmlocal_vec.c
+	$(CC) -c bmlocal_vec.c
 
 bmreader.o: bmreader.c
 	$(CC) -c bmreader.c

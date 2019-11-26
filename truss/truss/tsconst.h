@@ -5,7 +5,7 @@
                 Updated 6/27/00
 
     SLFFEA source file
-    Version:  1.3
+    Version:  1.4
     Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
@@ -27,13 +27,13 @@
 #define ONE          0.99999
 
 #define nsd       3                     /* number of spatial dimensions per node */
-#define ndof      3			/* degrees of freedom per node */
-#define npel      2			/* nodes per element */
-#define neqel     npel*ndof		/* degrees of freedom per element */
-#define num_int   1			/* number of integration points */
+#define ndof      3                     /* degrees of freedom per node */
+#define npel      2                     /* nodes per element */
+#define neqel     npel*ndof             /* degrees of freedom per element */
+#define num_int   1                     /* number of integration points */
 #define nsdsq          nsd*nsd            /* nsd squared */
-#define neqlsq    neqel*neqel 		/* neqel squared */
-#define npelsq    npel*npel		/* npel squared */
+#define neqlsq    neqel*neqel           /* neqel squared */
+#define npelsq    npel*npel             /* npel squared */
 #define sdim      1                     /* stress dimensions per element */
 #define soB       sdim*npel             /* size of B matrix */
 #define KB            1024.0                      /* number of bytes in kilobyte */

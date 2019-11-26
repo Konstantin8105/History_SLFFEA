@@ -15,7 +15,7 @@
     Web Page: http://yallara.cs.rmit.edu.au/~bgreen
  
     SLFFEA source file
-    Version:  1.3
+    Version:  1.4
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -38,12 +38,12 @@
 
 void printText(const char* string)
 {
-   	int index = 0;
+	int index = 0;
 
-   	while (string[index] != '\0')
-   	{
-      		glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN, string[index]);
-      		index++;
-   	}
+	while (string[index] != '\0')
+	{
+		glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN, string[index]);
+		index++;
+	}
 }
 

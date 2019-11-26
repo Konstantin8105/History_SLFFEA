@@ -6,7 +6,7 @@
                 Updated 9/26/01
 
     SLFFEA source file
-    Version:  1.3
+    Version:  1.4
     Copyright (C) 1999, 2000, 2001, 2002  San Le
 
     The source code contained in this file is released under the

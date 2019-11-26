@@ -37,7 +37,7 @@ c
 	common/var1/numnp, numel, nmat, nmode, dof, neqn, flag
 
     	write(6,*) "What is the name of the file containing the"
-    	write(6,*) "truss structural data?"
+    	write(6,*) "truss structural data? (example: tsp413)"
     	read(5,*) name
 
 c    10 contains all the structural data
@@ -255,7 +255,7 @@ c	Updated on 5/25/00
            read(file1,*) dum, (ncoord(dum+1,j), j = 1, nsd)
            write(6,22) dum+1, (ncoord(dum+1,j), j = 1, nsd)
 300     continue
-22	format('node (',i5,') coordinates ',3(1x,f9.4))
+22	format('coordinate (',i5,') coordinates ',3(1x,f9.4))
         read(file1,*) 
         write(6,*) 
 

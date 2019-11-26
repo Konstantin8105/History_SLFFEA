@@ -2,11 +2,11 @@
     This library function assembles the stiffness matrix and calculates the
     reaction forces for a finite element program which does analysis on a truss.
 
-        Updated 1/23/03
+                     Updated 11/8/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -34,22 +34,22 @@ int matX(double *, double *, double *, int, int, int);
 int matXT(double *, double *, double *, int, int, int);
 
 int tsKassemble(double *A, int *connect, double *coord, int *el_matl, double *force,
-	int *id, int *idiag, double *K_diag, int *lm, MATL *matl, STRAIN *strain,
-	STRESS *stress, double *U)
+	int *id, int *idiag, double *K_diag, int *lm, double *length, double *local_xyz,
+	MATL *matl, SDIM *strain, SDIM *stress, double *U)
 {
-        int i, i1, i2, j, ij, k, dof_el[neqel];
+	int i, i1, i2, j, ij, k, dof_el[neqel];
 	int check, counter, node0, node1;
-        int matl_num;
-        double Emod, area, EmodXarea, wXjacob;
-        double L, Lx, Ly, Lz, Lsq;
-        double B[soB], DB[soB], jacob;
+	int matl_num;
+	double Emod, area, EmodXarea, wXjacob;
+	double L, Lx, Ly, Lz, Lsq;
+	double B[soB], DB[soB], jacob;
 	double K_temp[npel*neqel], K_el[neqlsq], K_local[npelsq], rotate[npel*neqel];
 	double force_el[neqel], force_ax[npel], U_el[neqel], U_ax[npel];
-        double stress_el[sdim], strain_el[sdim];
+	double stress_el[sdim], strain_el[sdim];
 	double x[num_int], w[num_int];
 
-        *(x)=0.0;
-        *(w)=2.0;
+	*(x)=0.0;
+	*(w)=2.0;
 
 	for( k = 0; k < numel; ++k )
 	{
@@ -70,13 +70,8 @@ int tsKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
 		*(dof_el+4)=ndof*node1+1;
 		*(dof_el+5)=ndof*node1+2;
 
-		Lx = *(coord+nsd*node1) - *(coord+nsd*node0);
-		Ly = *(coord+nsd*node1+1) - *(coord+nsd*node0+1);
-		Lz = *(coord+nsd*node1+2) - *(coord+nsd*node0+2);
-
-		Lsq = Lx*Lx+Ly*Ly+Lz*Lz;
-		L = sqrt(Lsq);
-		Lx /= L; Ly /= L; Lz /= L;
+		L = *(length + k);
+		Lsq = L*L;
 
 		jacob = L/2.0;
 
@@ -87,20 +82,21 @@ int tsKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
 */
 
 		memset(rotate,0,npel*neqel*sof);
-		*(rotate) = Lx;
-		*(rotate+1) = Ly;
-		*(rotate+2) = Lz;
-		*(rotate+9) = Lx;
-		*(rotate+10) = Ly;
-		*(rotate+11) = Lz;
+
+		*(rotate)    = *(local_xyz + nsdsq*k);
+		*(rotate+1)  = *(local_xyz + nsdsq*k + 1);
+		*(rotate+2)  = *(local_xyz + nsdsq*k + 2);
+		*(rotate+9)  = *(local_xyz + nsdsq*k);
+		*(rotate+10) = *(local_xyz + nsdsq*k + 1);
+		*(rotate+11) = *(local_xyz + nsdsq*k + 2);
 
 		memset(U_el,0,neqel*sof);
 		memset(K_el,0,neqlsq*sof);
 		memset(force_el,0,neqel*sof);
 		memset(force_ax,0,npel*sof);
+		memset(K_temp,0,npel*neqel*sof);
 		memset(B,0,soB*sof);
 		memset(DB,0,soB*sof);
-		memset(K_temp,0,npel*neqel*sof);
 		memset(K_local,0,npel*npel*sof);
 
 /* Assembly of the local stiffness matrix */
@@ -237,7 +233,7 @@ int tsKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
 		}
 	     }
 	  }
-        }
+	}
 
 	return 1;
 }

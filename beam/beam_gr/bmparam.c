@@ -2,11 +2,11 @@
     This program calculates and writes the parameters for
     the FEM GUI for beam elements.
   
-   			Last Update 3/2/05
+	                Last Update 1/19/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -57,19 +57,19 @@ extern double max_Uphi_x, min_Uphi_x, del_Uphi_x, max_Uphi_y, min_Uphi_y, del_Up
 int bmparameter(double *coord, CURVATURE *curve, MOMENT *moment,
 	STRAIN *strain, STRESS *stress, double *U )
 {
-        int i, j, check; 
+	int i, j, check; 
 	int node_Ux_max, node_Ux_min, node_Uy_max, node_Uy_min, node_Uz_max, node_Uz_min,
 		node_Uphi_x_max, node_Uphi_x_min, node_Uphi_y_max, node_Uphi_y_min,
 		node_Uphi_z_max, node_Uphi_z_min;
-	IMDIM max_moment_el, min_moment_el, max_moment_integ, min_moment_integ,
-		max_curve_el, min_curve_el, max_curve_integ, min_curve_integ;
-	ISDIM max_stress_el, min_stress_el, max_stress_integ, min_stress_integ,
-		max_strain_el, min_strain_el, max_strain_integ, min_strain_integ;
+	IMDIM el_moment_max, el_moment_min, integ_moment_max, integ_moment_min,
+		el_curve_max, el_curve_min, integ_curve_max, integ_curve_min;
+	ISDIM el_stress_max, el_stress_min, integ_stress_max, integ_stress_min,
+		el_strain_max, el_strain_min, integ_strain_max, integ_strain_min;
 	FILE *bmdata;
 
 /*   bmdata contains all the parameters and extreme values
 */
-        bmdata = fopen( "bmview.dat","w" );
+	bmdata = fopen( "bmview.dat","w" );
 
 /* Initialize parameters */
 
@@ -84,39 +84,39 @@ int bmparameter(double *coord, CURVATURE *curve, MOMENT *moment,
 	max_Uphi_y = - BIG; min_Uphi_y = BIG;
 	max_Uphi_z = - BIG; min_Uphi_z = BIG;
 
-	node_Ux_max = 0; node_Ux_min = IBIG;
-	node_Uy_max = 0; node_Uy_min = IBIG;
-	node_Uz_max = 0; node_Uz_min = IBIG;
+	node_Ux_max = 0; node_Ux_min = 0;
+	node_Uy_max = 0; node_Uy_min = 0;
+	node_Uz_max = 0; node_Uz_min = 0;
 
-	node_Uphi_x_max = 0; node_Uphi_x_min = IBIG;
-	node_Uphi_y_max = 0; node_Uphi_y_min = IBIG;
-	node_Uphi_z_max = 0; node_Uphi_z_min = IBIG;
+	node_Uphi_x_max = 0; node_Uphi_x_min = 0;
+	node_Uphi_y_max = 0; node_Uphi_y_min = 0;
+	node_Uphi_z_max = 0; node_Uphi_z_min = 0;
 
-	max_curve_el.xx = 0; min_curve_el.xx = IBIG;
-	max_curve_el.yy = 0; min_curve_el.yy = IBIG;
-	max_curve_el.zz = 0; min_curve_el.zz = IBIG;
-	max_strain_el.xx = 0; min_strain_el.xx = IBIG;
-	max_strain_el.xy = 0; min_strain_el.xy = IBIG;
-	max_strain_el.zx = 0; min_strain_el.zx = IBIG;
-	max_curve_integ.xx = 0; min_curve_integ.xx = IBIG;
-	max_curve_integ.yy = 0; min_curve_integ.yy = IBIG;
-	max_curve_integ.zz = 0; min_curve_integ.zz = IBIG;
-	max_strain_integ.xx = 0; min_strain_integ.xx = IBIG;
-	max_strain_integ.xy = 0; min_strain_integ.xy = IBIG;
-	max_strain_integ.zx = 0; min_strain_integ.zx = IBIG;
+	el_curve_max.xx = 0; el_curve_min.xx = 0;
+	el_curve_max.yy = 0; el_curve_min.yy = 0;
+	el_curve_max.zz = 0; el_curve_min.zz = 0;
+	el_strain_max.xx = 0; el_strain_min.xx = 0;
+	el_strain_max.xy = 0; el_strain_min.xy = 0;
+	el_strain_max.zx = 0; el_strain_min.zx = 0;
+	integ_curve_max.xx = 0; integ_curve_min.xx = 0;
+	integ_curve_max.yy = 0; integ_curve_min.yy = 0;
+	integ_curve_max.zz = 0; integ_curve_min.zz = 0;
+	integ_strain_max.xx = 0; integ_strain_min.xx = 0;
+	integ_strain_max.xy = 0; integ_strain_min.xy = 0;
+	integ_strain_max.zx = 0; integ_strain_min.zx = 0;
 
-	max_moment_el.xx = 0; min_moment_el.xx = IBIG;
-	max_moment_el.yy = 0; min_moment_el.yy = IBIG;
-	max_moment_el.zz = 0; min_moment_el.zz = IBIG;
-	max_stress_el.xx = 0; min_stress_el.xx = IBIG;
-	max_stress_el.xy = 0; min_stress_el.xy = IBIG;
-	max_stress_el.zx = 0; min_stress_el.zx = IBIG;
-	max_moment_integ.xx = 0; min_moment_integ.xx = IBIG;
-	max_moment_integ.yy = 0; min_moment_integ.yy = IBIG;
-	max_moment_integ.zz = 0; min_moment_integ.zz = IBIG;
-	max_stress_integ.xx = 0; min_stress_integ.xx = IBIG;
-	max_stress_integ.xy = 0; min_stress_integ.xy= IBIG;
-	max_stress_integ.zx = 0; min_stress_integ.zx = IBIG;
+	el_moment_max.xx = 0; el_moment_min.xx = 0;
+	el_moment_max.yy = 0; el_moment_min.yy = 0;
+	el_moment_max.zz = 0; el_moment_min.zz = 0;
+	el_stress_max.xx = 0; el_stress_min.xx = 0;
+	el_stress_max.xy = 0; el_stress_min.xy = 0;
+	el_stress_max.zx = 0; el_stress_min.zx = 0;
+	integ_moment_max.xx = 0; integ_moment_min.xx = 0;
+	integ_moment_max.yy = 0; integ_moment_min.yy = 0;
+	integ_moment_max.zz = 0; integ_moment_min.zz = 0;
+	integ_stress_max.xx = 0; integ_stress_min.xx = 0;
+	integ_stress_max.xy = 0; integ_stress_min.xy= 0;
+	integ_stress_max.zx = 0; integ_stress_min.zx = 0;
 
 /* Initialize for largest and smallest curvatures and strains */
 
@@ -261,13 +261,13 @@ int bmparameter(double *coord, CURVATURE *curve, MOMENT *moment,
 	{
 		for( i = 0; i < numnp; ++i )
 		{
-                        *(coord+nsd*i) /= coord_rescale;
-                        *(coord+nsd*i+1) /= coord_rescale;
-                        *(coord+nsd*i+2) /= coord_rescale;
+			*(coord+nsd*i) /= coord_rescale;
+			*(coord+nsd*i+1) /= coord_rescale;
+			*(coord+nsd*i+2) /= coord_rescale;
 
-                        *(U+ndof*i) /= coord_rescale;
-                        *(U+ndof*i+1) /= coord_rescale;
-                        *(U+ndof*i+2) /= coord_rescale;
+			*(U+ndof*i) /= coord_rescale;
+			*(U+ndof*i+1) /= coord_rescale;
+			*(U+ndof*i+2) /= coord_rescale;
 
 		}
 
@@ -300,7 +300,7 @@ int bmparameter(double *coord, CURVATURE *curve, MOMENT *moment,
 	if( absolute_max_U < fabs(max_Uz))
 		absolute_max_U = fabs(max_Uz);
 
-        if( init_far > true_far)
+	if( init_far > true_far)
 		init_far=true_far;
 
 	for( i = 0; i < numel; ++i )
@@ -313,148 +313,148 @@ int bmparameter(double *coord, CURVATURE *curve, MOMENT *moment,
 		if( max_curve.xx < curve[i].pt[j].xx )
 		{
 			max_curve.xx = curve[i].pt[j].xx;
-			max_curve_el.xx = i;
-			max_curve_integ.xx = j;
+			el_curve_max.xx = i;
+			integ_curve_max.xx = j;
 		}
 		if( min_curve.xx > curve[i].pt[j].xx )
 		{
 			min_curve.xx = curve[i].pt[j].xx;
-			min_curve_el.xx = i;
-			min_curve_integ.xx = j;
+			el_curve_min.xx = i;
+			integ_curve_min.xx = j;
 		}
 		if( max_curve.yy < curve[i].pt[j].yy )
 		{
 			max_curve.yy = curve[i].pt[j].yy;
-			max_curve_el.yy = i;
-			max_curve_integ.yy = j;
+			el_curve_max.yy = i;
+			integ_curve_max.yy = j;
 		}
 		if( min_curve.yy > curve[i].pt[j].yy )
 		{
 			min_curve.yy = curve[i].pt[j].yy;
-			min_curve_el.yy = i;
-			min_curve_integ.yy = j;
+			el_curve_min.yy = i;
+			integ_curve_min.yy = j;
 		}
 		if( max_curve.zz < curve[i].pt[j].zz )
 		{
 			max_curve.zz = curve[i].pt[j].zz;
-			max_curve_el.zz = i;
-			max_curve_integ.zz = j;
+			el_curve_max.zz = i;
+			integ_curve_max.zz = j;
 		}
 		if( min_curve.zz > curve[i].pt[j].zz )
 		{
 			min_curve.zz = curve[i].pt[j].zz;
-			min_curve_el.zz = i;
-			min_curve_integ.zz = j;
+			el_curve_min.zz = i;
+			integ_curve_min.zz = j;
 		}
 		if( max_strain.xx < strain[i].pt[j].xx )
 		{
 			max_strain.xx = strain[i].pt[j].xx;
-			max_strain_el.xx = i;
-			max_strain_integ.xx = j;
+			el_strain_max.xx = i;
+			integ_strain_max.xx = j;
 		}
 		if( min_strain.xx > strain[i].pt[j].xx )
 		{
 			min_strain.xx = strain[i].pt[j].xx;
-			min_strain_el.xx = i;
-			min_strain_integ.xx = j;
+			el_strain_min.xx = i;
+			integ_strain_min.xx = j;
 		}
 		if( max_strain.xy < strain[i].pt[j].xy )
 		{
 			max_strain.xy = strain[i].pt[j].xy;
-			max_strain_el.xy = i;
-			max_strain_integ.xy = j;
+			el_strain_max.xy = i;
+			integ_strain_max.xy = j;
 		}
 		if( min_strain.xy > strain[i].pt[j].xy )
 		{
 			min_strain.xy = strain[i].pt[j].xy;
-			min_strain_el.xy = i;
-			min_strain_integ.xy = j;
+			el_strain_min.xy = i;
+			integ_strain_min.xy = j;
 		}
 		if( max_strain.zx < strain[i].pt[j].zx )
 		{
 			max_strain.zx = strain[i].pt[j].zx;
-			max_strain_el.zx = i;
-			max_strain_integ.zx = j;
+			el_strain_max.zx = i;
+			integ_strain_max.zx = j;
 		}
 		if( min_strain.zx > strain[i].pt[j].zx )
 		{
 			min_strain.zx = strain[i].pt[j].zx;
-			min_strain_el.zx = i;
-			min_strain_integ.zx = j;
+			el_strain_min.zx = i;
+			integ_strain_min.zx = j;
 		}
 /* Find extreme moments and stresses */
 
 		if( max_moment.xx < moment[i].pt[j].xx )
 		{
 			max_moment.xx = moment[i].pt[j].xx;
-			max_moment_el.xx = i;
-			max_moment_integ.xx = j;
+			el_moment_max.xx = i;
+			integ_moment_max.xx = j;
 		}
 		if( min_moment.xx > moment[i].pt[j].xx )
 		{
 			min_moment.xx = moment[i].pt[j].xx;
-			min_moment_el.xx = i;
-			min_moment_integ.xx = j;
+			el_moment_min.xx = i;
+			integ_moment_min.xx = j;
 		}
 		if( max_moment.yy < moment[i].pt[j].yy )
 		{
 			max_moment.yy = moment[i].pt[j].yy;
-			max_moment_el.yy = i;
-			max_moment_integ.yy = j;
+			el_moment_max.yy = i;
+			integ_moment_max.yy = j;
 		}
 		if( min_moment.yy > moment[i].pt[j].yy )
 		{
 			min_moment.yy = moment[i].pt[j].yy;
-			min_moment_el.yy = i;
-			min_moment_integ.yy = j;
+			el_moment_min.yy = i;
+			integ_moment_min.yy = j;
 		}
 		if( max_moment.zz < moment[i].pt[j].zz )
 		{
 			max_moment.zz = moment[i].pt[j].zz;
-			max_moment_el.zz = i;
-			max_moment_integ.zz = j;
+			el_moment_max.zz = i;
+			integ_moment_max.zz = j;
 		}
 		if( min_moment.zz > moment[i].pt[j].zz )
 		{
 			min_moment.zz = moment[i].pt[j].zz;
-			min_moment_el.zz = i;
-			min_moment_integ.zz = j;
+			el_moment_min.zz = i;
+			integ_moment_min.zz = j;
 		}
 		if( max_stress.xx < stress[i].pt[j].xx )
 		{
 			max_stress.xx = stress[i].pt[j].xx;
-			max_stress_el.xx = i;
-			max_stress_integ.xx = j;
+			el_stress_max.xx = i;
+			integ_stress_max.xx = j;
 		}
 		if( min_stress.xx > stress[i].pt[j].xx )
 		{
 			min_stress.xx = stress[i].pt[j].xx;
-			min_stress_el.xx = i;
-			min_stress_integ.xx = j;
+			el_stress_min.xx = i;
+			integ_stress_min.xx = j;
 		}
 		if( max_stress.xy < stress[i].pt[j].xy )
 		{
 			max_stress.xy = stress[i].pt[j].xy;
-			max_stress_el.xy = i;
-			max_stress_integ.xy = j;
+			el_stress_max.xy = i;
+			integ_stress_max.xy = j;
 		}
 		if( min_stress.xy > stress[i].pt[j].xy )
 		{
 			min_stress.xy = stress[i].pt[j].xy;
-			min_stress_el.xy = i;
-			min_stress_integ.xy = j;
+			el_stress_min.xy = i;
+			integ_stress_min.xy = j;
 		}
 		if( max_stress.zx < stress[i].pt[j].zx )
 		{
 			max_stress.zx = stress[i].pt[j].zx;
-			max_stress_el.zx = i;
-			max_stress_integ.zx = j;
+			el_stress_max.zx = i;
+			integ_stress_max.zx = j;
 		}
 		if( min_stress.zx > stress[i].pt[j].zx )
 		{
 			min_stress.zx = stress[i].pt[j].zx;
-			min_stress_el.zx = i;
-			min_stress_integ.zx = j;
+			el_stress_min.zx = i;
+			integ_stress_min.zx = j;
 		}
 	    }
 	}
@@ -583,45 +583,45 @@ int bmparameter(double *coord, CURVATURE *curve, MOMENT *moment,
 	fprintf( bmdata,"\n");
 	fprintf( bmdata, "                        el. gauss pt.\n");
 	fprintf( bmdata, "                        min       max         min           max\n");
-	fprintf( bmdata,"moment xx            %5d %2d %5d %2d  %14.6e %14.6e\n", min_moment_el.xx,
-		min_moment_integ.xx, max_moment_el.xx, max_moment_integ.xx,
+	fprintf( bmdata,"moment xx            %5d %2d %5d %2d  %14.6e %14.6e\n", el_moment_min.xx,
+		integ_moment_min.xx, el_moment_max.xx, integ_moment_max.xx,
 		min_moment.xx, max_moment.xx);
-	fprintf( bmdata,"moment yy            %5d %2d %5d %2d  %14.6e %14.6e\n", min_moment_el.yy,
-		min_moment_integ.yy, max_moment_el.yy, max_moment_integ.yy,
+	fprintf( bmdata,"moment yy            %5d %2d %5d %2d  %14.6e %14.6e\n", el_moment_min.yy,
+		integ_moment_min.yy, el_moment_max.yy, integ_moment_max.yy,
 		min_moment.yy, max_moment.yy);
-	fprintf( bmdata,"moment zz            %5d %2d %5d %2d  %14.6e %14.6e\n", min_moment_el.zz,
-		min_moment_integ.zz, max_moment_el.zz, max_moment_integ.zz,
+	fprintf( bmdata,"moment zz            %5d %2d %5d %2d  %14.6e %14.6e\n", el_moment_min.zz,
+		integ_moment_min.zz, el_moment_max.zz, integ_moment_max.zz,
 		min_moment.zz, max_moment.zz);
-	fprintf( bmdata,"stress xx            %5d %2d %5d %2d  %14.6e %14.6e\n", min_stress_el.xx,
-		min_stress_integ.xx, max_stress_el.xx, max_stress_integ.xx,
+	fprintf( bmdata,"stress xx            %5d %2d %5d %2d  %14.6e %14.6e\n", el_stress_min.xx,
+		integ_stress_min.xx, el_stress_max.xx, integ_stress_max.xx,
 		min_stress.xx, max_stress.xx);
-	fprintf( bmdata,"stress xy            %5d %2d %5d %2d  %14.6e %14.6e\n", min_stress_el.xy,
-		min_stress_integ.xy, max_stress_el.xy, max_stress_integ.xy,
+	fprintf( bmdata,"stress xy            %5d %2d %5d %2d  %14.6e %14.6e\n", el_stress_min.xy,
+		integ_stress_min.xy, el_stress_max.xy, integ_stress_max.xy,
 		min_stress.xy, max_stress.xy);
-	fprintf( bmdata,"stress zx            %5d %2d %5d %2d  %14.6e %14.6e\n", min_stress_el.zx,
-		min_stress_integ.zx, max_stress_el.zx, max_stress_integ.zx,
+	fprintf( bmdata,"stress zx            %5d %2d %5d %2d  %14.6e %14.6e\n", el_stress_min.zx,
+		integ_stress_min.zx, el_stress_max.zx, integ_stress_max.zx,
 		min_stress.zx, max_stress.zx);
 	fprintf( bmdata,"\n");
-	fprintf( bmdata,"curve xx             %5d %2d %5d %2d  %14.6e %14.6e\n", min_curve_el.xx,
-		min_curve_integ.xx, max_curve_el.xx, max_curve_integ.xx,
+	fprintf( bmdata,"curve xx             %5d %2d %5d %2d  %14.6e %14.6e\n", el_curve_min.xx,
+		integ_curve_min.xx, el_curve_max.xx, integ_curve_max.xx,
 		min_curve.xx, max_curve.xx);
-	fprintf( bmdata,"curve yy             %5d %2d %5d %2d  %14.6e %14.6e\n", min_curve_el.yy,
-		min_curve_integ.yy, max_curve_el.yy, max_curve_integ.yy,
+	fprintf( bmdata,"curve yy             %5d %2d %5d %2d  %14.6e %14.6e\n", el_curve_min.yy,
+		integ_curve_min.yy, el_curve_max.yy, integ_curve_max.yy,
 		min_curve.yy, max_curve.yy);
-	fprintf( bmdata,"curve zz             %5d %2d %5d %2d  %14.6e %14.6e\n", min_curve_el.zz,
-		min_curve_integ.zz, max_curve_el.zz, max_curve_integ.zz,
+	fprintf( bmdata,"curve zz             %5d %2d %5d %2d  %14.6e %14.6e\n", el_curve_min.zz,
+		integ_curve_min.zz, el_curve_max.zz, integ_curve_max.zz,
 		min_curve.zz, max_curve.zz);
-	fprintf( bmdata,"strain xx            %5d %2d %5d %2d  %14.6e %14.6e\n", min_strain_el.xx,
-		min_strain_integ.xx, max_strain_el.xx, max_strain_integ.xx,
+	fprintf( bmdata,"strain xx            %5d %2d %5d %2d  %14.6e %14.6e\n", el_strain_min.xx,
+		integ_strain_min.xx, el_strain_max.xx, integ_strain_max.xx,
 		min_strain.xx, max_strain.xx);
-	fprintf( bmdata,"strain xy            %5d %2d %5d %2d  %14.6e %14.6e\n", min_strain_el.xy,
-		min_strain_integ.xy, max_strain_el.xy, max_strain_integ.xy,
+	fprintf( bmdata,"strain xy            %5d %2d %5d %2d  %14.6e %14.6e\n", el_strain_min.xy,
+		integ_strain_min.xy, el_strain_max.xy, integ_strain_max.xy,
 		min_strain.xy, max_strain.xy);
-	fprintf( bmdata,"strain zx            %5d %2d %5d %2d  %14.6e %14.6e\n", min_strain_el.zx,
-		min_strain_integ.zx, max_strain_el.zx, max_strain_integ.zx,
+	fprintf( bmdata,"strain zx            %5d %2d %5d %2d  %14.6e %14.6e\n", el_strain_min.zx,
+		integ_strain_min.zx, el_strain_max.zx, integ_strain_max.zx,
 		min_strain.zx, max_strain.zx);
 	fprintf( bmdata,"\n");
-	fprintf( bmdata,"Orthographic viewport parameters(right, left, top, bootom, near, far)\n ");
+	fprintf( bmdata,"Orthographic viewport parameters(right, left, top, bottom, near, far)\n ");
 	fprintf( bmdata,"%14.6e %14.6e %14.6e %14.6e %14.6e %14.6e\n", ortho_right, ortho_left,
 		ortho_top, ortho_bottom, near, 1000.0);
 	fprintf( bmdata,"Perspective viewport parameters( mesh width and height)\n ");
@@ -633,6 +633,6 @@ int bmparameter(double *coord, CURVATURE *curve, MOMENT *moment,
 
 	fclose( bmdata );
 
-  	return 1;    /* ANSI C requires main to return int. */
+	return 1;    /* ANSI C requires main to return int. */
 }
 

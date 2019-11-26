@@ -3,11 +3,11 @@
     element program which does analysis on a truss which can behave
     nonlinearly.  The equations are solved using dynamic relaxation.
 
-        Updated 1/20/03
+        Updated 3/15/06
 
     SLFFEA source file
     Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002  San Le 
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -80,7 +80,12 @@ int tsFMassemble(int *connect, double *coord, double *coordh, int *el_matl,
 
 		jacob = L/2.0;
 
-/* Assembly of the rotation matrix */
+/* Assembly of the rotation matrix.  In the linear truss, I 
+   pre-assemble the rotation matrix with the length to expediate 
+   calculations.  This cannot be done for the non-linear truss  
+   though, because the coordinate are being continually updated  
+   with each time step.
+*/
 
 		memset(rotate,0,npel*neqel*sof);
 		*(rotate) = Lxh;

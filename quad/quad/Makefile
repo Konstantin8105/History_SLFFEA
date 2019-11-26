@@ -1,5 +1,5 @@
 # SLFFEA Makefile
-# Version:  1.3
+# Version:  1.4
 # Copyright (C) 1999, 2000  San Le (slffea@yahoo.com)
 # http://slffea.com/
 #
@@ -31,21 +31,22 @@ COMMON = ../../common
 OBJECTS = $(COMMON)/matxt.o $(COMMON)/matx.o $(COMMON)/dotx.o \
 	$(COMMON)/lm.o $(COMMON)/idiag.o $(COMMON)/kasmbl.o \
 	$(COMMON)/sky.o $(COMMON)/qr.o $(COMMON)/eigen.o \
-	$(COMMON)/eigenprint.o
+	$(COMMON)/eigenprint.o $(COMMON)/crossx.o \
+	$(COMMON)/rotate2.o $(COMMON)/rotate3.o $(COMMON)/local_vec.o
 
 PROGS = qd qdp
 
 all: qd qdp
 
 qd: femqd.o \
-		qdmemory.o \
+		memory.o \
 		qdreader.o \
-		qdid.o \
+		id.o \
 		qdshape.o \
 		quadb.o \
 		qdkasmbl.o\
 		qdconj.o\
-		qdbound.o \
+		bound.o \
 		qdstress.o\
 		qdmasmbl.o\
 		qdlanczos.o\
@@ -55,14 +56,14 @@ qd: femqd.o \
 		qdconst.h \
 		qdstruct.h
 	$(CC) -o qd femqd.o \
-		qdmemory.o \
+		memory.o \
 		qdreader.o \
-		qdid.o \
+		id.o \
 		qdshape.o \
 		quadb.o \
 		qdkasmbl.o\
 		qdconj.o\
-		qdbound.o \
+		bound.o \
 		qdstress.o\
 		qdmasmbl.o\
 		qdlanczos.o\
@@ -95,8 +96,8 @@ qdmasmbl.o: qdmasmbl.c
 qdstress.o: qdstress.c
 	$(CC) -c qdstress.c
 
-qdbound.o: qdbound.c
-	$(CC) -c qdbound.c 
+bound.o: $(COMMON)/bound.c
+	$(CC) -c $(COMMON)/bound.c -DQUAD1
 
 qdconj.o: qdconj.c
 	$(CC) -c qdconj.c
@@ -110,14 +111,14 @@ quadb.o: quadb.c
 qdshape.o: qdshape.c
 	$(CC) -c qdshape.c 
 
-qdid.o: qdid.c
-	$(CC) -c qdid.c
+id.o: $(COMMON)/id.c
+	$(CC) -c $(COMMON)/id.c -DQUAD1
 
 qdreader.o: qdreader.c
 	$(CC) -c qdreader.c
 
-qdmemory.o: qdmemory.c
-	$(CC) -c qdmemory.c
+memory.o: $(COMMON)/memory.c
+	$(CC) -c $(COMMON)/memory.c -DQUAD1
 
 femqd.o: femqd.c
 	$(CC) -c femqd.c

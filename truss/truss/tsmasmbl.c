@@ -3,11 +3,11 @@
     finite element program which does analysis on a truss.  It is for
     modal analysis.
 
-		 Updated 1/15/03
+		 Updated 8/22/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -33,17 +33,17 @@ int matXrot(double *, double *, double *, int, int);
 
 int rotXmat(double *, double *, double *, int, int);
 
-int tsMassemble( int *connect, double *coord, int *el_matl, int *id, double *mass,
-	MATL *matl)
+int tsMassemble( int *connect, double *coord, int *el_matl, int *id, double *length,
+        double *local_xyz, double *mass, MATL *matl)
 {
-        int i, i1, i2, i3, j, k, ij, dof_el[neqel];
+	int i, i1, i2, i3, j, k, ij, dof_el[neqel];
 	int check, counter, dum, node0, node1;
-        int matl_num, el_num, type_num;
-        double area, rho, fdum, fdum2;
-        double L, Lx, Ly, Lz, Lsq, Lxysq;
-        double M_temp[neqlsq], M_el[neqlsq], mass_el[neqel],
-		mass_local[neqlsq], rotate[nsdsq], rotateT[nsdsq];
-        double jacob;
+	int matl_num, el_num, type_num;
+	double area, rho, fdum, fdum2;
+	double L, Lsq;
+	double M_temp[neqlsq], M_el[neqlsq], mass_el[neqel],
+		mass_local[neqlsq], rotate[nsdsq];
+	double jacob;
 
 	for( k = 0; k < numel; ++k )
 	{
@@ -53,83 +53,25 @@ int tsMassemble( int *connect, double *coord, int *el_matl, int *id, double *mas
 
 		node0 = *(connect+k*npel);
 		node1 = *(connect+k*npel+1);
-		Lx = *(coord+nsd*node1) - *(coord+nsd*node0);
-		Ly = *(coord+nsd*node1+1) - *(coord+nsd*node0+1);
-		Lz = *(coord+nsd*node1+2) - *(coord+nsd*node0+2);
 
-		/*printf(" Lx, Ly, Lz %f %f %f\n ", Lx, Ly, Lz);*/
-
-		Lsq = Lx*Lx+Ly*Ly+Lz*Lz;
-		L = sqrt(Lsq);
-		Lx /= L; Ly /= L; Lz /= L;
+		L = *(length + k);
+		Lsq = L*L;
 		jacob = L/2.0;
-
-		Lxysq = Lx*Lx + Ly*Ly;
-		Lxysq = sqrt(Lxysq);
 
 /* Assembly of the 3X3 rotation matrix for the 6X6 global rotation
    matrix */
 
 		memset(rotate,0,nsdsq*sof);
-		*(rotate) = Lx;
-		*(rotate+1) = Ly;
-		*(rotate+2) = Lz;
-		*(rotate+3) = -Ly/Lxysq;
-		*(rotate+4) = Lx/Lxysq;
-		*(rotate+5) = 0.0;
-		*(rotate+6) = -Lx*Lz/Lxysq;
-		*(rotate+7) = -Ly*Lz/Lxysq;
-		*(rotate+8) = Lxysq;
 
-/* Assembly of the 3X3 transposed rotation matrix for the 6X6 global rotation
-   matrix.  The mechanism below for calculating rotations is based on the method
-   givin in the book, "A First Course in the Finite Element
-   Method 2nd Ed." by Daryl L. Logan and my own.  See pages 236-239 in:
-
-     Logan, Daryl L., A First Course in the Finite Element Method 2nd Ed., PWS-KENT,
-        1992.
- */
-
-		memset(rotateT,0,nsdsq*sof);
-		*(rotateT) = Lx;
-		*(rotateT+1) = -Ly/Lxysq;
-		*(rotateT+2) = -Lx*Lz/Lxysq;
-		*(rotateT+3) = Ly;
-		*(rotateT+4) = Lx/Lxysq;
-		*(rotateT+5) = -Ly*Lz/Lxysq;
-		*(rotateT+6) = Lz;
-		*(rotateT+7) = 0.0;
-		*(rotateT+8) = Lxysq;
-
-/* If local x axis lies on global z axis, modify rotate and rotateT */
-
-		if(Lz > ONE)
-		{
-			/*printf("%d %f\n", k, *(rotate+2)); */
-			memset(rotate,0,nsdsq*sof);
-			memset(rotateT,0,nsdsq*sof);
-			*(rotate+2) = 1.0;
-			*(rotate+4) = 1.0;
-			*(rotate+6) = -1.0;
-
-			*(rotateT+2) = -1.0;
-			*(rotateT+4) = 1.0;
-			*(rotateT+6) = 1.0;
-		}
-
-		if(Lz < -ONE)
-		{
-			/*printf("%d %f\n", k, *(rotate+2)); */
-			memset(rotate,0,nsdsq*sof);
-			memset(rotateT,0,nsdsq*sof);
-			*(rotate+2) = -1.0;
-			*(rotate+4) = 1.0;
-			*(rotate+6) = 1.0;
-
-			*(rotateT+2) = 1.0;
-			*(rotateT+4) = 1.0;
-			*(rotateT+6) = -1.0;
-		}
+		*(rotate)     = *(local_xyz + nsdsq*k);
+		*(rotate + 1) = *(local_xyz + nsdsq*k + 1);
+		*(rotate + 2) = *(local_xyz + nsdsq*k + 2);
+		*(rotate + 3) = *(local_xyz + nsdsq*k + 3);
+		*(rotate + 4) = *(local_xyz + nsdsq*k + 4);
+		*(rotate + 5) = *(local_xyz + nsdsq*k + 5);
+		*(rotate + 6) = *(local_xyz + nsdsq*k + 6);
+		*(rotate + 7) = *(local_xyz + nsdsq*k + 7);
+		*(rotate + 8) = *(local_xyz + nsdsq*k + 8);
 
 /* defining the components of a el element vector */
 
@@ -140,16 +82,18 @@ int tsMassemble( int *connect, double *coord, int *el_matl, int *id, double *mas
 		*(dof_el+4)=ndof*node1+1;
 		*(dof_el+5)=ndof*node1+2;
 
-		memset(M_el,0,neqlsq*sof);
-		memset(mass_el,0,neqel*sof);
-
 		fdum = .5*rho*area*L;
+
+		memset(M_el,0,neqlsq*sof);
+		memset(M_temp,0,neqlsq*sof);
+		memset(mass_el,0,neqel*sof);
 
 /* The mass matrix below comes from equation 10.81 on page 279 of:
 
      Przemieniecki, J. S., Theory of Matrix Structural Analysis, Dover
         Publications Inc., New York, 1985.
 */
+
 
 /* row 0 */
 		*(M_el) = 1.0/3.0;
@@ -181,8 +125,8 @@ int tsMassemble( int *connect, double *coord, int *el_matl, int *id, double *mas
 		check = matXrot(M_temp, M_el, rotate, neqel, neqel);
 		if(!check) printf( "error with matXrot \n");
 
-		check = rotXmat(M_el, rotateT, M_temp, neqel, neqel);
-		if(!check) printf( "error with rotXmat \n");
+		check = rotTXmat(M_el, rotate, M_temp, neqel, neqel);
+		if(!check) printf( "error with rotTXmat \n");
 
 		if(lumped_mass_flag)
 		{

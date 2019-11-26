@@ -1,5 +1,5 @@
 
-                             SLFFEA 1.3
+                             SLFFEA 1.4
 
                     Copyright (C) 1999, 2000, 2001, 2002 San Le
 
@@ -15,17 +15,22 @@ the GNU license.
 What's Inside:
 -------------
 
-9 of the basic finite elements types:
+14 of the basic finite elements types:
 
-1. beam             3-D 2 node beam
-2. brick            3-D 8 node brick
-3. plate            2-D 4 node plate
-4. quad             2-D 4 node quad - plane stress and plane strain
-5. shell            3-D 4 node doubly curved shell (individual element defined by 4 or 8 nodes)
-6. tetrahedron      3-D 4 node tetrahedron
-7. triangle         2-D 3 node triangle
-8. truss            3-D 2 node truss
-9. wedge            3-D 6 node wedge
+1.  beam             3-D 2 node beam
+2.  brick            3-D 8 node brick
+3.  plate            2-D 3 node plate (added on 11/11/06):
+4.  plate            2-D 4 node plate
+5.  plate            3-D 3 node plate with membrane properties (added on 11/11/06):
+6.  plate            3-D 4 node plate with membrane properties (added on 11/11/06):
+7.  quad             2-D 4 node quad - plane stress and plane strain
+8.  quad             3-D 4 node quad - plane stress and plane strain membrane (added on 11/11/06):
+9.  shell            3-D 4 node doubly curved shell (individual element defined by 4 or 8 nodes)
+10. tetrahedron      3-D 4 node tetrahedron
+11. triangle         2-D 3 node triangle - plane stress and plane strain
+12. triangle         3-D 3 node triangle - plane stress and plane strain membrane (added on 11/11/06):
+13. truss            3-D 2 node truss
+14. wedge            3-D 6 node wedge
 
 1 non-linear large deformation element:
 

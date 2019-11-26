@@ -1,5 +1,5 @@
 # SLFFEA Makefile
-# Version:  1.3
+# Version:  1.4
 # Copyright (C) 1999, 2000  San Le (slffea@yahoo.com)
 # http://slffea.com/
 #
@@ -40,10 +40,11 @@ all: ts
 ts: femtruss.o \
 		tsmemory.o \
 		tsreader.o \
-		tsid.o \
+		tslocal_vec.o \
+		id.o \
 		tskasmbl.o \
 		tsconj.o \
-		tsbound.o \
+		bound.o \
 		tsmasmbl.o \
 		tslanczos.o \
 		tsmassp.o \
@@ -54,10 +55,11 @@ ts: femtruss.o \
 	$(CC) -o ts femtruss.o \
 		tsmemory.o \
 		tsreader.o \
-		tsid.o \
+		tslocal_vec.o \
+		id.o \
 		tskasmbl.o \
 		tsconj.o \
-		tsbound.o \
+		bound.o \
 		tsmasmbl.o \
 		tslanczos.o \
 		tsmassp.o \
@@ -80,8 +82,8 @@ tslanczos.o: tslanczos.c
 tsmasmbl.o: tsmasmbl.c
 	$(CC) -c tsmasmbl.c
 
-tsbound.o: tsbound.c
-	$(CC) -c tsbound.c 
+bound.o: $(COMMON)/bound.c
+	$(CC) -c $(COMMON)/bound.c -DTRUSS1
 
 tsconj.o: tsconj.c
 	$(CC) -c tsconj.c 
@@ -89,8 +91,11 @@ tsconj.o: tsconj.c
 tskasmbl.o: tskasmbl.c
 	$(CC) -c tskasmbl.c 
 
-tsid.o: tsid.c
-	$(CC) -c tsid.c
+id.o: $(COMMON)/id.c
+	$(CC) -c $(COMMON)/id.c -DTRUSS1
+
+tslocal_vec.o: tslocal_vec.c
+	$(CC) -c tslocal_vec.c
 
 tsreader.o: tsreader.c
 	$(CC) -c tsreader.c

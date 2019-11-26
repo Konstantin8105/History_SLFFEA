@@ -1,12 +1,12 @@
 /*
     This library function reads in data for a finite element
-    program which does analysis on a shell element
+    program which does analysis on a shell element.
 
-		Updated 10/17/06
+		Updated 9/30/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -110,11 +110,11 @@ int shreader( BOUND bc, int *connect, double *coord, int *el_matl, double *force
 	for( i = 0; i < numel; ++i )
 	{
 	   fscanf( o1,"%d ",&dum);
-	   printf( "connectivity for element (%4d) ",dum);
+	   printf( "connectivity for element (%6d) ",dum);
 	   for( j = 0; j < npell; ++j )
 	   {
 		fscanf( o1, "%d",(connect+npell*dum+j));
-		printf( "%4d ",*(connect+npell*dum+j));
+		printf( "%6d ",*(connect+npell*dum+j));
 	   }
 	   fscanf( o1,"%d\n",(el_matl+dum));
 	   printf( " with matl %3d\n",*(el_matl+dum));
@@ -125,12 +125,12 @@ int shreader( BOUND bc, int *connect, double *coord, int *el_matl, double *force
 	for( i = 0; i < numnp; ++i )
 	{
 	   fscanf( o1,"%d ",&dum);
-	   printf( "coordinate (%d) ",dum);
+	   printf( "coordinate (%6d) ",dum);
 	   printf( "coordinates ");
 	   for( j = 0; j < nsd; ++j )
 	   {
 		fscanf( o1, "%lf ",(coord+nsd*dum+j));
-		printf( "%9.4f ",*(coord+nsd*dum+j));
+		printf( "%14.6e ",*(coord+nsd*dum+j));
 	   }
 	   fscanf( o1,"\n");
 	   printf( "\n");
@@ -182,12 +182,12 @@ int shreader( BOUND bc, int *connect, double *coord, int *el_matl, double *force
 	    for( i = 0; i < numnp; ++i )
 	    {
 		fscanf( o1,"%d ",&dum);
-		printf( "coordinate (%d) ",dum);
+		printf( "coordinate (%6d) ",dum);
 		printf( "coordinates ");
 		for( j = 0; j < nsd; ++j )
 		{
 		    fscanf( o1, "%lf ",(coord+nsd*(dum+numnp)+j));
-		    printf( "%9.4f ",*(coord+nsd*(dum+numnp)+j));
+		    printf( "%14.6e ",*(coord+nsd*(dum+numnp)+j));
 		}
 		fscanf( o1,"\n");
 		printf( "\n");
@@ -198,17 +198,18 @@ int shreader( BOUND bc, int *connect, double *coord, int *el_matl, double *force
 
 	dum= 0;
 	fscanf( o1,"%d",&bc.fix[dum].x);
-	printf( "node (%4d) has a x prescribed displacement of: ",bc.fix[dum].x);
+	printf( "node (%6d) has a x prescribed displacement of: ",bc.fix[dum].x);
 	while( bc.fix[dum].x > -1 )
 	{
 		fscanf( o1,"%lf\n%d",(U+ndof*bc.fix[dum].x),
 			&bc.fix[dum+1].x);
 		printf( "%14.6e\n",*(U+ndof*bc.fix[dum].x));
-		printf( "node (%4d) has a x prescribed displacement of: ",
+		printf( "node (%6d) has a x prescribed displacement of: ",
 			bc.fix[dum+1].x);
 		++dum;
 	}
 	bc.num_fix[0].x=dum;
+	if(dum > numnp) printf( "too many prescribed displacements x\n");
 	fscanf( o1,"%d",&dum);
 	fgets( buf, BUFSIZ, o1 );
 	printf( "\n\n");
@@ -216,68 +217,72 @@ int shreader( BOUND bc, int *connect, double *coord, int *el_matl, double *force
 
 	dum= 0;
 	fscanf( o1,"%d",&bc.fix[dum].y);
-	printf( "node (%4d) has a y prescribed displacement of: ",bc.fix[dum].y);
+	printf( "node (%6d) has a y prescribed displacement of: ",bc.fix[dum].y);
 	while( bc.fix[dum].y > -1 )
 	{
 		fscanf( o1,"%lf\n%d",(U+ndof*bc.fix[dum].y+1),
 			&bc.fix[dum+1].y);
 		printf( "%14.6e\n",*(U+ndof*bc.fix[dum].y+1));
-		printf( "node (%4d) has a y prescribed displacement of: ",
+		printf( "node (%6d) has a y prescribed displacement of: ",
 			bc.fix[dum+1].y);
 		++dum;
 	}
 	bc.num_fix[0].y=dum;
+	if(dum > numnp) printf( "too many prescribed displacements y\n");
 	fscanf( o1,"%d",&dum);
 	fgets( buf, BUFSIZ, o1 );
 	printf( "\n\n");
 
 	dum= 0;
 	fscanf( o1,"%d",&bc.fix[dum].z);
-	printf( "node (%4d) has a z prescribed displacement of: ",bc.fix[dum].z);
+	printf( "node (%6d) has a z prescribed displacement of: ",bc.fix[dum].z);
 	while( bc.fix[dum].z > -1 )
 	{
 		fscanf( o1,"%lf\n%d",(U+ndof*bc.fix[dum].z+2),
 			&bc.fix[dum+1].z);
 		printf( "%14.6e\n",*(U+ndof*bc.fix[dum].z+2));
-		printf( "node (%4d) has a z prescribed displacement of: ",
+		printf( "node (%6d) has a z prescribed displacement of: ",
 			bc.fix[dum+1].z);
 		++dum;
 	}
 	bc.num_fix[0].z=dum;
+	if(dum > numnp) printf( "too many prescribed displacements z\n");
 	fscanf( o1,"%d",&dum);
 	fgets( buf, BUFSIZ, o1 );
 	printf( "\n\n");
 
 	dum= 0;
 	fscanf( o1,"%d",&bc.fix[dum].phix);
-	printf( "node (%4d) has a prescribed angle phi x of: ",bc.fix[dum].phix);
+	printf( "node (%6d) has a prescribed angle phi x of: ",bc.fix[dum].phix);
 	while( bc.fix[dum].phix > -1 )
 	{
 		fscanf( o1,"%lf\n%d",(U+ndof*bc.fix[dum].phix+3),
 			&bc.fix[dum+1].phix);
 		printf( "%14.6e\n",*(U+ndof*bc.fix[dum].phix+3));
-		printf( "node (%4d) has a prescribed angle phi x of: ",
+		printf( "node (%6d) has a prescribed angle phi x of: ",
 			bc.fix[dum+1].phix);
 		++dum;
 	}
 	bc.num_fix[0].phix=dum;
+	if(dum > numnp) printf( "too many prescribed angles phi x\n");
 	fscanf( o1,"%d",&dum);
 	fgets( buf, BUFSIZ, o1 );
 	printf( "\n\n");
 
 	dum= 0;
 	fscanf( o1,"%d",&bc.fix[dum].phiy);
-	printf( "node (%4d) has a prescribed angle phi y of: ",bc.fix[dum].phiy);
+	printf( "node (%6d) has a prescribed angle phi y of: ",bc.fix[dum].phiy);
 	while( bc.fix[dum].phiy > -1 )
 	{
 		fscanf( o1,"%lf\n%d",(U+ndof*bc.fix[dum].phiy+4),
 			&bc.fix[dum+1].phiy);
 		printf( "%14.6e\n",*(U+ndof*bc.fix[dum].phiy+4));
-		printf( "node (%4d) has a prescribed angle phi y of: ",
+		printf( "node (%6d) has a prescribed angle phi y of: ",
 			bc.fix[dum+1].phiy);
 		++dum;
 	}
 	bc.num_fix[0].phiy=dum;
+	if(dum > numnp) printf( "too many prescribed angles phi y\n");
 	fscanf( o1,"%d",&dum);
 	fgets( buf, BUFSIZ, o1 );
 	printf( "\n\n");
@@ -285,7 +290,7 @@ int shreader( BOUND bc, int *connect, double *coord, int *el_matl, double *force
 	dum= 0;
 	printf("force vector for node: ");
 	fscanf( o1,"%d",&bc.force[dum]);
-	printf( "(%4d)",bc.force[dum]);
+	printf( "(%6d)",bc.force[dum]);
 	while( bc.force[dum] > -1 )
 	{
 	   for( j = 0; j < ndof; ++j )
@@ -298,9 +303,10 @@ int shreader( BOUND bc, int *connect, double *coord, int *el_matl, double *force
 	   printf("force vector for node: ");
 	   ++dum;
 	   fscanf( o1,"%d",&bc.force[dum]);
-	   printf( "(%4d)",bc.force[dum]);
+	   printf( "(%6d)",bc.force[dum]);
 	}
 	bc.num_force[0]=dum;
+	if(dum > numnp) printf( "too many forces\n");
 	fscanf( o1,"%d",&dum);
 	fgets( buf, BUFSIZ, o1 );
 	printf( "\n\n");
@@ -309,7 +315,7 @@ int shreader( BOUND bc, int *connect, double *coord, int *el_matl, double *force
 	{
 	   printf("stress for node: ");
 	   fscanf( o1,"%d",&dum);
-	   printf( "(%4d)",dum);
+	   printf( "(%6d)",dum);
 	   while( dum > -1 )
 	   {
 		fscanf( o1,"%lf ",&stress_node[dum].xx);
@@ -326,7 +332,7 @@ int shreader( BOUND bc, int *connect, double *coord, int *el_matl, double *force
 		printf( "\n");
 		printf("stress for node: ");
 		fscanf( o1,"%d",&dum);
-		printf( "(%4d)",dum);
+		printf( "(%6d)",dum);
 	   }
 	}
 	printf( "\n\n");
@@ -337,7 +343,7 @@ int shreader( BOUND bc, int *connect, double *coord, int *el_matl, double *force
 	   printf( "\n\n");
 	   printf("stress for ele: ");
 	   fscanf( o4,"%d",&dum);
-	   printf( "(%4d)",dum);
+	   printf( "(%6d)",dum);
 	   while( dum > -1 )
 	   {
 		fscanf( o4,"%d",&dum2);
@@ -356,7 +362,7 @@ int shreader( BOUND bc, int *connect, double *coord, int *el_matl, double *force
 		printf( "\n");
 		printf("stress for ele: ");
 		fscanf( o4,"%d",&dum);
-		printf( "(%4d)",dum);
+		printf( "(%6d)",dum);
 	   }
 	}
 	printf( "\n\n");

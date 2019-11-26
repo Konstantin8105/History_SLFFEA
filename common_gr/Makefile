@@ -1,5 +1,5 @@
 # SLFFEA Makefile
-# Version:  1.3
+# Version:  1.4
 # Copyright (C) 1999, 2000, 2001, 2002  San Le (slffea@yahoo.com)
 # http://slffea.com/
 #

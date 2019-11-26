@@ -6,7 +6,7 @@
 	Updated 2/1/00
 
     SLFFEA source file
-    Version:  1.3
+    Version:  1.4
     Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
@@ -20,10 +20,10 @@
 #include <string.h>
 #include <math.h>
 
-int matX(double *C,double *A,double *B, int n,int m,int p)
+int matX(double *C, double *A, double *B, int n, int m, int p)
 {
-	int i,j,k;
-	memset(C,0,n*m*sizeof(double));
+	int i, j, k;
+	memset(C, 0, n*m*sizeof(double));
 	for( i = 0; i < n; ++i )
 	{
 	   for( j = 0; j < m; ++j )
@@ -32,7 +32,7 @@ int matX(double *C,double *A,double *B, int n,int m,int p)
 		{
 		   *(C+m*i+j) += (*(A+p*i+k))*(*(B+m*k+j));
 		}
-		/*printf("%d %d %10.7f ",i,j,*(C+m*i+j));*/
+		/*printf("%d %d %10.7f ", i, j, *(C+m*i+j));*/
 	   }
 	   /*printf("\n");*/
 	}

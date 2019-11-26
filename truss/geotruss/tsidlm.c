@@ -1,6 +1,6 @@
 /*
     This utility function assembles the id and lm arrays for a finite 
-    element program which does analysis on a 2 node truss element.
+    element program which does analysis on a 2 node truss element. 
 
 		Updated 12/15/98
 

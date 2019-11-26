@@ -2,11 +2,11 @@
     This program calculates and writes the parameters for
     the FEM GUI for truss elements.
   
-   			Last Update 1/24/02
+	                Last Update 1/22/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -45,71 +45,71 @@ extern double amplify_step0;
 
 extern double init_right, init_left, init_top,
 	init_bottom, init_near, init_far, true_far, dim_max;
-extern STRESS del_stress, max_stress, min_stress;
-extern STRAIN del_strain, max_strain, min_strain;
+extern SDIM del_stress, max_stress, min_stress;
+extern SDIM del_strain, max_strain, min_strain;
 extern double max_Ux, min_Ux, del_Ux, max_Uy, min_Uy, del_Uy,
 	max_Uz, min_Uz, del_Uz, absolute_max_U, absolute_max_coord;
 
-int tsparameter( double *coord, STRAIN *strain, STRESS *stress, double *U )
+int tsparameter( double *coord, SDIM *strain, SDIM *stress, double *U )
 {
-        int i, j, check;
-        int node_Ux_max, node_Ux_min, node_Uy_max, node_Uy_min, node_Uz_max, node_Uz_min;
-        ISDIM max_stress_el, min_stress_el, max_stress_integ, min_stress_integ,
-                max_strain_el, min_strain_el, max_strain_integ, min_strain_integ;
-        FILE *tsdata;
+	int i, j, check;
+	int node_Ux_max, node_Ux_min, node_Uy_max, node_Uy_min, node_Uz_max, node_Uz_min;
+	ISDIM el_stress_max, el_stress_min, integ_stress_max, integ_stress_min,
+		el_strain_max, el_strain_min, integ_strain_max, integ_strain_min;
+	FILE *tsdata;
 
 /*   shdata contains all the parameters and extreme values
 */
-        tsdata = fopen( "tsview.dat","w" );
+	tsdata = fopen( "tsview.dat","w" );
 
 /* Initialize parameters */
 
 	step_sizex = .1; step_sizey = .1; step_sizez = .1;
-        init_right = - BIG; init_left = BIG;
+	init_right = - BIG; init_left = BIG;
 	init_top = - BIG; init_bottom = BIG;
 	init_near = - BIG; init_far = init_far0; true_far = BIG;
 	max_Ux = - BIG; min_Ux = BIG;
 	max_Uy = - BIG; min_Uy = BIG;
 	max_Uz = - BIG; min_Uz = BIG;
 
-	node_Ux_max = 0; node_Ux_min = IBIG;
-	node_Uy_max = 0; node_Uy_min = IBIG;
-	node_Uz_max = 0; node_Uz_min = IBIG;
+	node_Ux_max = 0; node_Ux_min = 0;
+	node_Uy_max = 0; node_Uy_min = 0;
+	node_Uz_max = 0; node_Uz_min = 0;
 
-	max_strain_el.xx = 0; min_strain_el.xx = IBIG;
-	max_strain_integ.xx = 0; min_strain_integ.xx = IBIG;
-	max_stress_el.xx = 0; min_stress_el.xx = IBIG;
-	max_stress_integ.xx = 0; min_stress_integ.xx = IBIG;
+	el_strain_max.xx = 0; el_strain_min.xx = 0;
+	integ_strain_max.xx = 0; integ_strain_min.xx = 0;
+	el_stress_max.xx = 0; el_stress_min.xx = 0;
+	integ_stress_max.xx = 0; integ_stress_min.xx = 0;
 
 /* Initialize for largest and smallest strains */
 
-        max_strain.xx = - BIG; min_strain.xx = BIG;
+	max_strain.xx = - BIG; min_strain.xx = BIG;
 
 /* Initialize largest and smallest stresses */
 
-        max_stress.xx = - BIG; min_stress.xx = BIG;
+	max_stress.xx = - BIG; min_stress.xx = BIG;
 
 /* Search for extreme values */
  
 /* Search for extreme values of displacement and nodal point */
 
-        for( i = 0; i < numnp; ++i )
-        {
+	for( i = 0; i < numnp; ++i )
+	{
 
 /* Search for extreme nodal coordinates for parameters when object is
    viewed orthographically */
 
-                if( init_right < *(coord+nsd*i))
-                        init_right=*(coord+nsd*i);
+		if( init_right < *(coord+nsd*i))
+			init_right=*(coord+nsd*i);
 
-                if( init_left > *(coord+nsd*i))
-                        init_left=*(coord+nsd*i);
+		if( init_left > *(coord+nsd*i))
+			init_left=*(coord+nsd*i);
 
-                if( init_top < *(coord+nsd*i+1))
-                        init_top=*(coord+nsd*i+1);
+		if( init_top < *(coord+nsd*i+1))
+			init_top=*(coord+nsd*i+1);
 
-                if( init_bottom > *(coord+nsd*i+1))
-                        init_bottom=*(coord+nsd*i+1);
+		if( init_bottom > *(coord+nsd*i+1))
+			init_bottom=*(coord+nsd*i+1);
 
 		if( init_near < *(coord+nsd*i+2))
 			init_near=*(coord+nsd*i+2);
@@ -149,7 +149,7 @@ int tsparameter( double *coord, STRAIN *strain, STRESS *stress, double *U )
 			min_Uz=*(U+ndof*i+2);
 			node_Uz_min = i;
 		}
-        }
+	}
 
 /* Because Mesa has problems with Meshes that have dimensions larger than 1000
    or smaller than .1, I am rescaling everything so that things are on the order
@@ -184,13 +184,13 @@ int tsparameter( double *coord, STRAIN *strain, STRESS *stress, double *U )
 	{
 		for( i = 0; i < numnp; ++i )
 		{
-                        *(coord+nsd*i) /= coord_rescale;
-                        *(coord+nsd*i+1) /= coord_rescale;
-                        *(coord+nsd*i+2) /= coord_rescale;
+			*(coord+nsd*i) /= coord_rescale;
+			*(coord+nsd*i+1) /= coord_rescale;
+			*(coord+nsd*i+2) /= coord_rescale;
 
-                        *(U+ndof*i) /= coord_rescale;
-                        *(U+ndof*i+1) /= coord_rescale;
-                        *(U+ndof*i+2) /= coord_rescale;
+			*(U+ndof*i) /= coord_rescale;
+			*(U+ndof*i+1) /= coord_rescale;
+			*(U+ndof*i+2) /= coord_rescale;
 
 		}
 
@@ -223,13 +223,13 @@ int tsparameter( double *coord, STRAIN *strain, STRESS *stress, double *U )
 	if( absolute_max_U < fabs(max_Uz))
 		absolute_max_U = fabs(max_Uz);
 
-        if( init_far > true_far)
+	if( init_far > true_far)
 		init_far=true_far;
 
-	max_strain_integ.xx = 0;
-	min_strain_integ.xx = 0;
-	max_stress_integ.xx = 0;
-	min_stress_integ.xx = 0;
+	integ_strain_max.xx = 0;
+	integ_strain_min.xx = 0;
+	integ_stress_max.xx = 0;
+	integ_stress_min.xx = 0;
 
 	for( i = 0; i < numel; ++i )
 	{
@@ -239,24 +239,24 @@ int tsparameter( double *coord, STRAIN *strain, STRESS *stress, double *U )
 		if( max_strain.xx < strain[i].xx )
 		{
 			max_strain.xx = strain[i].xx;
-			max_strain_el.xx = i;
+			el_strain_max.xx = i;
 		}
 		if( min_strain.xx > strain[i].xx )
 		{
 			min_strain.xx = strain[i].xx;
-			min_strain_el.xx = i;
+			el_strain_min.xx = i;
 		}
 /* Find extreme stresses */
 
 		if( max_stress.xx < stress[i].xx )
 		{
 			max_stress.xx = stress[i].xx;
-			max_stress_el.xx = i;
+			el_stress_max.xx = i;
 		}
 		if( min_stress.xx > stress[i].xx )
 		{
 			min_stress.xx = stress[i].xx;
-			min_stress_el.xx = i;
+			el_stress_min.xx = i;
 		}
 	}
 
@@ -316,10 +316,10 @@ int tsparameter( double *coord, STRAIN *strain, STRESS *stress, double *U )
 
 /* Calculate orthographic viewport parameters */
 
-        right = init_right + (init_right - init_left) / 10.0;
-        left = init_left - (init_right - init_left) / 10.0;
-        top = init_top + (init_top - init_bottom) / 10.0;
-        bottom = init_bottom - (init_top - init_bottom) / 10.0;
+	right = init_right + (init_right - init_left) / 10.0;
+	left = init_left - (init_right - init_left) / 10.0;
+	top = init_top + (init_top - init_bottom) / 10.0;
+	bottom = init_bottom - (init_top - init_bottom) / 10.0;
 	near = init_near + (init_near - init_far) / 10.0;
 	far = init_far - (init_near - init_far) / 10.0;
 
@@ -361,8 +361,8 @@ int tsparameter( double *coord, STRAIN *strain, STRESS *stress, double *U )
 	cross_sec_up_down = cross_sec_up_down0;
 	cross_sec_in_out = cross_sec_in_out0;
 
-    	mesh_width=mesh_width0;
-    	mesh_height=mesh_height0;
+	mesh_width=mesh_width0;
+	mesh_height=mesh_height0;
 
 
 /* Print the above data in the file "tsview.dat" */
@@ -378,15 +378,15 @@ int tsparameter( double *coord, STRAIN *strain, STRESS *stress, double *U )
 	fprintf( tsdata,"\n");
 	fprintf( tsdata, "                        el. gauss pt.\n");
 	fprintf( tsdata, "                        min       max         min           max\n");
-	fprintf( tsdata,"stress xx            %5d %2d %5d %2d  %14.6e %14.6e\n", min_stress_el.xx,
-		min_stress_integ.xx, max_stress_el.xx, max_stress_integ.xx,
+	fprintf( tsdata,"stress xx            %5d %2d %5d %2d  %14.6e %14.6e\n", el_stress_min.xx,
+		integ_stress_min.xx, el_stress_max.xx, integ_stress_max.xx,
 		min_stress.xx, max_stress.xx);
 	fprintf( tsdata,"\n");
-	fprintf( tsdata,"strain xx            %5d %2d %5d %2d  %14.6e %14.6e\n", min_strain_el.xx,
-		min_strain_integ.xx, max_strain_el.xx, max_strain_integ.xx,
+	fprintf( tsdata,"strain xx            %5d %2d %5d %2d  %14.6e %14.6e\n", el_strain_min.xx,
+		integ_strain_min.xx, el_strain_max.xx, integ_strain_max.xx,
 		min_strain.xx, max_strain.xx);
 	fprintf( tsdata,"\n");
-	fprintf( tsdata,"Orthographic viewport parameters(right, left, top, bootom, near, far)\n ");
+	fprintf( tsdata,"Orthographic viewport parameters(right, left, top, bottom, near, far)\n ");
 	fprintf( tsdata,"%14.6e %14.6e %14.6e %14.6e %14.6e %14.6e\n", ortho_right, ortho_left,
 		ortho_top, ortho_bottom, near, 1000.0);
 	fprintf( tsdata,"Perspective viewport parameters( mesh width and height)\n ");

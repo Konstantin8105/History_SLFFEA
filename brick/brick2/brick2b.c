@@ -6,7 +6,7 @@
      "The Finite Element Method" by Thomas Hughes, page 780.
 
      SLFFEA source file
-     Version:  1.3
+     Version:  1.4
      Copyright (C) 1999, 2000, 2001, 2002  San Le
 
      The source code contained in this file is released under the
@@ -19,7 +19,7 @@
 #include <math.h>
 #include "../brick/brconst.h"
 
-int brickB_T(double *shg,double *B_T)
+int brickB_T(double *shg, double *B_T)
 {
 /*
  ....  SET UP THE TEMPERATURE GRADIENT MATRIX "B" FOR
@@ -31,14 +31,14 @@ int brickB_T(double *shg,double *B_T)
 	int i;
 	for( i = 0; i < npel; ++i )
 	{
-        	*(B_T+i)          = *(shg+i);
-        	*(B_T+Tneqel*1+i) = *(shg+npel*1+i);
-        	*(B_T+Tneqel*2+i) = *(shg+npel*2+i); 
+		*(B_T+i)          = *(shg+i);
+		*(B_T+Tneqel*1+i) = *(shg+npel*1+i);
+		*(B_T+Tneqel*2+i) = *(shg+npel*2+i); 
 	}
-        return 1;
+	return 1;
 }
 
-int brickB_T2(double *shg,double *B_T2)
+int brickB_T2(double *shg, double *B_T2)
 {
 /*
      This library function assembles the B_T2 matrix in
@@ -51,12 +51,12 @@ int brickB_T2(double *shg,double *B_T2)
 	int i;
 	for( i = 0; i < npel; ++i )
 	{
-        	*(B_T2+i) = *(shg+i);
+		*(B_T2+i) = *(shg+i);
 	}
-        return 1;
+	return 1;
 }
 
-int brickB_TB(double *shl,double *B_TB)
+int brickB_TB(double *shl, double *B_TB)
 {
 /*
      This library function assembles the B_TB matrix in
@@ -68,8 +68,8 @@ int brickB_TB(double *shl,double *B_TB)
 	int i;
 	for( i = 0; i < npel_film; ++i )
 	{
-        	*(B_TB+i) = *(shl+i);
+		*(B_TB+i) = *(shl+i);
 	}
-        return 1;
+	return 1;
 }
 

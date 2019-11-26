@@ -2,11 +2,11 @@
    Control Display Window for a quad.  It also gives you the
    structure of how the text is placed.  
 
-              Updated 9/7/00
+              Updated 8/17/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -54,4 +54,5 @@ char ControlText[][90] = {
 ""," displacement  ",
 " X  ","           ",
 " Y  ","           ",
+" Z  ","           ",
 };

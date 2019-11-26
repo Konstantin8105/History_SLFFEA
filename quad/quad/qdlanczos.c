@@ -13,11 +13,11 @@
    a 4 node quadrilateral element.  Note that implicit in this algorithm is
    the assumption that [M] is positive definite.
 
-                        Updated 6/28/02 
+                        Updated 10/19/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002  San Le
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -62,22 +62,23 @@ int matX(double *, double *, double *, int, int, int);
 
 int matXT(double *, double *, double *, int, int, int);
 
-int qdConjGrad(double *, BOUND , int *, double *, int *, double *, double *, MATL *,
-	double *);
+int qdConjGrad(double *, BOUND , int *, double *, int *, double *, double *,
+	double *, MATL *, double *);
 
 int solve(double *, double *, int *, int );
 
-int qdMassPassemble(int *, double *, int *, double *, MATL *, double *, double *);
+int qdMassPassemble(int *, double *, int *, double *, double *, MATL *, double *,
+	double *);
 
 int QR_check( double *, double *, double *, int, int );
 
 int qdLanczos(double *K, BOUND bc, int *connect, double *coord, EIGEN *eigen,
-	int *el_matl, int *id, int *idiag, double *K_diag,  double *M, MATL *matl,
-	double *ritz, int num_eigen)
+	int *el_matl, int *id, int *idiag, double *K_diag, double *local_xyz, double *M,
+	MATL *matl, double *ritz, int num_eigen)
 {
 	int i,i2,j,jsave,k,check;
-        int sofmf, sofeigen, ptr_inc;
-        int *index;
+	int sofmf, sofeigen, ptr_inc;
+	int *index;
 	double *mem_double;
 	double *r, *rbar, *rhat, *p, *pbar, *qm1, *Mq, *vv,
 		*q, *T_evector, *T_diag, *T_upper, *temp;
@@ -87,8 +88,8 @@ int qdLanczos(double *K, BOUND bc, int *connect, double *coord, EIGEN *eigen,
 
 	n = neqn;
 
-        index=(int *)malloc(n*sizeof(int));
-        if(!index) printf( "error allocating memory for index\n");
+	index=(int *)malloc(n*sizeof(int));
+	if(!index) printf( "error allocating memory for index\n");
 
 	sofmf= num_eigen*num_eigen + 2*n*num_eigen + 5*n +
 		num_eigen + num_eigen-1 + 2*dof;
@@ -99,7 +100,7 @@ int qdLanczos(double *K, BOUND bc, int *connect, double *coord, EIGEN *eigen,
 		printf( "failed to allocate memory for double\n ");
 		exit(1);
 	}
-                                                     ptr_inc=0;
+	                                             ptr_inc=0;
 	T_evector=(mem_double+ptr_inc);              ptr_inc += num_eigen*num_eigen;
 	q=(mem_double+ptr_inc);                      ptr_inc += n*num_eigen;
 	Mq=(mem_double+ptr_inc);                     ptr_inc += n*num_eigen;
@@ -110,8 +111,8 @@ int qdLanczos(double *K, BOUND bc, int *connect, double *coord, EIGEN *eigen,
 	temp=(mem_double+ptr_inc);                   ptr_inc += n;
 	T_diag=(mem_double+ptr_inc);                 ptr_inc += num_eigen;
 	T_upper=(mem_double+ptr_inc);                ptr_inc += num_eigen-1;
-       	fdum_vector_in=(mem_double+ptr_inc);         ptr_inc += dof;
-       	fdum_vector_out=(mem_double+ptr_inc);        ptr_inc += dof;
+	fdum_vector_in=(mem_double+ptr_inc);         ptr_inc += dof;
+	fdum_vector_out=(mem_double+ptr_inc);        ptr_inc += dof;
 
 /* Initialize variables */
 
@@ -123,7 +124,7 @@ int qdLanczos(double *K, BOUND bc, int *connect, double *coord, EIGEN *eigen,
 	dn = 3.14159/((double) n);
 
 	fdum = 0.0;
-        for( i = 0; i < n; ++i ) 
+	for( i = 0; i < n; ++i ) 
 	{
 		*(qm1 + i) = 0.0;
 		*(r + i) = sin(3.14159*fdum);
@@ -135,7 +136,7 @@ int qdLanczos(double *K, BOUND bc, int *connect, double *coord, EIGEN *eigen,
 
 	if(lumped_mass_flag)
 	{
-            for( i = 0; i < n; ++i ) 
+	    for( i = 0; i < n; ++i ) 
 	    {
 		*(p + i) = *(M + i)*(*(r + i));
 	    }
@@ -160,9 +161,9 @@ int qdLanczos(double *K, BOUND bc, int *connect, double *coord, EIGEN *eigen,
 		}
 	    }
 
-	    check = qdMassPassemble(connect, coord, el_matl, M, matl,
-		fdum_vector_out, fdum_vector_in);
-            if(!check) printf( " Problems with qdMassPassemble \n");
+	    check = qdMassPassemble(connect, coord, el_matl, local_xyz,
+		M, matl, fdum_vector_out, fdum_vector_in);
+	    if(!check) printf( " Problems with qdMassPassemble \n");
 
 	    for( j = 0; j < dof; ++j )
 	    {
@@ -174,7 +175,7 @@ int qdLanczos(double *K, BOUND bc, int *connect, double *coord, EIGEN *eigen,
 	}
 
 	check = dotX( &beta, r, p, n);
-        if(!check) printf( " Problems with dotX \n");
+	if(!check) printf( " Problems with dotX \n");
 	if( beta > 0.0 ) beta = sqrt(beta);
 	else
 	{
@@ -183,7 +184,7 @@ int qdLanczos(double *K, BOUND bc, int *connect, double *coord, EIGEN *eigen,
 		exit(1);
 	}
 
-        for( i = 0; i < n; ++i ) 
+	for( i = 0; i < n; ++i ) 
 	{
 		*(q + i ) = *(r+i)/beta;
 
@@ -192,7 +193,7 @@ int qdLanczos(double *K, BOUND bc, int *connect, double *coord, EIGEN *eigen,
 		*(p + i ) /= beta;
 	}
 
-        for( i = 0; i < n; ++i ) 
+	for( i = 0; i < n; ++i ) 
 	{
 		*(Mq + i) = *(p + i);
 		*(r + i) = *(p + i);
@@ -202,9 +203,9 @@ int qdLanczos(double *K, BOUND bc, int *connect, double *coord, EIGEN *eigen,
 
 /* Begin iteration */
 
-        /*while( err > 1.0e-6 )*/
-        for( i = 0; i < num_eigen; ++i )
-        {
+	/*while( err > 1.0e-6 )*/
+	for( i = 0; i < num_eigen; ++i )
+	{
 
 	    if(LU_decomp_flag)
 	    {
@@ -225,8 +226,8 @@ int qdLanczos(double *K, BOUND bc, int *connect, double *coord, EIGEN *eigen,
    conditions are restored. 
 */
 
-	    	memset(fdum_vector_in,0,dof*sof);
-	    	memset(fdum_vector_out,0,dof*sof);
+		memset(fdum_vector_in,0,dof*sof);
+		memset(fdum_vector_out,0,dof*sof);
 		for( j = 0; j < dof; ++j )
 		{
 			if( *(id + j) > -1 )
@@ -236,7 +237,7 @@ int qdLanczos(double *K, BOUND bc, int *connect, double *coord, EIGEN *eigen,
 		}
 
 		check = qdConjGrad( K, bc, connect, coord, el_matl, fdum_vector_in,
-			K_diag, matl, fdum_vector_out);
+			K_diag, local_xyz, matl, fdum_vector_out);
 		if(!check) printf( " Problems with qdConjGrad \n");
 
 		for( j = 0; j < dof; ++j )
@@ -254,7 +255,7 @@ int qdLanczos(double *K, BOUND bc, int *connect, double *coord, EIGEN *eigen,
 	    }
 
 	    check = dotX( &alpha, p, r, n);
-            if(!check) printf( " Problems with dotX \n");
+	    if(!check) printf( " Problems with dotX \n");
 
 /* Cretate tridiagonal T matrix */
 
@@ -262,12 +263,12 @@ int qdLanczos(double *K, BOUND bc, int *connect, double *coord, EIGEN *eigen,
 
 	    if(i)
 	    {
-	    	*(T_upper + i - 1 ) = beta;
+		*(T_upper + i - 1 ) = beta;
 	    }
 
-            for( j = 0; j < n; ++j )
-            {
-	    	*(r + j) -= *(q + n*i + j)*alpha;
+	    for( j = 0; j < n; ++j )
+	    {
+		*(r + j) -= *(q + n*i + j)*alpha;
 	    }
 
 	    if(lumped_mass_flag)
@@ -292,9 +293,9 @@ int qdLanczos(double *K, BOUND bc, int *connect, double *coord, EIGEN *eigen,
 		    }
 		}
 
-		check = qdMassPassemble(connect, coord, el_matl, M, matl,
-		    fdum_vector_out, fdum_vector_in);
-        	if(!check) printf( " Problems with qdMassPassemble \n");
+		check = qdMassPassemble(connect, coord, el_matl, local_xyz,
+		    M, matl, fdum_vector_out, fdum_vector_in);
+		if(!check) printf( " Problems with qdMassPassemble \n");
 
 		for( j = 0; j < dof; ++j )
 		{
@@ -306,7 +307,7 @@ int qdLanczos(double *K, BOUND bc, int *connect, double *coord, EIGEN *eigen,
 	    }
 
 	    check = dotX( &beta, p, r, n);
-            if(!check) printf( " Problems with dotX \n");
+	    if(!check) printf( " Problems with dotX \n");
 	    if( beta > 0.0 ) beta = sqrt(beta);
 	    else
 	    {
@@ -318,11 +319,11 @@ int qdLanczos(double *K, BOUND bc, int *connect, double *coord, EIGEN *eigen,
 	    memset(temp,0,n*sof);
 	    if( i < num_eigen - 1)
 	    {
-            	for( j = 0; j < n; ++j )
-            	{
-	    		*(qm1 + j) = *(q + n*i + j);
+		for( j = 0; j < n; ++j )
+		{
+			*(qm1 + j) = *(q + n*i + j);
 			*(q + n*(i+1) + j) = *(r + j)/beta;
-                }
+		}
 
 /* Below is a re-orthogonalization step not given in the algorithm, but
    is needed to retain the orthonormal properties of q with Mq, which are
@@ -330,25 +331,25 @@ int qdLanczos(double *K, BOUND bc, int *connect, double *coord, EIGEN *eigen,
    using Gram-Schmidt
 */
 
-                /* printf( "\n");*/
-                for( k = 0; k < i+1; ++k )
-                {
-                    check = dotX( &fdum, (Mq + n*k), (q + n*(i+1)), n);
-            	    if(!check) printf( " Problems with dotX \n");
-                    /*printf( "q(%d)M*q(%d) = %14.6e \n", k, i+1, fdum);*/
+		/* printf( "\n");*/
+		for( k = 0; k < i+1; ++k )
+		{
+		    check = dotX( &fdum, (Mq + n*k), (q + n*(i+1)), n);
+		    if(!check) printf( " Problems with dotX \n");
+		    /*printf( "q(%d)M*q(%d) = %14.6e \n", k, i+1, fdum);*/
 		    if ( fabs(fdum) > SMALL )
 		    {
-                    	for( i2 = 0; i2 < n; ++i2 )
-                    	{
-                        	*(temp + i2) += fdum*(*(q + n*k + i2));
+			for( i2 = 0; i2 < n; ++i2 )
+			{
+				*(temp + i2) += fdum*(*(q + n*k + i2));
 				/*printf( " temp i2  %14.6e %5d \n", *(temp + i2), i2);*/
-                    	}
-                    }
-                }
-            	for( j = 0; j < n; ++j )
-            	{
+			}
+		    }
+		}
+		for( j = 0; j < n; ++j )
+		{
 		    *(q + n*(i+1) + j) -= *(temp + j);
-                }
+		}
 
 /* Below is an extra normalization step not given in the algorithm, but
    is needed to retain the orthonormal properties of q with Mq.  So 
@@ -357,10 +358,10 @@ int qdLanczos(double *K, BOUND bc, int *connect, double *coord, EIGEN *eigen,
 
 		if(lumped_mass_flag)
 		{
-            	    for( j = 0; j < n; ++j ) 
-	    	    {
+		    for( j = 0; j < n; ++j ) 
+		    {
 			*(temp + j) = *(M + j)*(*(q + n*(i+1) + j));
-	    	    }
+		    }
 		}
 		if(consistent_mass_flag)
 		{
@@ -377,8 +378,8 @@ int qdLanczos(double *K, BOUND bc, int *connect, double *coord, EIGEN *eigen,
 			}
 		    }
 
-		    check = qdMassPassemble(connect, coord, el_matl, M, matl,
-		    	fdum_vector_out, fdum_vector_in );
+		    check = qdMassPassemble(connect, coord, el_matl, local_xyz,
+			M, matl, fdum_vector_out, fdum_vector_in );
 		    if(!check) printf( " Problems with qdMassPassemble \n");
 
 		    for( j = 0; j < dof; ++j )
@@ -390,8 +391,8 @@ int qdLanczos(double *K, BOUND bc, int *connect, double *coord, EIGEN *eigen,
 		    }
 		}
 
-                check = dotX( &fdum, temp, (q + n*(i+1)), n);
-            	if(!check) printf( " Problems with dotX \n");
+		check = dotX( &fdum, temp, (q + n*(i+1)), n);
+		if(!check) printf( " Problems with dotX \n");
 		if( fdum > 0.0 ) fdum = sqrt(fdum);
 		else
 		{
@@ -401,30 +402,30 @@ int qdLanczos(double *K, BOUND bc, int *connect, double *coord, EIGEN *eigen,
 		}
 
 		for( j = 0; j < n; ++j )
-                {
+		{
 			*(q + n*(i+1) + j) /= fdum;
 			*(p + j) =  *(temp + j)/fdum;
-	    		*(Mq + n*(i+1) + j) = *(p + j);
+			*(Mq + n*(i+1) + j) = *(p + j);
 			*(r + j) = *(p + j);
-	    	}
+		}
 	    }
 	}
 
 	if(eigen_print_flag)
 	{
 	    check = T_print( T_diag, T_upper, n, num_eigen);
-            if(!check) printf( " Problems with T_print \n");
+	    if(!check) printf( " Problems with T_print \n");
 	}
 
 /* Calculate eigenvalues */
 
 	check = QR_check(T_evector, T_diag, T_upper, iteration_max, num_eigen);
-        if(!check) printf( " Problems with QR \n");
+	if(!check) printf( " Problems with QR \n");
 
 	if(eigen_print_flag)
 	{
 	    check = T_eval_print( T_diag, T_upper, n, num_eigen);
-            if(!check) printf( " Problems with T_eval_print \n");
+	    if(!check) printf( " Problems with T_eval_print \n");
 	}
 
 /* For inverse iteration, the eigenvalues of the original system relate
@@ -442,10 +443,10 @@ int qdLanczos(double *K, BOUND bc, int *connect, double *coord, EIGEN *eigen,
 	if(eigen_print_flag)
 	{
 	    check = T_evector_print(T_evector, n, num_eigen);
-            if(!check) printf( " Problems with T_evector_print \n");
+	    if(!check) printf( " Problems with T_evector_print \n");
 
 	    check = Lanczos_vec_print(q, n, num_eigen);
-            if(!check) printf( " Problems with Lanczos_vec_print \n");
+	    if(!check) printf( " Problems with Lanczos_vec_print \n");
 	}
 
 	check = matXT(ritz, q, T_evector, n, num_eigen, num_eigen);
@@ -455,7 +456,7 @@ int qdLanczos(double *K, BOUND bc, int *connect, double *coord, EIGEN *eigen,
 	{
 	    printf("These are the eigenvectors of the original problem\n");
 	    check = evector_print(ritz, n, num_eigen);
-            if(!check) printf( " Problems with evector_print \n");
+	    if(!check) printf( " Problems with evector_print \n");
 	}
 
 /* Redorder the eigenvectors */
@@ -476,11 +477,11 @@ int qdLanczos(double *K, BOUND bc, int *connect, double *coord, EIGEN *eigen,
 	if(eigen_print_flag)
 	{
 	    check = eval_print(eigen, num_eigen);
-            if(!check) printf( " Problems with eval_print \n");
+	    if(!check) printf( " Problems with eval_print \n");
 
 	    printf("These are the eigenvectors in order\n");
 	    check = evector_print(ritz, n, num_eigen);
-            if(!check) printf( " Problems with evector_print \n");
+	    if(!check) printf( " Problems with evector_print \n");
 	}
 
 	free(mem_double);

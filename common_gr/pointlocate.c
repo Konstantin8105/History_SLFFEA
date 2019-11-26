@@ -5,7 +5,7 @@
  		Last Update 4/26/01
 
     SLFFEA source file
-    Version:  1.3
+    Version:  1.4
     Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
@@ -92,9 +92,9 @@ int PointLocate(double *point_vec, double xAngle, double yAngle, double zAngle )
 	check = matX( point_vec4, rotate, point_vec3, 3, 1, 3); 
 	if(!check) printf( " Problems with matX\n");
 
-    	point_vec[0] = point_vec4[0];
-    	point_vec[1] = point_vec4[1];
-    	point_vec[2] = point_vec4[2];
+	point_vec[0] = point_vec4[0];
+	point_vec[1] = point_vec4[1];
+	point_vec[2] = point_vec4[2];
 
 	return 1;
 }

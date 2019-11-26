@@ -2,11 +2,11 @@
     This utility function assembles the stiffness matrix for a finite 
     element program which does analysis on a beam.
 
-	      Updated 3/17/05
+	      Updated 11/6/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -67,6 +67,8 @@ int matXrot(double *, double *, double *, int, int);
 
 int rotXmat(double *, double *, double *, int, int);
 
+int rotTXmat(double *, double *, double *, int, int);
+
 int matX(double *, double *, double *, int, int, int);
 
 int matXT(double *, double *, double *, int, int, int);
@@ -75,9 +77,9 @@ int bmshape(SHAPE *, double , double , double );
 
 int bmnormcrossX(double *, double *, double *);
 
-int bmKassemble(double *A, double *axis_z, BOUND bc, int *connect, double *coord,
-	CURVATURE *curve, double *dist_load, int *el_matl, int *el_type,
-	double *force, int *id, int *idiag, double *K_diag, int *lm, MATL *matl,
+int bmKassemble(double *A, BOUND bc, int *connect, double *coord, CURVATURE *curve,
+	double *dist_load, int *el_matl, int *el_type, double *force, int *id, int *idiag,
+	double *K_diag, int *lm, double *length, double *local_xyz, MATL *matl,
 	MOMENT *moment, STRAIN *strain, STRESS *stress, double *U)
 {
 	int i, i1, i2, j, k, ij, dof_el[neqel];
@@ -86,10 +88,9 @@ int bmKassemble(double *A, double *axis_z, BOUND bc, int *connect, double *coord
 	double area, areaSy, areaSz, Emod, EmodXarea, wXjacob, EmodXIy, EmodXIz,
 		G, GXIp, GXareaSy, GXareaSz, phiy, phiz, shear_coeffy, shear_coeffz,
 		shear_coeffy2, shear_coeffz2;
-	double L, Lx, Ly, Lz, Lsq, Lcube, Lxysq, axis_x[nsd], axis_y[nsd];
+	double L, Lsq, Lcube, axis_x[nsd], axis_y[nsd];
 	double B[soBRM], DB[soBRM], jacob, fdum, fdum2;
-	double K_temp[neqlsq], K_el[neqlsq], K_local[neqlsq],
-		rotate[nsdsq], rotateT[nsdsq];
+	double K_temp[neqlsq], K_el[neqlsq], K_local[neqlsq], rotate[nsdsq];
 	double force_el_dist[neqel], force_gl_dist[neqel], force_el_U[neqel],
 		force_local[neqel], U_el[neqel], U_local[neqel],
 		vecdum[neqel], vecdum2[neqel];
@@ -115,28 +116,14 @@ int bmKassemble(double *A, double *axis_z, BOUND bc, int *connect, double *coord
 
 		node0 = *(connect+k*npel);
 		node1 = *(connect+k*npel+1);
-		Lx = *(coord+nsd*node1) - *(coord+nsd*node0);
-		Ly = *(coord+nsd*node1+1) - *(coord+nsd*node0+1);
-		Lz = *(coord+nsd*node1+2) - *(coord+nsd*node0+2);
 
-		/*printf(" Lx, Ly, Lz %f %f %f\n ", Lx, Ly, Lz);*/
-
-/* The mechanism below for calculating rotations is based on a combination
-   of the method givin in the book, "A First Course in the Finite Element
-   Method 2nd Ed." by Daryl L. Logan and my own.  See pages 236-239 in:
-
-     Logan, Daryl L., A First Course in the Finite Element Method 2nd Ed., PWS-KENT,
-        1992.
-*/
-
-		Lsq = Lx*Lx+Ly*Ly+Lz*Lz;
-		L = sqrt(Lsq);
+		L = *(length + k);
+		Lsq = L*L;
 		Lcube = L*Lsq;
-		Lx /= L; Ly /= L; Lz /= L;
-		*(axis_x) = Lx;
-		*(axis_x+1) = Ly;
-		*(axis_x+2) = Lz;
 
+/* The phiy and phyz below are not angles.  They are used to be consistent with the
+   notation in Przemieniecki on page 79 in "Theory of Matrix Structural Analysis".
+*/
 		phiy = 0.0;
 		phiz = 0.0;
 		if( areaSy > 0.0e-10 && areaSz > 0.0e-10 )
@@ -168,7 +155,7 @@ int bmKassemble(double *A, double *axis_z, BOUND bc, int *connect, double *coord
       http://caswww.colorado.edu/courses.d/IFEM.d/IFEM.Ch13.d/IFEM.Ch13.pdf
 
    Felippa, Carlos A., Non-Linear Finite Element Methods, University of Colorado,
-        Boulder, 2001.
+	Boulder, 2001.
    carlos.felippa@colorado.edu
 
    I could not make the derivation work without including the -1.0/(phi + 1.0).
@@ -212,65 +199,17 @@ int bmKassemble(double *A, double *axis_z, BOUND bc, int *connect, double *coord
 
 		jacob = L/2.0;
 
-/* To find axis_y, take cross product of axis_z and axis_x */
+		memset(rotate,0,nsdsq*sof);
 
-		check = bmnormcrossX((axis_z+nsd*k), axis_x, axis_y);
-		if(!check)
-		{
-
-/* If magnitude of axis_y < SMALL(i.e. axis_z and axis_x are parallel), then make
-local x global z, local z global x, and local y global y.  */
-
-		   memset(rotate,0,nsdsq*sof);
-		   *(rotate+2) = 1.0;
-		   *(rotate+4) = 1.0;
-		   *(rotate+6) = -1.0;
-		   if(Lz < -ONE)
-		   {
-			memset(rotate,0,nsdsq*sof);
-			*(rotate+2) = -1.0;
-			*(rotate+4) = 1.0;
-			*(rotate+6) = 1.0;
-		   }
-		   *(axis_z + nsd*k) = *(rotate+6);
-		   *(axis_z + nsd*k+1) = 0.0;
-		   *(axis_z + nsd*k+2) = 0.0;
-		}
-		else
-		{
-
-/* To find the true axis_z, take cross product of axis_x and axis_y */
-
-		   check = bmnormcrossX(axis_x, axis_y, (axis_z+nsd*k));
-		   if(!check) printf( "Problems with bmnormcrossX \n");
-
-/* Assembly of the 3X3 rotation matrix for the 12X12 global rotation
-   matrix */
-		   memset(rotate,0,nsdsq*sof);
-		   *(rotate) = *(axis_x);
-		   *(rotate+1) = *(axis_x+1);
-		   *(rotate+2) = *(axis_x+2);
-		   *(rotate+3) = *(axis_y);
-		   *(rotate+4) = *(axis_y+1);
-		   *(rotate+5) = *(axis_y+2);
-		   *(rotate+6) = *(axis_z+nsd*k);
-		   *(rotate+7) = *(axis_z+nsd*k+1);
-		   *(rotate+8) = *(axis_z+nsd*k+2);
-		}
-
-/* Assembly of the 3X3 transposed rotation matrix for the 12X12 global rotation
-   matrix */
-
-		memset(rotateT,0,nsdsq*sof);
-		*(rotateT) = *(rotate);
-		*(rotateT+1) = *(rotate+3);
-		*(rotateT+2) = *(rotate+6);
-		*(rotateT+3) = *(rotate+1);
-		*(rotateT+4) = *(rotate+4);
-		*(rotateT+5) = *(rotate+7);
-		*(rotateT+6) = *(rotate+2);
-		*(rotateT+7) = *(rotate+5);
-		*(rotateT+8) = *(rotate+8);
+		*(rotate)     = *(local_xyz + nsdsq*k);
+		*(rotate + 1) = *(local_xyz + nsdsq*k + 1);
+		*(rotate + 2) = *(local_xyz + nsdsq*k + 2);
+		*(rotate + 3) = *(local_xyz + nsdsq*k + 3);
+		*(rotate + 4) = *(local_xyz + nsdsq*k + 4);
+		*(rotate + 5) = *(local_xyz + nsdsq*k + 5);
+		*(rotate + 6) = *(local_xyz + nsdsq*k + 6);
+		*(rotate + 7) = *(local_xyz + nsdsq*k + 7);
+		*(rotate + 8) = *(local_xyz + nsdsq*k + 8);
 
 /* defining the components of an el element vector */
 
@@ -293,6 +232,7 @@ local x global z, local z global x, and local y global y.  */
 		memset(force_el_dist,0,neqel*sof);
 		memset(force_gl_dist,0,neqel*sof);
 		memset(force_el_U,0,neqel*sof);
+		memset(K_temp,0,neqlsq*sof);
 
 /* assemble the distributed load */
 
@@ -559,7 +499,7 @@ local x global z, local z global x, and local y global y.  */
 
 
 /* The loop below calculates the points of 1 point gaussian integration
-   for the stiffness matrices which are based on linear(C0) intepolating
+   for the stiffness matrices which are based on linear(C0) interpolating
    functions.  These beam element stiffnesses are integrated
    using 1 point Gauss.  For an explanation of the differences between
    C0 and C1 interpolating functions, see page 109 and 110 of Tom Hughes
@@ -637,7 +577,7 @@ local x global z, local z global x, and local y global y.  */
 		}
 
 /* The loop below calculates the points of 2 point gaussian integration
-   for the stiffness matrices which are based on Hermitian(C1) intepolating
+   for the stiffness matrices which are based on Hermitian(C1) interpolating
    functions.  These beam element stiffnesses are integrated using 2
    point Gauss.
 */
@@ -678,14 +618,14 @@ local x global z, local z global x, and local y global y.  */
 			    *(B+39) = sh.Nhat[0].dx1;
 			    *(B+45) = sh.Nhat[1].dx1;
 
-                            *(B+50) = -sh.N[0].dx3;
-                            *(B+52) = sh.N[1].dx3;
-                            *(B+56) = -sh.N[2].dx3;
-                            *(B+58) = sh.N[3].dx3;
-                            *(B+61) = sh.N[0].dx3;
-                            *(B+65) = sh.N[1].dx3;
-                            *(B+67) = sh.N[2].dx3;
-                            *(B+71) = sh.N[3].dx3;
+			    *(B+50) = -sh.N[0].dx3;
+			    *(B+52) = sh.N[1].dx3;
+			    *(B+56) = -sh.N[2].dx3;
+			    *(B+58) = sh.N[3].dx3;
+			    *(B+61) = sh.N[0].dx3;
+			    *(B+65) = sh.N[1].dx3;
+			    *(B+67) = sh.N[2].dx3;
+			    *(B+71) = sh.N[3].dx3;
 
 /* The DB matrix */
 			    *(DB+13) = EmodXIz*sh.N[0].dx2;
@@ -699,14 +639,14 @@ local x global z, local z global x, and local y global y.  */
 			    *(DB+39) = GXIp*sh.Nhat[0].dx1;
 			    *(DB+45) = GXIp*sh.Nhat[1].dx1;
 
-                            *(DB+50) = -shear_coeffz*sh.N[0].dx3;
-                            *(DB+52) = shear_coeffz*sh.N[1].dx3;
-                            *(DB+56) = -shear_coeffz*sh.N[2].dx3;
-                            *(DB+58) = shear_coeffz*sh.N[3].dx3;
-                            *(DB+61) = shear_coeffy*sh.N[0].dx3;
-                            *(DB+65) = shear_coeffy*sh.N[1].dx3;
-                            *(DB+67) = shear_coeffy*sh.N[2].dx3;
-                            *(DB+71) = shear_coeffy*sh.N[3].dx3;
+			    *(DB+50) = -shear_coeffz*sh.N[0].dx3;
+			    *(DB+52) = shear_coeffz*sh.N[1].dx3;
+			    *(DB+56) = -shear_coeffz*sh.N[2].dx3;
+			    *(DB+58) = shear_coeffz*sh.N[3].dx3;
+			    *(DB+61) = shear_coeffy*sh.N[0].dx3;
+			    *(DB+65) = shear_coeffy*sh.N[1].dx3;
+			    *(DB+67) = shear_coeffy*sh.N[2].dx3;
+			    *(DB+71) = shear_coeffy*sh.N[3].dx3;
 			}
 
 			check = matXT(K_local, B, DB, neqel, neqel, sdimRM);
@@ -734,8 +674,8 @@ local x global z, local z global x, and local y global y.  */
 		check = matXrot(K_temp, K_el, rotate, neqel, neqel);
 		if(!check) printf( "Problems with matXrot \n");
 
-		check = rotXmat(K_el, rotateT, K_temp, neqel, neqel);
-		if(!check) printf( "Problems with rotXmat \n");
+		check = rotTXmat(K_el, rotate, K_temp, neqel, neqel);
+		if(!check) printf( "Problems with rotTXmat \n");
 
 		for( j = 0; j < neqel; ++j )
 		{
@@ -752,14 +692,14 @@ local x global z, local z global x, and local y global y.  */
 
 		  for( j = 0; j < neqel; ++j )
 		  {
-		  	*(force + *(dof_el+j)) -= *(force_el_U + j);
+			*(force + *(dof_el+j)) -= *(force_el_U + j);
 		  }
 
 /* Compute the equivalant nodal forces based on distributed element loads */
 
 		  if( dist_flag )
 		  {
-		     check = rotXmat(force_gl_dist, rotateT, force_el_dist, 1, neqel);
+		     check = rotTXmat(force_gl_dist, rotate, force_el_dist, 1, neqel);
 		     for( j = 0; j < neqel; ++j )
 		     {
 			*(force + *(dof_el+j)) += *(force_gl_dist + j);
@@ -842,7 +782,7 @@ local x global z, local z global x, and local y global y.  */
 
 /* The loop below calculates either the points of 1 point gaussian integration
    or at the nodes for the [B] and [stress] matrices which are based on linear(C0)
-   intepolating functions. 
+   interpolating functions. 
 */
 
 			if(type_num == 5 || type_num == 6)
@@ -956,7 +896,7 @@ local x global z, local z global x, and local y global y.  */
 
 /* The loop below calculates either the points of 2 point gaussian integration
    or at the nodes for the [B] and [stress] matrices which are based on Hermitian(C1)
-   intepolating functions. 
+   interpolating functions. 
 */
 
 			if(type_num > 6)

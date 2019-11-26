@@ -179,7 +179,7 @@ all the values.  This is in contrast with the cantilever problem which
 produces all distinct eigenvalues, although modes higher than 1 do
 look questionable.  
 
----------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------
 
 P 2.0
 
@@ -239,7 +239,7 @@ jacob = L/2    N1''(0) = -6/L^2    N1''(L) =  6/L^2   jacob*N1''(0)
 Which tells us that the forces are the same at the ends while the moments swich signs.
 The magnitude of N1 and N3 as well as N2 and N4 however, remain the same.
 
----------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------
 
 P 3.0
 
@@ -699,7 +699,7 @@ but because the internal energy is given by [B][stress], I had to redefine stres
 stress xy based on the above because when they are multiplied by the resulting shape functions
 in [B] arising from v''' and w''', this is the only way to get the internal energy.
 
----------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------
 
 P 6.0
 
@@ -730,7 +730,7 @@ So Hughes's element with reduced integration is something worth including as an 
 option. 
 
 
----------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------
 
 P 7.0
 

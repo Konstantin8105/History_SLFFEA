@@ -1,5 +1,5 @@
 # SLFFEA Makefile
-# Version:  1.3
+# Version:  1.4
 # Copyright (C) 1999, 2000  San Le (slffea@yahoo.com)
 # http://slffea.com/
 #
@@ -28,14 +28,20 @@ CC = /usr/bin/gcc  -g
 
 LIBS = -lm
 COMMON = ../../common
+TRI = ../../tri/tri
+QUAD = ../../quad/quad
 OBJECTS = $(COMMON)/matxt.o $(COMMON)/matx.o $(COMMON)/dotx.o \
 	$(COMMON)/lm.o $(COMMON)/idiag.o $(COMMON)/kasmbl.o \
 	$(COMMON)/sky.o $(COMMON)/qr.o $(COMMON)/eigen.o \
-	$(COMMON)/eigenprint.o
+	$(COMMON)/eigenprint.o $(COMMON)/crossx.o \
+	$(COMMON)/rotate4.o $(COMMON)/rotate2.o $(COMMON)/rotate.o \
+	$(COMMON)/cubic.o $(COMMON)/local_vec.o $(COMMON)/local_vec2.o
+OBJECTS_TRI = $(TRI)/trshape.o $(TRI)/trib.o 
+OBJECTS_QD = $(QUAD)/quadb.o 
 
 PROGS = pl plp
 
-all: pl plp
+all: quadb.o trshape.o trib.o pl plp
 
 pl: fempl.o \
 		plmemory.o \
@@ -44,12 +50,16 @@ pl: fempl.o \
 		plshape.o \
 		plateb.o \
 		plkasmbl.o\
+		plkasmbl2.o\
 		plconj.o\
+		plconj2.o\
 		plbound.o\
 		plstress.o\
 		plmasmbl.o \
+		plmasmbl2.o \
 		pllanczos.o \
 		plmassp.o \
+		plmassp2.o \
 		plwriter.o\
 		plarea.o\
 		plconst.h \
@@ -61,14 +71,27 @@ pl: fempl.o \
 		plshape.o \
 		plateb.o \
 		plkasmbl.o\
+		plkasmbl2.o\
 		plconj.o\
+		plconj2.o\
 		plbound.o\
 		plstress.o\
 		plmasmbl.o \
+		plmasmbl2.o \
 		pllanczos.o \
 		plmassp.o \
+		plmassp2.o \
 		plwriter.o \
-		plarea.o $(OBJECTS) $(LIBS)
+		plarea.o $(OBJECTS) $(OBJECTS_QD) $(OBJECTS_TRI) $(LIBS)
+
+trshape.o:
+	cd $(TRI) ; make trshape.o 
+
+trib.o:
+	cd $(TRI) ; make trib.o 
+
+quadb.o:
+	cd $(QUAD) ; make quadb.o 
 
 plp: plp.o \
 		plpatch.o
@@ -83,11 +106,17 @@ plarea.o: plarea.c
 plwriter.o: plwriter.c
 	$(CC) -c plwriter.c 
 
+plmassp2.o: plmassp2.c
+	$(CC) -c plmassp2.c
+
 plmassp.o: plmassp.c
 	$(CC) -c plmassp.c
 
 pllanczos.o: pllanczos.c
 	$(CC) -c pllanczos.c
+
+plmasmbl2.o: plmasmbl2.c
+	$(CC) -c plmasmbl2.c
 
 plmasmbl.o: plmasmbl.c
 	$(CC) -c plmasmbl.c
@@ -98,8 +127,14 @@ plstress.o: plstress.c
 plbound.o: plbound.c
 	$(CC) -c plbound.c
 
+plconj2.o: plconj2.c
+	$(CC) -c plconj2.c
+
 plconj.o: plconj.c
 	$(CC) -c plconj.c
+
+plkasmbl2.o: plkasmbl2.c
+	$(CC) -c plkasmbl2.c
 
 plkasmbl.o: plkasmbl.c
 	$(CC) -c plkasmbl.c

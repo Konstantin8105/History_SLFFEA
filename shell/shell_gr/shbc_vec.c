@@ -1,10 +1,16 @@
 /*
    This program draws the displacement and force vectors
    for shell elements. 
+
+                  Last Update 1/21/06
+
+    SLFFEA source file
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le
+
+    The source code contained in this file is released under the
+    terms of the GNU Library General Public License.
  
-                                 San Le
- 
-  			Last Update 5/14/00
  */
 
 #if WINDOWS
@@ -23,7 +29,7 @@
 #include <GL/glut.h>
 
 extern GLfloat yellow[4], orange[4], orangeRed[4], red[4], green[4], 
- 	violetRed[4], magenta[4], purple[4], blue[4],
+	violetRed[4], magenta[4], purple[4], blue[4],
 	white[4], grey[4], black[4], brown[4];
 extern double AxisLength_max;
 
@@ -69,7 +75,7 @@ void shdisp_vectors0(int displaylistnum, BOUND bc, double *coord0)
 		fpointx = *(coord0+nsd*bc.fix[i].z);
 		fpointy = *(coord0+nsd*bc.fix[i].z + 1);
 		fpointz = *(coord0+nsd*bc.fix[i].z + 2);
-      		glVertex3f( fpointx, fpointy, fpointz);
+		glVertex3f( fpointx, fpointy, fpointz);
 		glVertex3f( fpointx, fpointy, fpointz - fdum); 
 	}
     glEnd();
@@ -82,7 +88,7 @@ void shdisp_vectors0(int displaylistnum, BOUND bc, double *coord0)
 		fpointx = *(coord0+nsd*bc.fix[i].phix);
 		fpointy = *(coord0+nsd*bc.fix[i].phix + 1);
 		fpointz = *(coord0+nsd*bc.fix[i].phix + 2);
-      		glVertex3f( fpointx, fpointy, fpointz);
+		glVertex3f( fpointx, fpointy, fpointz);
 		glVertex3f( fpointx - fdum2, fpointy - fdum2, fpointz); 
 		glVertex3f( fpointx - fdum2, fpointy - fdum2, fpointz); 
 		glVertex3f( fpointx - fdum2, fpointy + fdum2, fpointz); 
@@ -96,7 +102,7 @@ void shdisp_vectors0(int displaylistnum, BOUND bc, double *coord0)
 		fpointx = *(coord0+nsd*bc.fix[i].phiy);
 		fpointy = *(coord0+nsd*bc.fix[i].phiy + 1);
 		fpointz = *(coord0+nsd*bc.fix[i].phiy + 2);
-      		glVertex3f( fpointx, fpointy, fpointz);
+		glVertex3f( fpointx, fpointy, fpointz);
 		glVertex3f( fpointx - fdum2, fpointy - fdum2, fpointz); 
 		glVertex3f( fpointx - fdum2, fpointy - fdum2, fpointz); 
 		glVertex3f( fpointx + fdum2, fpointy - fdum2, fpointz); 
@@ -133,14 +139,14 @@ void shdisp_vectors0(int displaylistnum, BOUND bc, double *coord0)
 		fpointx = *(coord0+nsd*bc.fix[i].phix);
 		fpointy = *(coord0+nsd*bc.fix[i].phix + 1);
 		fpointz = *(coord0+nsd*bc.fix[i].phix + 2);
-      		glVertex3f( fpointx, fpointy, fpointz);
+		glVertex3f( fpointx, fpointy, fpointz);
 	}
 	for( i = 0; i < bc.num_fix[0].phiy; ++i)
 	{
 		fpointx = *(coord0+nsd*bc.fix[i].phiy);
 		fpointy = *(coord0+nsd*bc.fix[i].phiy + 1);
 		fpointz = *(coord0+nsd*bc.fix[i].phiy + 2);
-      		glVertex3f( fpointx, fpointy, fpointz);
+		glVertex3f( fpointx, fpointy, fpointz);
 	}
     glEnd();
   glPopAttrib();
@@ -166,7 +172,7 @@ void shforce_vectors0(int displaylistnum, BOUND bc, double *coord0,
 	for( i = 0; i < bc.num_force[0]; ++i)
 	{
 	    fx = force_vec[i].x; fy = force_vec[i].y;
-	    	fz = force_vec[i].z;
+		fz = force_vec[i].z;
 	    fpointx = *(coord0+nsd*bc.force[i]);
 	    fpointy = *(coord0+nsd*bc.force[i] + 1);
 	    fpointz = *(coord0+nsd*bc.force[i] + 2);
@@ -175,7 +181,7 @@ void shforce_vectors0(int displaylistnum, BOUND bc, double *coord0,
 	    fdum += fabs(fz-fpointz);
 	    if( fdum > SMALL)
 	    {
-      		glVertex3f( fpointx, fpointy, fpointz);
+		glVertex3f( fpointx, fpointy, fpointz);
 		glVertex3f( fx, fy, fz); 
 	    }
 	}
@@ -197,12 +203,12 @@ void shforce_vectors0(int displaylistnum, BOUND bc, double *coord0,
 	    {
 		fdum *= .2;
 		fdum2 *= .2;
-      		glVertex3f( fpointx, fpointy, fpointz);
+		glVertex3f( fpointx, fpointy, fpointz);
 		glVertex3f( fx + fdum2, fy - fdum, fpointz); 
 		glVertex3f( fx + fdum2, fy - fdum, fpointz); 
 		glVertex3f( fx - fdum2, fy + fdum, fpointz); 
 		glVertex3f( fx - fdum2, fy + fdum, fpointz); 
-      		glVertex3f( fpointx, fpointy, fpointz);
+		glVertex3f( fpointx, fpointy, fpointz);
 	    }
 	}
     glEnd();
@@ -214,7 +220,7 @@ void shforce_vectors0(int displaylistnum, BOUND bc, double *coord0,
 		fpointx = *(coord0+nsd*bc.force[i]);
 		fpointy = *(coord0+nsd*bc.force[i] + 1);
 		fpointz = *(coord0+nsd*bc.force[i] + 2);
-      		glVertex3f( fpointx, fpointy, fpointz);
+		glVertex3f( fpointx, fpointy, fpointz);
 	}
     glEnd();
   glPopAttrib();
@@ -261,7 +267,7 @@ void shdisp_vectors(BOUND bc, double *coord)
 		fpointx = *(coord+nsd*bc.fix[i].z);
 		fpointy = *(coord+nsd*bc.fix[i].z + 1);
 		fpointz = *(coord+nsd*bc.fix[i].z + 2);
-      		glVertex3f( fpointx, fpointy, fpointz);
+		glVertex3f( fpointx, fpointy, fpointz);
 		glVertex3f( fpointx, fpointy, fpointz - fdum); 
 	}
     glEnd();
@@ -274,7 +280,7 @@ void shdisp_vectors(BOUND bc, double *coord)
 		fpointx = *(coord+nsd*bc.fix[i].phix);
 		fpointy = *(coord+nsd*bc.fix[i].phix + 1);
 		fpointz = *(coord+nsd*bc.fix[i].phix + 2);
-      		glVertex3f( fpointx, fpointy, fpointz);
+		glVertex3f( fpointx, fpointy, fpointz);
 		glVertex3f( fpointx - fdum2, fpointy - fdum2, fpointz); 
 		glVertex3f( fpointx - fdum2, fpointy - fdum2, fpointz); 
 		glVertex3f( fpointx - fdum2, fpointy + fdum2, fpointz); 
@@ -288,7 +294,7 @@ void shdisp_vectors(BOUND bc, double *coord)
 		fpointx = *(coord+nsd*bc.fix[i].phiy);
 		fpointy = *(coord+nsd*bc.fix[i].phiy + 1);
 		fpointz = *(coord+nsd*bc.fix[i].phiy + 2);
-      		glVertex3f( fpointx, fpointy, fpointz);
+		glVertex3f( fpointx, fpointy, fpointz);
 		glVertex3f( fpointx - fdum2, fpointy - fdum2, fpointz); 
 		glVertex3f( fpointx - fdum2, fpointy - fdum2, fpointz); 
 		glVertex3f( fpointx + fdum2, fpointy - fdum2, fpointz); 
@@ -318,21 +324,21 @@ void shdisp_vectors(BOUND bc, double *coord)
 		fpointx = *(coord+nsd*bc.fix[i].z);
 		fpointy = *(coord+nsd*bc.fix[i].z + 1);
 		fpointz = *(coord+nsd*bc.fix[i].z + 2);
-      		glVertex3f( fpointx, fpointy, fpointz);
+		glVertex3f( fpointx, fpointy, fpointz);
 	}
 	for( i = 0; i < bc.num_fix[0].phix; ++i)
 	{
 		fpointx = *(coord+nsd*bc.fix[i].phix);
 		fpointy = *(coord+nsd*bc.fix[i].phix + 1);
 		fpointz = *(coord+nsd*bc.fix[i].phix + 2);
-      		glVertex3f( fpointx, fpointy, fpointz);
+		glVertex3f( fpointx, fpointy, fpointz);
 	}
 	for( i = 0; i < bc.num_fix[0].phiy; ++i)
 	{
 		fpointx = *(coord+nsd*bc.fix[i].phiy);
 		fpointy = *(coord+nsd*bc.fix[i].phiy + 1);
 		fpointz = *(coord+nsd*bc.fix[i].phiy + 2);
-      		glVertex3f( fpointx, fpointy, fpointz);
+		glVertex3f( fpointx, fpointy, fpointz);
 	}
     glEnd();
 }
@@ -353,7 +359,7 @@ void shforce_vectors(BOUND bc, double *coord, XYZPhiF *force_vec )
 	for( i = 0; i < bc.num_force[0]; ++i)
 	{
 	    fx = force_vec[i].x; fy = force_vec[i].y;
-	    	fz = force_vec[i].z;
+		fz = force_vec[i].z;
 	    fpointx = *(coord+nsd*bc.force[i]);
 	    fpointy = *(coord+nsd*bc.force[i] + 1);
 	    fpointz = *(coord+nsd*bc.force[i] + 2);
@@ -362,7 +368,7 @@ void shforce_vectors(BOUND bc, double *coord, XYZPhiF *force_vec )
 	    fdum += fabs(fz-fpointz);
 	    if( fdum > SMALL)
 	    {
-      		glVertex3f( fpointx, fpointy, fpointz);
+		glVertex3f( fpointx, fpointy, fpointz);
 		glVertex3f( fx, fy, fz); 
 	    }
 	}
@@ -384,12 +390,12 @@ void shforce_vectors(BOUND bc, double *coord, XYZPhiF *force_vec )
 	    {
 		fdum *= .2;
 		fdum2 *= .2;
-      		glVertex3f( fpointx, fpointy, fpointz);
+		glVertex3f( fpointx, fpointy, fpointz);
 		glVertex3f( fx + fdum2, fy - fdum, fpointz); 
 		glVertex3f( fx + fdum2, fy - fdum, fpointz); 
 		glVertex3f( fx - fdum2, fy + fdum, fpointz); 
 		glVertex3f( fx - fdum2, fy + fdum, fpointz); 
-      		glVertex3f( fpointx, fpointy, fpointz);
+		glVertex3f( fpointx, fpointy, fpointz);
 	    }
 	}
     glEnd();
@@ -401,7 +407,7 @@ void shforce_vectors(BOUND bc, double *coord, XYZPhiF *force_vec )
 		fpointx = *(coord+nsd*bc.force[i]);
 		fpointy = *(coord+nsd*bc.force[i] + 1);
 		fpointz = *(coord+nsd*bc.force[i] + 2);
-      		glVertex3f( fpointx, fpointy, fpointz);
+		glVertex3f( fpointx, fpointy, fpointz);
 	}
     glEnd();
 }

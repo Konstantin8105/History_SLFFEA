@@ -2,11 +2,11 @@
     This library function reads in additional strain and
     curvature data for the graphics program for beam elements.
 
-		Updated 5/1/05
+		Updated 8/12/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -24,7 +24,7 @@ extern int stress_xyzx_flag;
 
 int bmreader_gr( FILE *o1, CURVATURE *curve, STRAIN *strain)
 {
-        int i, j, dum, dum2, file_loc;
+	int i, j, dum, dum2, file_loc;
 	double fdum1, fdum2, fdum3, fdum4, fdum5, fdum6;
 	char one_char;
 	char buf[ BUFSIZ ];
@@ -69,7 +69,7 @@ an old beam data file.
 
 	printf("strain for ele: ");
 	fscanf( o1,"%d",&dum);
-	printf( "(%4d)",dum);
+	printf( "(%6d)",dum);
 	if(stress_xyzx_flag)
 	{
 	   while( dum > -1 )
@@ -92,7 +92,7 @@ an old beam data file.
 		printf( "\n");
 		printf("strain for ele: ");
 		fscanf( o1,"%d",&dum);
-		printf( "(%4d)",dum);
+		printf( "(%6d)",dum);
 	   }
 	}
 	else
@@ -115,11 +115,11 @@ an old beam data file.
 		printf( "\n");
 		printf("strain for ele: ");
 		fscanf( o1,"%d",&dum);
-		printf( "(%4d)",dum);
+		printf( "(%6d)",dum);
 	   }
 	}
 	printf( "\n\n");
 
-        return 1;
+	return 1;
 }
 

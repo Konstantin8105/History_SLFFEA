@@ -3,7 +3,7 @@
     by reading in the data, doing assembling, and
     then solving the linear system for a truss
 
-	Updated 4/26/05
+	Updated 12/4/06
 
     SLFFEA source file
     Version:  1.1
@@ -77,7 +77,7 @@ int main(int argc, char** argv)
 	memset(name,0,30*sizeof(char));
 
     	printf("What is the name of the file containing the \n");
-    	printf("truss structural data? \n");
+    	printf("truss structural data? (example: tsp4_11.txt)\n");
     	scanf( "%30s",name);
 
 /*   o1 contains all the structural data */

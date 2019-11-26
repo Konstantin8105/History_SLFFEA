@@ -5,7 +5,7 @@
 		Updated 12/15/98
 
     SLFFEA source file
-    Version:  1.3
+    Version:  1.4
     Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
@@ -27,37 +27,37 @@ int diag( int *idiag, int *lm, int ndof, int neqn, int npel, int numel)
 
 /* Assembly of the idiag array for the skyline */
 
-        for( i = 0; i < neqn; ++i )
+	for( i = 0; i < neqn; ++i )
 	{
 		*(idiag+i)=i;	
 	}
-        for( k = 0; k < numel; ++k )
+	for( k = 0; k < numel; ++k )
 	{
 	   min=neqn;
-           for( j = 0; j < npel; ++j )
+	   for( j = 0; j < npel; ++j )
 	   {
-           	for( i = 0; i < ndof; ++i )
-	   	{
+		for( i = 0; i < ndof; ++i )
+		{
 			num=*(lm + ndof*npel*k + ndof*j + i);
 			if(num > -1 )
 			{
 				min = MIN(min,num);
 			}
-	   	}
+		}
 	   }
-           for( j = 0; j < npel; ++j )
+	   for( j = 0; j < npel; ++j )
 	   {
-           	for( i = 0; i < ndof; ++i )
-	   	{
+		for( i = 0; i < ndof; ++i )
+		{
 			num=*(lm + ndof*npel*k + ndof*j + i);
 			if(num > -1 )
-                        {
-                                *(idiag+num) = MIN(*(idiag+num),min);
-                        }
-	   	}
+			{
+				*(idiag+num) = MIN(*(idiag+num),min);
+			}
+		}
 	   }
 	}
-        for( i = 1; i < neqn; ++i )
+	for( i = 1; i < neqn; ++i )
 	{
 		*(idiag+i)=*(idiag+i-1)+i-*(idiag+i)+1;	
 	}

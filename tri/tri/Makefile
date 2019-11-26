@@ -1,5 +1,5 @@
 # SLFFEA Makefile
-# Version:  1.3
+# Version:  1.4
 # Copyright (C) 1999, 2000  San Le (slffea@yahoo.com)
 # http://slffea.com/
 #
@@ -31,21 +31,22 @@ COMMON = ../../common
 OBJECTS = $(COMMON)/matxt.o $(COMMON)/matx.o $(COMMON)/dotx.o \
 	$(COMMON)/lm.o $(COMMON)/idiag.o $(COMMON)/kasmbl.o \
 	$(COMMON)/sky.o $(COMMON)/qr.o $(COMMON)/eigen.o \
-	$(COMMON)/eigenprint.o
+	$(COMMON)/eigenprint.o $(COMMON)/crossx.o \
+	$(COMMON)/rotate2.o $(COMMON)/local_vec2.o
 
 PROGS = tri trp
 
 all: tri trp
 
 tri: femtr.o \
-		trmemory.o \
+		memory2.o \
 		trreader.o \
-		trid.o \
+		id.o \
 		trshape.o \
 		trib.o \
 		trkasmbl.o\
 		trconj.o\
-		trbound.o \
+		bound.o \
 		trmasmbl.o\
 		trlanczos.o\
 		trmassp.o\
@@ -53,14 +54,14 @@ tri: femtr.o \
 		trconst.h \
 		trstruct.h
 	$(CC) -o tri femtr.o \
-		trmemory.o \
+		memory2.o \
 		trreader.o \
-		trid.o \
+		id.o \
 		trshape.o \
 		trib.o \
 		trkasmbl.o\
 		trconj.o\
-		trbound.o \
+		bound.o \
 		trmasmbl.o\
 		trlanczos.o\
 		trmassp.o\
@@ -85,8 +86,8 @@ trlanczos.o: trlanczos.c
 trmasmbl.o: trmasmbl.c
 	$(CC) -c trmasmbl.c 
 
-trbound.o: trbound.c
-	$(CC) -c trbound.c 
+bound.o: $(COMMON)/bound.c
+	$(CC) -c $(COMMON)/bound.c -DTRI1
 
 trconj.o: trconj.c
 	$(CC) -c trconj.c
@@ -100,14 +101,14 @@ trib.o: trib.c
 trshape.o: trshape.c
 	$(CC) -c trshape.c 
 
-trid.o: trid.c
-	$(CC) -c trid.c
+id.o: $(COMMON)/id.c
+	$(CC) -c $(COMMON)/id.c -DTRI1
 
 trreader.o: trreader.c
 	$(CC) -c trreader.c
 
-trmemory.o: trmemory.c
-	$(CC) -c trmemory.c
+memory2.o: $(COMMON)/memory2.c
+	$(CC) -c $(COMMON)/memory2.c -DTRI1
 
 femtr.o: femtr.c
 	$(CC) -c femtr.c

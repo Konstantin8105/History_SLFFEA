@@ -2,11 +2,11 @@
     This program contains the mesh display routine for the FEM GUI
     for beam elements.
   
-   			Last Update 6/26/02
+                  Last Update 1/21/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -55,16 +55,16 @@ void CrossSetionPlaneDraw(void);
 
 void bmMeshDisplay(void)
 {
-    	glClear (GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
+	glClear (GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
 
-    	glLoadIdentity ();  /*  clear the matrix    */
+	glLoadIdentity ();  /*  clear the matrix    */
 
-        glTranslatef (left_right, up_down, in_out);
-        glRotatef (xAngle, 1, 0, 0);
-        glRotatef (yAngle, 0, 1, 0);
-        glRotatef (zAngle, 0, 0, 1);
+	glTranslatef (left_right, up_down, in_out);
+	glRotatef (xAngle, 1, 0, 0);
+	glRotatef (yAngle, 0, 1, 0);
+	glRotatef (zAngle, 0, 0, 1);
 
-    	glPointSize(8);
+	glPointSize(8);
 	if(Axes_flag)
 		glCallList(AxesList);
 	if(AppliedDisp_flag)
@@ -72,21 +72,21 @@ void bmMeshDisplay(void)
 		if(Before_flag )
 			glCallList(DispList);
 		if(After_flag )
-  			bmdisp_vectors(bc, coord);
+			bmdisp_vectors(bc, coord);
 	}
 	if(AppliedForce_flag)
 	{
 		if(Before_flag )
 			glCallList(ForceList);
 		if(After_flag )
-  			bmforce_vectors(bc, coord, force_vec);
+			bmforce_vectors(bc, coord, force_vec);
 	}
 	if(Dist_Load_flag)
 	{
 		if(Before_flag )
 			glCallList(Dist_LoadList);
 		if(After_flag )
-  			bmdist_load_vectors(bc, connecter, coord, dist_load_vec);
+			bmdist_load_vectors(bc, connecter, coord, dist_load_vec);
 	}
 	if(CrossSection_flag)
 	{
@@ -99,6 +99,6 @@ void bmMeshDisplay(void)
 		AxesNumbers();
 		/*AxesNumbers2();*/
 	}
-  	glutSwapBuffers();
+	glutSwapBuffers();
 }
 

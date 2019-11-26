@@ -14,7 +14,7 @@
 		Updated 7/6/00
 
     SLFFEA source file
-    Version:  1.3
+    Version:  1.4
     Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
@@ -31,7 +31,7 @@
 
 int globalKassemble(double *A, int *idiag, double *K_el, int *lm, int neqel)
 {
-        int i, j;
+	int i, j;
 	int ijmax, ijabs, locina, lmi, lmj;
 
 /* Assembly of the global skylined stiffness matrix */
@@ -62,7 +62,7 @@ int globalKassemble(double *A, int *idiag, double *K_el, int *lm, int neqel)
 int globalConjKassemble(double *A, int *dof_el, int el, double *K_diag,
 	double *K_el, int neqel, int neqlsq, int numel_K)
 {
-        int i, j;
+	int i, j;
 
 /* Store numel_K element stiffness matrices for the Conjugate Gradient method */
 

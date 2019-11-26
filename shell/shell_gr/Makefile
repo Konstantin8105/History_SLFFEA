@@ -1,5 +1,5 @@
 # SLFFEA Makefile
-# Version:  1.3
+# Version:  1.4
 # Copyright (C) 1999, 2000  San Le (slffea@yahoo.com)
 # http://slffea.com/
 #
@@ -27,7 +27,7 @@ LIB1 = -I/usr/local/include -O2 -funroll-loops -ansi -pedantic \
 LIB2 = -L/usr/local/lib -lglut -lGLU -lGL -lm -L/usr/X11/lib \
 	-L/usr/X11R6/lib -lX11 -lXext -lXmu -lXt -lXi -lSM -lICE
 
-OBJECTS_SH = ../shell/shmemory.o ../shell/shreader.o ../shell/shcoord.o 
+OBJECTS_SH = ../shell/shmemory.o ../shell/shreader.o ../shell/shcoord.o  ../shell/shlocal_vec.o 
 
 OBJECTS_SHH = ../shell/shconst.h ../shell/shstruct.h 
 
@@ -59,7 +59,7 @@ shpost: shpost.o \
 		shmemgr.o \
 		shreadgr.o \
 		shparam.o \
-		shparam2.o \
+		shregetparam.o \
 		shset.o \
 		shnorm_vec.o \
 		shbc_vec.o \
@@ -79,7 +79,7 @@ shpost: shpost.o \
 		shmemgr.o \
 		shreadgr.o \
 		shparam.o \
-		shparam2.o \
+		shregetparam.o \
 		shset.o \
 		shnorm_vec.o \
 		shbc_vec.o \
@@ -134,8 +134,8 @@ shnorm_vec.o: shnorm_vec.c
 shset.o: shset.c 
 	$(CC) -c shset.c
 
-shparam2.o: shparam2.c 
-	$(CC) -c shparam2.c 
+shregetparam.o: shregetparam.c 
+	$(CC) -c shregetparam.c 
 
 shparam.o: shparam.c 
 	$(CC) -c shparam.c 

@@ -2,11 +2,11 @@
     This utility function assembles the K matrix for a finite 
     element program which does analysis on a triangle.
 
-		Updated 11/18/01
+		Updated 10/20/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -23,7 +23,7 @@
 
 #define  DEBUG         0
 
-extern int analysis_flag, dof, neqn, numel, numnp, plane_stress_flag, sof;
+extern int analysis_flag, dof, neqn, numel, numnp, plane_stress_flag, sof, flag_3D;
 extern int gauss_stress_flag;
 extern int LU_decomp_flag, numel_K, numel_P;
 extern double shg[sosh], shg_node[sosh], shl[sosh], shl_node[sosh],
@@ -34,29 +34,39 @@ int globalConjKassemble(double *, int *, int , double *,
 
 int globalKassemble(double *, int *, double *, int *, int );
 
+int matXrot2(double *, double *, double *, int, int);
+
+int rotXmat2(double *, double *, double *, int, int);
+
+int rotTXmat2(double *, double *, double *, int, int);
+
 int matX( double *,double *,double *, int ,int ,int );
 
 int matXT( double *, double *, double *, int, int, int);
 
 int triangleB( double *,double *);
 
-int trshg( double *, int, double *, double *, double *);
+int trshg( double *, int, int, double *, double *, double *);
 
 int trKassemble(double *A, int *connect, double *coord, int *el_matl, double *force,
-	int *id, int *idiag, double *K_diag, int *lm, MATL *matl,
-	double *node_counter, STRAIN *strain, STRAIN *strain_node, STRESS *stress,
-	STRESS *stress_node, double *U, double *Arean)
+	int *id, int *idiag, double *K_diag, int *lm, double *local_xyz, MATL *matl,
+	double *node_counter, SDIM *strain, SDIM *strain_node, SDIM *stress,
+	SDIM *stress_node, double *U, double *Arean)
 {
 	int i, i1, i2, j, k, dof_el[neqel], sdof_el[npel*nsd];
-	int check, counter, node;
+	int check, counter, node, dum;
 	int matl_num;
-	double Emod, Pois, G;
+	double Emod, Pois, G, Gt, thickness;
 	double D11,D12,D21,D22;
 	double lamda, mu;
 	double B[soB], DB[soB];
-	double K_temp[neqlsq], K_el[neqlsq];
-	double force_el[neqel], U_el[neqel];
-	double coord_el_trans[npel*nsd], X1, X2, X3, Y1, Y2, Y3;
+	double K_temp[neqlsq], K_el[neqlsq], K_local[neqlsq36], rotate[nsd2*nsd];
+	double force_el[neqel], U_el[neqel], U_el_local[npel*(ndof-1)];
+	double coord_el[npel*nsd], coord_el_trans[npel*nsd],
+		coord_el_local[npel*nsd2], coord_el_local_trans[npel*nsd2];
+	double X1, X2, X3, Y1, Y2, Y3, Z1, Z2, Z3, X12, X13, Y12, Y13, Z12, Z13;
+	double Xp, Xr, Xq, Yp, Yr, Yq, Zp, Zr, Zq, Xpr, Xpq, Ypr, Ypq, Zpr, Zpq;
+	double Lpq, Ltr, Mpq, Mtr, Npq, Ntr, Dpq, Dpt, Dtr;
 	double stress_el[sdim], strain_el[sdim], xxaddyy, xxsubyy, xysq;
 	double det[1], wXdet;
 	double fdum;
@@ -67,6 +77,7 @@ int trKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
 		matl_num = *(el_matl+k);
 		Emod = matl[matl_num].E;
 		Pois = matl[matl_num].nu;
+		thickness = matl[matl_num].thick;
 
 		mu = Emod/(1.0+Pois)/2.0;
 
@@ -81,12 +92,19 @@ int trKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
 
 		/*printf("lamda, mu, Emod, Pois  %f %f %f %f \n", lamda, mu, Emod, Pois);*/
 
-		D11 = lamda+2.0*mu;
-		D12 = lamda;
-		D21 = lamda;
-		D22 = lamda+2.0*mu;
+/* Normally, with plane elements, we assume a unit thickness in the transverse direction.  But
+   because these elements can be 3 dimensional, I multiply the material property matrix by the
+   thickness.  This is justified by equation 5.141a in "Theory of Matrix Structural
+   Analysis" by J. S. Przemieniecki on page 86.
+*/
+
+		D11 = thickness*(lamda+2.0*mu);
+		D12 = thickness*lamda;
+		D21 = thickness*lamda;
+		D22 = thickness*(lamda+2.0*mu);
 
 		G = mu;
+		Gt = thickness*mu;
 
 /* Create the coord_el vector for one element */
 
@@ -96,12 +114,19 @@ int trKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
 
 			*(sdof_el+nsd*j) = nsd*node;
 			*(sdof_el+nsd*j+1) = nsd*node+1;
+			*(sdof_el+nsd*j+2) = nsd*node+2;
+
+			*(coord_el+nsd*j)=*(coord+*(sdof_el+nsd*j));
+			*(coord_el+nsd*j+1)=*(coord+*(sdof_el+nsd*j+1));
+			*(coord_el+nsd*j+2)=*(coord+*(sdof_el+nsd*j+2));
 
 			*(coord_el_trans+j)=*(coord+*(sdof_el+nsd*j));
 			*(coord_el_trans+npel*1+j)=*(coord+*(sdof_el+nsd*j+1));
+			*(coord_el_trans+npel*2+j)=*(coord+*(sdof_el+nsd*j+2));
 
 			*(dof_el+ndof*j) = ndof*node;
 			*(dof_el+ndof*j+1) = ndof*node+1;
+			*(dof_el+ndof*j+2) = ndof*node+2;
 
 /* Count the number of times a particular node is part of an element */
 
@@ -109,12 +134,40 @@ int trKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
 				*(node_counter + node) += 1.0;
 		}
 
-		memset(U_el,0,neqel*sof);
-		memset(K_el,0,neqlsq*sof);
-		memset(force_el,0,neqel*sof);
+		memset(rotate,0,nsd2*nsd*sof);
+		
+		if(!flag_3D)
+		{
+/* For 2-D meshes */
+		    X1 = *(coord_el_trans);
+		    X2 = *(coord_el_trans + 1);
+		    X3 = *(coord_el_trans + 2);
 
-		memset(B,0,soB*sof);
-		memset(DB,0,soB*sof);
+		    Y1 = *(coord_el_trans + npel*1);
+		    Y2 = *(coord_el_trans + npel*1 + 1);
+		    Y3 = *(coord_el_trans + npel*1 + 2);
+		}
+		else
+		{
+/* For 3-D meshes */
+
+/* For 3-D triangle meshes, I have to rotate from the global coordinates to the local x and
+   y coordinates which lie in the plane of the element.  The local basis used for the
+   rotation has already been calculated and stored in local_xyz[].  Below, it is
+   copied to rotate[].
+*/
+		    *(rotate)     = *(local_xyz + nsdsq*k);
+		    *(rotate + 1) = *(local_xyz + nsdsq*k + 1);
+		    *(rotate + 2) = *(local_xyz + nsdsq*k + 2);
+		    *(rotate + 3) = *(local_xyz + nsdsq*k + 3);
+		    *(rotate + 4) = *(local_xyz + nsdsq*k + 4);
+		    *(rotate + 5) = *(local_xyz + nsdsq*k + 5);
+
+/* Put coord_el into local coordinates */
+
+		    dum = nsd*npel;
+		    check = rotXmat2(coord_el_local, rotate, coord_el, 1, dum);
+		    if(!check) printf( "Problems with  rotXmat2 \n");
 
 /* Assembly of the B matrix.  This is taken from "Fundamentals of the Finite
    Element Method" by Hartley Grandin Jr., page 201-205.
@@ -129,13 +182,18 @@ int trKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
      is still the same.
 */
 
-		X1 = *(coord_el_trans);
-		X2 = *(coord_el_trans + 1);
-		X3 = *(coord_el_trans + 2);
+		    X1 = *(coord_el_local);     Y1 = *(coord_el_local + 1);
+		    X2 = *(coord_el_local + 2); Y2 = *(coord_el_local + 3);
+		    X3 = *(coord_el_local + 4); Y3 = *(coord_el_local + 5);
+		}
 
-		Y1 = *(coord_el_trans + npel*1);
-		Y2 = *(coord_el_trans + npel*1 + 1);
-		Y3 = *(coord_el_trans + npel*1 + 2);
+		*(coord_el_local_trans) = X1;     *(coord_el_local_trans + 3) = Y1;
+		*(coord_el_local_trans + 1) = X2; *(coord_el_local_trans + 4) = Y2;
+		*(coord_el_local_trans + 2) = X3; *(coord_el_local_trans + 5) = Y3;
+
+/* Area is simply the the cross product of the sides connecting node 1 to node 0
+   and node 2 to node 0, divided by 2.
+*/
 
 		fdum = (X2 - X1)*(Y3 - Y1) - (X3 - X1)*(Y2 - Y1);
 
@@ -151,7 +209,20 @@ int trKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
 
 		*(Arean + k) = .5*fdum;
 
+		memset(U_el,0,neqel*sof);
+		memset(K_el,0,neqlsq*sof);
+		memset(K_temp,0,neqlsq*sof);
+		memset(force_el,0,neqel*sof);
+
+		memset(B,0,soB*sof);
+		memset(DB,0,soB*sof);
+		memset(K_local,0,neqlsq36*sof);
 #if !DEBUG
+
+/* For [B] below, see "Fundamentals of the Finite Element Method" by Hartley Grandin Jr.,
+   page 205, Eq. 6.8 on page 204.  Despite the permutation of nodes mentioned above, 
+   B remains the same.  */
+
 		*(B) = Y2 - Y3;
 		*(B+2) = Y3 - Y1;
 		*(B+4) = Y1 - Y2;
@@ -173,47 +244,89 @@ int trKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
    of integration points (num_int), but for triangles, the shape
    function derivatives are constant.
 */
-		check=trshg(det, k, shl, shg, coord_el_trans);
+		check=trshg(det, k, 2, shl, shg, coord_el_local_trans);
 		if(!check) printf( "Problems with trshg \n");
 
 		check = triangleB(shg,B);
 		if(!check) printf( "Problems with triangleB \n");
 #endif
 
-		for( i1 = 0; i1 < neqel; ++i1 )
+		for( i1 = 0; i1 < neqel6; ++i1 )
 		{
 			*(DB+i1) = *(B+i1)*D11+
-				*(B+neqel*1+i1)*D12;
-			*(DB+neqel*1+i1) = *(B+i1)*D21+
-				*(B+neqel*1+i1)*D22;
-			*(DB+neqel*2+i1) = *(B+neqel*2+i1)*G;
+				*(B+neqel6*1+i1)*D12;
+			*(DB+neqel6*1+i1) = *(B+i1)*D21+
+				*(B+neqel6*1+i1)*D22;
+			*(DB+neqel6*2+i1) = *(B+neqel6*2+i1)*Gt;
 		}
 
-		check=matXT(K_el, B, DB, neqel, neqel, sdim);
+		check=matXT(K_local, B, DB, neqel6, neqel6, sdim);
 		if(!check) printf( "Problems with matXT  \n");
 
 #if !DEBUG
-		for( j = 0; j < neqlsq; ++j )
+		for( j = 0; j < neqlsq36; ++j )
 		{
-			*(K_el + j) /= 4.0*(*(Arean + k));
+			*(K_el + j) = *(K_local + j)/( 4.0*(*(Arean + k)) );
 		}
 #endif
 
 #if DEBUG
 /* The code below is for debugging the code.  Normally, I would use
    wXdet rather than .5*(*(det)), but we are really using the one
-   point rule, since the derivative of the shape functions are
+   point rule, since the derivative of the shape functions is
    constant, and w = 1.0.  This also means that the determinant does
    not change and we only need *(det+0).
 
    A factor of 0.5 is needed to do the integration.  See Eq. 3.I.34 in
    "The Finite Element Method" by Thomas Hughes, page 174
 */
-		for( j = 0; j < neqlsq; ++j )
+		for( j = 0; j < neqlsq36; ++j )
 		{
-			*(K_el + j) *= .5*(*(det));
+			*(K_el + j) = *(K_local + j)*.5*(*(det));
 		}
 #endif
+
+		if(!flag_3D)
+		{
+/* For 2-D meshes */
+		   for( i = 0; i < npel; ++i )
+		   {
+			for( j = 0; j < npel; ++j )
+			{
+/* row for displacement x */
+			   *(K_temp + ndof*neqel*i + ndof*j) =
+				*(K_el + ndof2*neqel6*i + ndof2*j);
+			   *(K_temp + ndof*neqel*i + ndof*j + 1) =
+				*(K_el + ndof2*neqel6*i + ndof2*j + 1);
+			   *(K_temp + ndof*neqel*i + ndof*j + 2) = 0.0;
+
+/* row for displacement y */
+			   *(K_temp + ndof*neqel*i + neqel + ndof*j) =
+				*(K_el + ndof2*neqel6*i + neqel6 + ndof2*j);
+			   *(K_temp + ndof*neqel*i + neqel + ndof*j + 1) =
+				*(K_el + ndof2*neqel6*i + neqel6 + ndof2*j + 1);
+			   *(K_temp + ndof*neqel*i + neqel + ndof*j + 2) = 0.0;
+
+/* row for displacement z */
+			   *(K_temp + ndof*neqel*i + 2*neqel + ndof*j) = 0.0;
+			   *(K_temp + ndof*neqel*i + 2*neqel + ndof*j + 1) = 0.0;
+			   *(K_temp + ndof*neqel*i + 2*neqel + ndof*j + 2) = 0.0;
+			}
+		   }
+		   memcpy(K_el, K_temp, neqlsq*sizeof(double));
+		}
+		else
+		{
+/* For 3-D meshes */
+
+/* Put K back to global coordinates */
+
+		   check = matXrot2(K_temp, K_el, rotate, neqel6, neqel);
+		   if(!check) printf( "Problems with matXrot2 \n");
+
+		   check = rotTXmat2(K_el, rotate, K_temp, neqel, neqel);
+		   if(!check) printf( "Problems with rotTXmat2 \n");
+		}
 
 		for( j = 0; j < neqel; ++j )
 		{
@@ -263,10 +376,35 @@ int trKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
 
 			memset(stress_el,0,sdim*sof);
 			memset(strain_el,0,sdim*sof);
+			memset(U_el_local,0,neqel6*sof);
 
 /* Calculation of the local strain matrix */
 
-			check=matX(strain_el, B, U_el, sdim, 1, neqel );
+/* Determine local U coordinates */
+
+			if(!flag_3D)
+			{
+/* For 2-D meshes */
+				*(U_el_local) = *(U_el);
+				*(U_el_local + 1) = *(U_el + 1);
+
+				*(U_el_local + 2) = *(U_el + 3);
+				*(U_el_local + 3) = *(U_el + 4);
+
+				*(U_el_local + 4) = *(U_el + 6);
+				*(U_el_local + 5) = *(U_el + 7);
+			}
+			else
+			{
+/* For 3-D meshes */
+
+/* Put U_el into local coordinates */
+
+			   check = rotXmat2(U_el_local, rotate, U_el, 1, neqel);
+			   if(!check) printf( "Problems with rotXmat2 \n");
+			}
+
+			check=matX(strain_el, B, U_el_local, sdim, 1, neqel6 );
 			if(!check) printf( "Problems with matX \n");
 
 #if 0
@@ -309,7 +447,7 @@ int trKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
 				strain[k].yy*D12;
 			*(stress_el+1) = strain[k].xx*D21+
 				strain[k].yy*D22;
-			*(stress_el+2) = strain[k].xy*G;
+			*(stress_el+2) = strain[k].xy*Gt;
 
 /* Update of the global stress matrix */
 

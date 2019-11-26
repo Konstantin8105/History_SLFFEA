@@ -5,7 +5,7 @@
    			Last Update 3/2/05
 
     SLFFEA source file
-    Version:  1.3
+    Version:  1.4
     Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005  San Le 
 
     The source code contained in this file is released under the
@@ -53,21 +53,21 @@ extern double max_Uphi_x, min_Uphi_x, del_Uphi_x, max_Uphi_y, min_Uphi_y, del_Up
 
 void bmReGetparameter(void)
 {
-        int i, j, check; 
+	int i, j, check; 
 	int node_Ux_max, node_Ux_min, node_Uy_max, node_Uy_min, node_Uz_max, node_Uz_min,
 		node_Uphi_x_max, node_Uphi_x_min, node_Uphi_y_max, node_Uphi_y_min,
 		node_Uphi_z_max, node_Uphi_z_min;
-	IMDIM max_moment_el, min_moment_el, max_moment_integ, min_moment_integ,
-		max_curve_el, min_curve_el, max_curve_integ, min_curve_integ;
-	ISDIM max_stress_el, min_stress_el, max_stress_integ, min_stress_integ,
-		max_strain_el, min_strain_el, max_strain_integ, min_strain_integ;
+	IMDIM el_moment_max, el_moment_min, integ_moment_max, integ_moment_min,
+		el_curve_max, el_curve_min, integ_curve_max, integ_curve_min;
+	ISDIM el_stress_max, el_stress_min, integ_stress_max, integ_stress_min,
+		el_strain_max, el_strain_min, integ_strain_max, integ_strain_min;
 	char char_dum[20], char_dum2[5], char_dum3[5], buf[ BUFSIZ ];
 	double fdum;
 	FILE *bmdata;
 
 /*   bmdata contains all the parameters and extreme values
 */
-        bmdata = fopen( "bmview.dat","r" );
+	bmdata = fopen( "bmview.dat","r" );
 
 /* Read data from the file "bmview.dat" */
 
@@ -99,42 +99,42 @@ void bmReGetparameter(void)
 	fgets( buf, BUFSIZ, bmdata );
 	fgets( buf, BUFSIZ, bmdata );
 	fscanf( bmdata,"%20s %5s    %d %d %d %d  %lf %lf\n", char_dum, char_dum2,
-		&min_moment_el.xx, &min_moment_integ.xx, &max_moment_el.xx,
-		&max_moment_integ.xx, &min_moment.xx, &max_moment.xx);
+		&el_moment_min.xx, &integ_moment_min.xx, &el_moment_max.xx,
+		&integ_moment_max.xx, &min_moment.xx, &max_moment.xx);
 	fscanf( bmdata,"%20s %5s    %d %d %d %d  %lf %lf\n", char_dum, char_dum2,
-		&min_moment_el.yy, &min_moment_integ.yy, &max_moment_el.yy,
-		&max_moment_integ.yy, &min_moment.yy, &max_moment.yy);
+		&el_moment_min.yy, &integ_moment_min.yy, &el_moment_max.yy,
+		&integ_moment_max.yy, &min_moment.yy, &max_moment.yy);
 	fscanf( bmdata,"%20s %5s    %d %d %d %d  %lf %lf\n", char_dum, char_dum2,
-		&min_moment_el.zz, &min_moment_integ.zz, &max_moment_el.zz,
-		&max_moment_integ.zz, &min_moment.zz, &max_moment.zz);
+		&el_moment_min.zz, &integ_moment_min.zz, &el_moment_max.zz,
+		&integ_moment_max.zz, &min_moment.zz, &max_moment.zz);
 	fscanf( bmdata,"%20s %5s    %d %d %d %d  %lf %lf\n", char_dum, char_dum2,
-		&min_stress_el.xx, &min_stress_integ.xx, &max_stress_el.xx,
-		&max_stress_integ.xx, &min_stress.xx, &max_stress.xx);
+		&el_stress_min.xx, &integ_stress_min.xx, &el_stress_max.xx,
+		&integ_stress_max.xx, &min_stress.xx, &max_stress.xx);
 	fscanf( bmdata,"%20s %5s    %d %d %d %d  %lf %lf\n", char_dum, char_dum2,
-		&min_stress_el.xy, &min_stress_integ.xy, &max_stress_el.xy,
-		&max_stress_integ.xy, &min_stress.xy, &max_stress.xy);
+		&el_stress_min.xy, &integ_stress_min.xy, &el_stress_max.xy,
+		&integ_stress_max.xy, &min_stress.xy, &max_stress.xy);
 	fscanf( bmdata,"%20s %5s    %d %d %d %d  %lf %lf\n", char_dum, char_dum2,
-		&min_stress_el.zx, &min_stress_integ.zx, &max_stress_el.zx,
-		&max_stress_integ.zx, &min_stress.zx, &max_stress.zx);
+		&el_stress_min.zx, &integ_stress_min.zx, &el_stress_max.zx,
+		&integ_stress_max.zx, &min_stress.zx, &max_stress.zx);
 	fscanf( bmdata,"\n");
 	fscanf( bmdata,"%20s %5s    %d %d %d %d  %lf %lf\n", char_dum, char_dum2,
-		&min_curve_el.xx, &min_curve_integ.xx, &max_curve_el.xx,
-		&max_curve_integ.xx, &min_curve.xx, &max_curve.xx);
+		&el_curve_min.xx, &integ_curve_min.xx, &el_curve_max.xx,
+		&integ_curve_max.xx, &min_curve.xx, &max_curve.xx);
 	fscanf( bmdata,"%20s %5s    %d %d %d %d  %lf %lf\n", char_dum, char_dum2,
-		&min_curve_el.yy, &min_curve_integ.yy, &max_curve_el.yy,
-		&max_curve_integ.yy, &min_curve.yy, &max_curve.yy);
+		&el_curve_min.yy, &integ_curve_min.yy, &el_curve_max.yy,
+		&integ_curve_max.yy, &min_curve.yy, &max_curve.yy);
 	fscanf( bmdata,"%20s %5s    %d %d %d %d  %lf %lf\n", char_dum, char_dum2,
-		&min_curve_el.zz, &min_curve_integ.zz, &max_curve_el.zz,
-		&max_curve_integ.zz, &min_curve.zz, &max_curve.zz);
+		&el_curve_min.zz, &integ_curve_min.zz, &el_curve_max.zz,
+		&integ_curve_max.zz, &min_curve.zz, &max_curve.zz);
 	fscanf( bmdata,"%20s %5s    %d %d %d %d  %lf %lf\n", char_dum, char_dum2,
-		&min_strain_el.xx, &min_strain_integ.xx, &max_strain_el.xx,
-		&max_strain_integ.xx, &min_strain.xx, &max_strain.xx);
+		&el_strain_min.xx, &integ_strain_min.xx, &el_strain_max.xx,
+		&integ_strain_max.xx, &min_strain.xx, &max_strain.xx);
 	fscanf( bmdata,"%20s %5s    %d %d %d %d  %lf %lf\n", char_dum, char_dum2,
-		&min_strain_el.xy, &min_strain_integ.xy, &max_strain_el.xy,
-		&max_strain_integ.xy, &min_strain.xy, &max_strain.xy);
+		&el_strain_min.xy, &integ_strain_min.xy, &el_strain_max.xy,
+		&integ_strain_max.xy, &min_strain.xy, &max_strain.xy);
 	fscanf( bmdata,"%20s %5s    %d %d %d %d  %lf %lf\n", char_dum, char_dum2,
-		&min_strain_el.zx, &min_strain_integ.zx, &max_strain_el.zx,
-		&max_strain_integ.zx, &min_strain.zx, &max_strain.zx);
+		&el_strain_min.zx, &integ_strain_min.zx, &el_strain_max.zx,
+		&integ_strain_max.zx, &min_strain.zx, &max_strain.zx);
 	fscanf( bmdata,"\n");
 	fgets( buf, BUFSIZ, bmdata );
 	fscanf( bmdata,"%lf %lf %lf %lf %lf %lf\n", &ortho_right, &ortho_left,
@@ -165,42 +165,42 @@ void bmReGetparameter(void)
 	printf("\n");
 	printf( "                        el. gauss pt.\n");
 	printf( "                        min       max         min           max\n");
-	printf("moment xx            %5d %2d %5d %2d  %14.6e %14.6e\n", min_moment_el.xx,
-		min_moment_integ.xx, max_moment_el.xx, max_moment_integ.xx,
+	printf("moment xx            %5d %2d %5d %2d  %14.6e %14.6e\n", el_moment_min.xx,
+		integ_moment_min.xx, el_moment_max.xx, integ_moment_max.xx,
 		min_moment.xx, max_moment.xx);
-	printf("moment yy            %5d %2d %5d %2d  %14.6e %14.6e\n", min_moment_el.yy,
-		min_moment_integ.yy, max_moment_el.yy, max_moment_integ.yy,
+	printf("moment yy            %5d %2d %5d %2d  %14.6e %14.6e\n", el_moment_min.yy,
+		integ_moment_min.yy, el_moment_max.yy, integ_moment_max.yy,
 		min_moment.yy, max_moment.yy);
-	printf("moment zz            %5d %2d %5d %2d  %14.6e %14.6e\n", min_moment_el.zz,
-		min_moment_integ.zz, max_moment_el.zz, max_moment_integ.zz,
+	printf("moment zz            %5d %2d %5d %2d  %14.6e %14.6e\n", el_moment_min.zz,
+		integ_moment_min.zz, el_moment_max.zz, integ_moment_max.zz,
 		min_moment.zz, max_moment.zz);
-	printf("stress xx            %5d %2d %5d %2d  %14.6e %14.6e\n", min_stress_el.xx,
-		min_stress_integ.xx, max_stress_el.xx, max_stress_integ.xx,
+	printf("stress xx            %5d %2d %5d %2d  %14.6e %14.6e\n", el_stress_min.xx,
+		integ_stress_min.xx, el_stress_max.xx, integ_stress_max.xx,
 		min_stress.xx, max_stress.xx);
-	printf("stress xy            %5d %2d %5d %2d  %14.6e %14.6e\n", min_stress_el.xy,
-		min_stress_integ.xy, max_stress_el.xy, max_stress_integ.xy,
+	printf("stress xy            %5d %2d %5d %2d  %14.6e %14.6e\n", el_stress_min.xy,
+		integ_stress_min.xy, el_stress_max.xy, integ_stress_max.xy,
 		min_stress.xy, max_stress.xy);
-	printf("stress zx            %5d %2d %5d %2d  %14.6e %14.6e\n", min_stress_el.zx,
-		min_stress_integ.zx, max_stress_el.zx, max_stress_integ.zx,
+	printf("stress zx            %5d %2d %5d %2d  %14.6e %14.6e\n", el_stress_min.zx,
+		integ_stress_min.zx, el_stress_max.zx, integ_stress_max.zx,
 		min_stress.zx, max_stress.zx);
 	printf("\n");
-	printf("curve xx             %5d %2d %5d %2d  %14.6e %14.6e\n", min_curve_el.xx,
-		min_curve_integ.xx, max_curve_el.xx, max_curve_integ.xx,
+	printf("curve xx             %5d %2d %5d %2d  %14.6e %14.6e\n", el_curve_min.xx,
+		integ_curve_min.xx, el_curve_max.xx, integ_curve_max.xx,
 		min_curve.xx, max_curve.xx);
-	printf("curve yy             %5d %2d %5d %2d  %14.6e %14.6e\n", min_curve_el.yy,
-		min_curve_integ.yy, max_curve_el.yy, max_curve_integ.yy,
+	printf("curve yy             %5d %2d %5d %2d  %14.6e %14.6e\n", el_curve_min.yy,
+		integ_curve_min.yy, el_curve_max.yy, integ_curve_max.yy,
 		min_curve.yy, max_curve.yy);
-	printf("curve zz             %5d %2d %5d %2d  %14.6e %14.6e\n", min_curve_el.zz,
-		min_curve_integ.zz, max_curve_el.zz, max_curve_integ.zz,
+	printf("curve zz             %5d %2d %5d %2d  %14.6e %14.6e\n", el_curve_min.zz,
+		integ_curve_min.zz, el_curve_max.zz, integ_curve_max.zz,
 		min_curve.zz, max_curve.zz);
-	printf("strain xx            %5d %2d %5d %2d  %14.6e %14.6e\n", min_strain_el.xx,
-		min_strain_integ.xx, max_strain_el.xx, max_strain_integ.xx,
+	printf("strain xx            %5d %2d %5d %2d  %14.6e %14.6e\n", el_strain_min.xx,
+		integ_strain_min.xx, el_strain_max.xx, integ_strain_max.xx,
 		min_strain.xx, max_strain.xx);
-	printf("strain xy            %5d %2d %5d %2d  %14.6e %14.6e\n", min_strain_el.xy,
-		min_strain_integ.xy, max_strain_el.xy, max_strain_integ.xy,
+	printf("strain xy            %5d %2d %5d %2d  %14.6e %14.6e\n", el_strain_min.xy,
+		integ_strain_min.xy, el_strain_max.xy, integ_strain_max.xy,
 		min_strain.xy, max_strain.xy);
-	printf("strain zx            %5d %2d %5d %2d  %14.6e %14.6e\n", min_strain_el.zx,
-		min_strain_integ.zx, max_strain_el.zx, max_strain_integ.zx,
+	printf("strain zx            %5d %2d %5d %2d  %14.6e %14.6e\n", el_strain_min.zx,
+		integ_strain_min.zx, el_strain_max.zx, integ_strain_max.zx,
 		min_strain.zx, max_strain.zx);
 	printf("\n");
 	printf("Orthographic viewport parameters(right, left, top, bootom, near, far)\n ");

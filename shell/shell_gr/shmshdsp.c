@@ -2,11 +2,11 @@
     This program contains the mesh display routine for the FEM GUI
     for shell elements.
   
-   			Last Update 2/4/02
+                  Last Update 1/21/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -52,16 +52,16 @@ void CrossSetionPlaneDraw(void);
 
 void shMeshDisplay(void)
 {
-    	glClear (GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
+	glClear (GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
 
-    	glLoadIdentity ();  /*  clear the matrix    */
+	glLoadIdentity ();  /*  clear the matrix    */
 
-        glTranslatef (left_right, up_down, in_out);
-        glRotatef (xAngle, 1, 0, 0);
-        glRotatef (yAngle, 0, 1, 0);
-        glRotatef (zAngle, 0, 0, 1);
+	glTranslatef (left_right, up_down, in_out);
+	glRotatef (xAngle, 1, 0, 0);
+	glRotatef (yAngle, 0, 1, 0);
+	glRotatef (zAngle, 0, 0, 1);
 
-    	glPointSize(8);
+	glPointSize(8);
 	if(Axes_flag)
 		glCallList(AxesList);
 	if(AppliedDisp_flag)
@@ -69,14 +69,14 @@ void shMeshDisplay(void)
 		if(Before_flag )
 			glCallList(DispList);
 		if(After_flag )
-  			shdisp_vectors(bc, coord);
+			shdisp_vectors(bc, coord);
 	}
 	if(AppliedForce_flag)
 	{
 		if(Before_flag )
 			glCallList(ForceList);
 		if(After_flag )
-  			shforce_vectors(bc, coord, force_vec);
+			shforce_vectors(bc, coord, force_vec);
 	}
 	if(CrossSection_flag)
 	{
@@ -85,13 +85,13 @@ void shMeshDisplay(void)
 	glLineWidth (2.0);
 	if(Render_flag)
 		shrender();
-    	else
+	else
 		shmeshdraw();
 	if(Axes_flag)
 	{
 		AxesNumbers();
 		/*AxesNumbers2();*/
 	}
-  	glutSwapBuffers();
+	glutSwapBuffers();
 }
 

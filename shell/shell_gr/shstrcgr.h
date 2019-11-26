@@ -2,10 +2,10 @@
     This file contains the structures of the graphics program
     for shell elements.
 
-	Updated 9/26/06
+	Updated 9/22/06
 
     SLFFEA source file
-    Version:  1.3
+    Version:  1.4
     Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
 
     The source code contained in this file is released under the
@@ -20,15 +20,15 @@
 #include "../shell/shconst.h"
 
 typedef struct {
-        int xx,yy,xy,zx,yz,I,II,III;
+	int xx,yy,xy,zx,yz,I,II,III;
 } ISDIM;
 
 typedef struct {
-        ISDIM pt[num_int];
+	ISDIM pt[num_int];
 } ISTRESS;
 
 typedef struct {
-        ISDIM pt[num_int];
+	ISDIM pt[num_int];
 } ISTRAIN;
 
 /* The structure below is a repeat of XYZF found in ../shell/shstruct.h.
@@ -37,13 +37,13 @@ typedef struct {
    and this causes a redundancy which is not allowed. */
 
 typedef struct {
-        double x, y, z, phix, phiy;
+	double x, y, z, phix, phiy;
 } XYZPhiF_GR;
 
 typedef struct {
-        double x, y, z;
+	double x, y, z;
 } XYZF_GR;
 
 typedef struct {
-        XYZF_GR face[12];
+	XYZF_GR face[12];
 } NORM;

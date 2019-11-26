@@ -2,11 +2,11 @@
     This program reads in the new input file and prepares it
     for graphical display.
   
-   			Last Update 4/27/05
+   			Last Update 12/4/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -36,30 +36,30 @@
 
 /******** Data management and calculations ********/
 
-void tsforce_vectors0(int , BOUND , double *, XYZF *);
+void force_vectors0(int , BOUND , double *, XYZF *);
 
-void tsdisp_vectors0(int , BOUND , double *);
+void disp_vectors0(int , BOUND , double *);
 
 void agvMakeAxesList(GLuint);
 
-int tsset( BOUND , double *, XYZF *, STRAIN *, ISTRAIN *, STRESS *,
-	ISTRESS *, double *, int *);
+int tsset( BOUND , double *, XYZF *, SDIM *, ISDIM *, SDIM *,
+	ISDIM *, double *, int *);
 
-int tsparameter( double *, STRAIN *, STRESS *, double * );
+int tsparameter( double *, SDIM *, SDIM *, double * );
 
 int tsReGetMemory2_gr( XYZF **, int );
 
-int tsreader_gr( FILE *, STRAIN *);
+int tsreader_gr( FILE *, SDIM *);
 
 int tsreader( BOUND , int *, double *, int *, double *, MATL *,
-	FILE *, STRESS *, double *);
+	FILE *, SDIM *, double *);
 
-int tsReGetMemory_gr( ISTRAIN **, ISTRESS **, int );
+int tsReGetMemory_gr( ISDIM **, ISDIM **, int );
 
 int tsReGetMemory( double **, int, int **, int, MATL **, int , XYZI **, int,
-        STRAIN **, STRESS **, int );
+	SDIM **, SDIM **, int );
 
-int filecheck( char *, char *, FILE **, FILE **, FILE **, char * );
+int filecheck( char *, char *, FILE **, FILE **, FILE **, char *, int );
 
 /******************************* GLOBAL VARIABLES **************************/
 
@@ -77,13 +77,13 @@ extern BOUND bc;
 extern MATL *matl;
 extern int *el_matl;
 extern double *force;
-extern STRESS *stress;
-extern STRAIN *strain;
+extern SDIM *stress;
+extern SDIM *strain;
 
 /* Global variables for the mesh color and nodal data */
 
-extern ISTRESS *stress_color;
-extern ISTRAIN *strain_color;
+extern ISDIM *stress_color;
+extern ISDIM *strain_color;
 extern int *U_color, *el_matl_color;
 extern MATL *matl_crtl;
 
@@ -103,14 +103,14 @@ extern double amplify_factor;
 int tsGetNewMesh(void)
 {
 
-        int i, j, check;
-        char *ccheck;
+	int i, j, check;
+	char *ccheck;
 	int dum, dum1, dum2, dum3;
-        double fpointx, fpointy, fpointz;
-	int sofmi, sofmf, sofmSTRESS, sofmISTRESS, sofmSTRAIN,
-		sofmXYZI, sofmXYZF, ptr_inc;
-        char name[30], name2[30], ots_exten[4], buf[ BUFSIZ ];
-        FILE *o1, *o2, *o3;
+	double fpointx, fpointy, fpointz;
+	int sofmi, sofmf, sofmSDIM, sofmISDIM, sofmXYZI, sofmXYZF, ptr_inc;
+	char name[30], name2[30], ots_exten[4], buf[ BUFSIZ ];
+	int ots_exten_length = 4;
+	FILE *o1, *o2, *o3;
 
 /* Delete the old display lists */
 
@@ -125,7 +125,7 @@ int tsGetNewMesh(void)
 
 	memset(name,0,30*sizeof(char));
 	memset(name2,0,30*sizeof(char));
-	memset(ots_exten,0,4*sizeof(char));
+	memset(ots_exten,0,ots_exten_length*sizeof(char));
 
 /* Initialize old variables */
 
@@ -139,97 +139,97 @@ int tsGetNewMesh(void)
 	node_choice = 0;
 	ele_choice = 0;
 
-	ccheck = strncpy(ots_exten,".ots",4);
+	ccheck = strncpy(ots_exten,".ots",ots_exten_length);
 	if(!ccheck) printf( " Problems with strncpy \n");
 
-        printf("What is the name of the input file containing the \n");
-        printf("truss structural data? \n");
-        scanf( "%30s",name2);
+	printf("What is the name of the input file containing the \n");
+	printf("truss structural data? (example: tower)\n");
+	scanf( "%30s",name2);
 
 /*   o1 contains all the structural data for input
      o3 contains all the structural data for postprocessing
      o2 is used to determine the existance of input and post files
 */
-        o2 = fopen( name2,"r" );
-        if(o2 == NULL ) {
-                printf("Can't find file %30s\n", name2);
-                exit(1);
-        }
-        /*printf( "%3d %30s\n ",name2_length,name2);*/
+	o2 = fopen( name2,"r" );
+	if(o2 == NULL ) {
+		printf("Can't find file %30s\n", name2);
+		exit(1);
+	}
+	/*printf( "%3d %30s\n ",name2_length,name2);*/
 
-        fgets( buf, BUFSIZ, o2 );
-        fscanf( o2, "%d %d %d %d\n ",&numel,&numnp,&nmat,&nmode);
-        dof=numnp*ndof;
+	fgets( buf, BUFSIZ, o2 );
+	fscanf( o2, "%d %d %d %d\n ",&numel,&numnp,&nmat,&nmode);
+	dof=numnp*ndof;
 	sdof=numnp*nsd;
 	nmode = abs(nmode);
 
-	check = filecheck( name, name2, &o1, &o2, &o3, ots_exten );
+	check = filecheck( name, name2, &o1, &o2, &o3, ots_exten, ots_exten_length );
 	if(!check) printf( " Problems with filecheck \n");
 
 	if( input_flag )
 	{
-        	fgets( buf, BUFSIZ, o1 );
-        	fscanf( o1, "%d %d %d %d\n ",&dum,&dum1,&dum2,&dum3);
-        	printf( "%d %d %d %d\n ",dum,dum1,dum2,dum3);
-                /*printf( "name %30s\n ",name);*/
+		fgets( buf, BUFSIZ, o1 );
+		fscanf( o1, "%d %d %d %d\n ",&dum,&dum1,&dum2,&dum3);
+		printf( "%d %d %d %d\n ",dum,dum1,dum2,dum3);
+		/*printf( "name %30s\n ",name);*/
 	}
 	if( post_flag )
 	{
-        	fgets( buf, BUFSIZ, o3 );
-        	fscanf( o3, "%d %d %d %d\n ",&dum,&dum1,&dum2,&dum3);
-        	printf( "%d %d %d %d\n ",dum,dum1,dum2,dum3);
-                /*printf( "out %30s\n ",out);*/
+		fgets( buf, BUFSIZ, o3 );
+		fscanf( o3, "%d %d %d %d\n ",&dum,&dum1,&dum2,&dum3);
+		printf( "%d %d %d %d\n ",dum,dum1,dum2,dum3);
+		/*printf( "out %30s\n ",out);*/
 	}
 
 /*   Begin allocation of meomory */
 
 /* For the doubles */
-        sofmf=2*sdof + 2*dof;
+	sofmf=2*sdof + 2*dof;
 
 /* For the integers */
-        sofmi= numel*npel + numel + numnp+1 + 1 + dof;
+	sofmi= numel*npel + numel + numnp+1 + 1 + dof;
 
 /* For the XYZI integers */
-        sofmXYZI=numnp+1 + 1;
+	sofmXYZI=numnp+1 + 1;
 
-/* For the STRESS */
-        sofmSTRESS=numel;
+/* For the SDIM */
+	sofmSDIM=numel;
 
-/* For the ISTRESS */
-        sofmISTRESS=numel;
+/* For the ISDIM */
+	sofmISDIM=numel;
 
 	check = tsReGetMemory( &mem_double, sofmf, &mem_int, sofmi, &matl, nmat,
-		&mem_XYZI, sofmXYZI, &strain, &stress, sofmSTRESS );
+		&mem_XYZI, sofmXYZI, &strain, &stress, sofmSDIM );
 	if(!check) printf( " Problems with tsReGetMemory \n");
 
-	check = tsReGetMemory_gr( &strain_color, &stress_color, sofmISTRESS );
+	check = tsReGetMemory_gr( &strain_color, &stress_color, sofmISDIM );
 	if(!check) printf( " Problems with tsReGetMemory_gr \n");
 
 /* For the doubles */
-                                        ptr_inc=0;
-        coord=(mem_double+ptr_inc);     ptr_inc += sdof;
-        coord0=(mem_double+ptr_inc);    ptr_inc += sdof;
-        force=(mem_double+ptr_inc);     ptr_inc += dof;
-        U=(mem_double+ptr_inc);         ptr_inc += dof;
+	                                ptr_inc=0;
+	coord=(mem_double+ptr_inc);     ptr_inc += sdof;
+	coord0=(mem_double+ptr_inc);    ptr_inc += sdof;
+	force=(mem_double+ptr_inc);     ptr_inc += dof;
+	U=(mem_double+ptr_inc);         ptr_inc += dof;
 
 /* For the materials */
 
 	matl_crtl = matl;
 
 /* For the integers */
-                                                ptr_inc = 0;
-        connecter=(mem_int+ptr_inc);            ptr_inc += numel*npel;
-        el_matl=(mem_int+ptr_inc);              ptr_inc += numel;
-        bc.force =(mem_int+ptr_inc);            ptr_inc += numnp+1;
-        bc.num_force=(mem_int+ptr_inc);         ptr_inc += 1;
-        U_color=(mem_int+ptr_inc);              ptr_inc += dof;
+	                                        ptr_inc = 0;
+	connecter=(mem_int+ptr_inc);            ptr_inc += numel*npel;
+	el_matl=(mem_int+ptr_inc);              ptr_inc += numel;
+	bc.force =(mem_int+ptr_inc);            ptr_inc += numnp+1;
+	bc.num_force=(mem_int+ptr_inc);         ptr_inc += 1;
+	U_color=(mem_int+ptr_inc);              ptr_inc += dof;
 
 	el_matl_color = el_matl;
 
 /* For the XYZI integers */
-                                          	ptr_inc = 0;
-        bc.fix =(mem_XYZI+ptr_inc);       	ptr_inc += numnp+1;
-        bc.num_fix=(mem_XYZI+ptr_inc);    	ptr_inc += 1;
+	                                        ptr_inc = 0;
+	bc.fix =(mem_XYZI+ptr_inc);             ptr_inc += numnp+1;
+	bc.num_fix=(mem_XYZI+ptr_inc);          ptr_inc += 1;
 
 
 /* If there is no post file, then set coord to coord0 */
@@ -256,23 +256,23 @@ int tsGetNewMesh(void)
 	{
 		check = tsreader( bc, connecter, coord, el_matl, force, matl,
 			o3, stress, U);
-        	if(!check) printf( " Problems with tsreader \n");
+		if(!check) printf( " Problems with tsreader \n");
 		stress_read_flag = 0;
 
-        	check = tsreader_gr( o3, strain);
-        	if(!check) printf( " Problems with tsreader_gr \n");
+		check = tsreader_gr( o3, strain);
+		if(!check) printf( " Problems with tsreader_gr \n");
 	}
 
 	if( input_flag )
 	{
 		check = tsreader( bc, connecter, coord0, el_matl, force, matl,
 			o1, stress, U);
-        	if(!check) printf( " Problems with tsreader \n");
+		if(!check) printf( " Problems with tsreader \n");
 
 	}
 
 /* For the XYZF doubles */
-        sofmXYZF=2*bc.num_force[0];
+	sofmXYZF=2*bc.num_force[0];
 /*
    This is allocated seperately from tsReGetMemory_gr because we need to know the
    number of force vectors read from tsreader and stored in bc.num_force[0].
@@ -281,18 +281,18 @@ int tsGetNewMesh(void)
 	check = tsReGetMemory2_gr( &mem_XYZF, sofmXYZF );
 	if(!check) printf( " Problems with tsReGetMemory2_gr \n");
 
-                                                ptr_inc = 0;
-        force_vec =(mem_XYZF+ptr_inc);          ptr_inc += bc.num_force[0];
-        force_vec0 =(mem_XYZF+ptr_inc);         ptr_inc += bc.num_force[0];
+	                                        ptr_inc = 0;
+	force_vec =(mem_XYZF+ptr_inc);          ptr_inc += bc.num_force[0];
+	force_vec0 =(mem_XYZF+ptr_inc);         ptr_inc += bc.num_force[0];
 
 /* Search for extreme values */
  
 /* In mesh viewer, search for extreme values of nodal points, displacements
-   and stresss and strains to obtain viewing parameters and make color
+   and stress and strains to obtain viewing parameters and make color
    assignments.  Also initialize variables */
 
 	check = tsparameter( coord, strain, stress, U );
-        if(!check) printf( " Problems with tsparameter \n");
+	if(!check) printf( " Problems with tsparameter \n");
 
 /* Rescale undeformed coordinates */
 
@@ -321,10 +321,10 @@ int tsGetNewMesh(void)
 
 	check = tsset( bc, force, force_vec0, strain, strain_color, stress,
 		stress_color, U, U_color );
-        if(!check) printf( " Problems with tsparameter \n");
+	if(!check) printf( " Problems with tsparameter \n");
 
-  	AxesList = glGenLists(1);
-  	agvMakeAxesList(AxesList);
+	AxesList = glGenLists(1);
+	agvMakeAxesList(AxesList);
 
 	if( input_flag )
 	{
@@ -332,21 +332,21 @@ int tsGetNewMesh(void)
 /* create display list for displacement and force grapics vectors
    on undeformed mesh*/
 
-  	    DispList = glGenLists(1);
-  	    tsdisp_vectors0(DispList, bc, coord0);
+	    DispList = glGenLists(1);
+	    disp_vectors0(DispList, bc, coord0);
 
-            for( i = 0; i < bc.num_force[0]; ++i)
-            {
+	    for( i = 0; i < bc.num_force[0]; ++i)
+	    {
 		    fpointx = *(coord0+nsd*bc.force[i]);
 		    fpointy = *(coord0+nsd*bc.force[i] + 1);
 		    fpointz = *(coord0+nsd*bc.force[i] + 2);
 		    force_vec[i].x = fpointx - force_vec0[i].x;
 		    force_vec[i].y = fpointy - force_vec0[i].y;
 		    force_vec[i].z = fpointz - force_vec0[i].z;
-            }
+	    }
     
-  	    ForceList = glGenLists(1);
-  	    tsforce_vectors0(ForceList, bc, coord0, force_vec);
+	    ForceList = glGenLists(1);
+	    force_vectors0(ForceList, bc, coord0, force_vec);
     
 	}
 
@@ -354,15 +354,15 @@ int tsGetNewMesh(void)
 	{
 /* create force grapics vectors for undeformed mesh*/
 
-            for( i = 0; i < bc.num_force[0]; ++i)
-            {
+	    for( i = 0; i < bc.num_force[0]; ++i)
+	    {
 		    fpointx = *(coord+nsd*bc.force[i]);
 		    fpointy = *(coord+nsd*bc.force[i] + 1);
 		    fpointz = *(coord+nsd*bc.force[i] + 2);
 		    force_vec[i].x = fpointx - force_vec0[i].x;
 		    force_vec[i].y = fpointy - force_vec0[i].y;
 		    force_vec[i].z = fpointz - force_vec0[i].z;
-            }
+	    }
 	}
 
 	return 1;

@@ -1,6 +1,6 @@
 # SLFFEA Makefile
-# Version:  1.3
-# Copyright (C) 1999, 2000  San Le (slffea@yahoo.com)
+# Version:  1.4
+# Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005  San Le (slffea@yahoo.com)
 # http://slffea.com/
 #
 # This library is free software; you can redistribute it and/or
@@ -26,7 +26,7 @@ LIB1 = -I/usr/local/include -O2 -funroll-loops -ansi -pedantic \
 LIB2 = -L/usr/local/lib -lglut -lGLU -lGL -lm -L/usr/X11/lib \
 	-L/usr/X11R6/lib -lX11 -lXext -lXmu -lXt -lXi -lSM -lICE
 
-OBJECTS_QD = ../tri/trmemory.o ../tri/trreader.o 
+OBJECTS_QD = ../tri/memory2.o ../tri/trreader.o 
 
 OBJECTS_QDH = ../tri/trconst.h ../tri/trstruct.h 
 
@@ -50,82 +50,87 @@ PROGS = trpost
 CC = /usr/bin/gcc
 
 trpost: trpost.o \
-		trmemgr.o \
-		trreadgr.o \
-		trparam.o \
-		trparam2.o \
+		memgr2.o \
+		readgr2.o \
+		param2.o \
+		regetparam2.o \
 		trset.o \
-		trbc_vec.o \
-		trmshdsp.o \
+		trnorm_vec.o \
+		bc_vec.o \
+		mshdsp.o \
 		trmesh.o \
-		trmshkey.o \
-		trmenu.o \
+		mshkey2.o \
+		menu2.o \
 		trgetnew.o \
-		trcrtldsp.o \
-		trcrtlmse.o \
+		crtldsp2.o \
+		crtlmse2.o \
 		trrender.o \
 		$(OBJECTS_QDH) \
 		$(OBJECTS_GRH) \
 		trgui.h \
 		trstrcgr.h 
 	$(CC) -o trpost $(LIB1) trpost.o \
-		trmemgr.o \
-		trreadgr.o \
-		trparam.o \
-		trparam2.o \
+		memgr2.o \
+		readgr2.o \
+		param2.o \
+		regetparam2.o \
 		trset.o \
-		trbc_vec.o \
-		trmshdsp.o \
+		trnorm_vec.o \
+		bc_vec.o \
+		mshdsp.o \
 		trmesh.o \
-		trmshkey.o \
-		trmenu.o \
+		mshkey2.o \
+		menu2.o \
 		trgetnew.o \
-		trcrtldsp.o \
-		trcrtlmse.o \
+		crtldsp2.o \
+		crtlmse2.o \
 		trrender.o \
 		$(OBJECTS_QD) $(OBJECTS_GR) $(OBJECTS2) $(LIB2) 
 
 trrender.o: trrender.c 
 	$(CC) -c trrender.c 
 
-trcrtlmse.o: trcrtlmse.c 
-	$(CC) -c trcrtlmse.c 
+crtlmse2.o: $(COMMON_GR)/crtlmse2.c 
+	$(CC) -c $(COMMON_GR)/crtlmse2.c -DTRI1
 
-trcrtldsp.o: trcrtldsp.c 
-	$(CC) -c trcrtldsp.c 
+crtldsp2.o: $(COMMON_GR)/crtldsp2.c 
+	$(CC) -c $(COMMON_GR)/crtldsp2.c -DTRI1
 
 trgetnew.o: trgetnew.c 
 	$(CC) -c trgetnew.c 
 
-trmenu.o: trmenu.c 
-	$(CC) -c trmenu.c 
+menu2.o: $(COMMON_GR)/menu2.c 
+	$(CC) -c $(COMMON_GR)/menu2.c -DTRI1
 
-trmshkey.o: trmshkey.c 
-	$(CC) -c trmshkey.c 
+mshkey2.o: $(COMMON_GR)/mshkey2.c 
+	$(CC) -c $(COMMON_GR)/mshkey2.c -DTRI1
 
 trmesh.o: trmesh.c 
 	$(CC) -c trmesh.c 
 
-trmshdsp.o: trmshdsp.c 
-	$(CC) -c trmshdsp.c 
+mshdsp.o: $(COMMON_GR)/mshdsp.c 
+	$(CC) -c $(COMMON_GR)/mshdsp.c -DTRI1
 
-trbc_vec.o: trbc_vec.c 
-	$(CC) -c trbc_vec.c 
+bc_vec.o: $(COMMON_GR)/bc_vec.c
+	$(CC) -c $(COMMON_GR)/bc_vec.c -DTRI1
+
+trnorm_vec.o: trnorm_vec.c
+	$(CC) -c trnorm_vec.c -DTRI1
 
 trset.o: trset.c 
 	$(CC) -c trset.c 
 
-trparam2.o: trparam2.c 
-	$(CC) -c trparam2.c 
+regetparam2.o: $(COMMON_GR)/regetparam2.c 
+	$(CC) -c $(COMMON_GR)/regetparam2.c -DTRI1
 
-trparam.o: trparam.c 
-	$(CC) -c trparam.c 
+param2.o: $(COMMON_GR)/param2.c 
+	$(CC) -c $(COMMON_GR)/param2.c -DTRI1
 
-trreadgr.o: trreadgr.c 
-	$(CC) -c trreadgr.c 
+readgr2.o: $(COMMON_GR)/readgr2.c
+	$(CC) -c $(COMMON_GR)/readgr2.c -DTRI1
 
-trmemgr.o: trmemgr.c 
-	$(CC) -c trmemgr.c 
+memgr2.o: $(COMMON_GR)/memgr2.c 
+	$(CC) -c $(COMMON_GR)/memgr2.c -DTRI1
 
 trpost.o: trpost.c 
 	$(CC) -c trpost.c

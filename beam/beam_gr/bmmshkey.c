@@ -2,11 +2,11 @@
     This program contains the mesh key routine for the FEM GUI
     for beam elements.
   
-                        Last Update 8/18/06
+                  Last Update 9/23/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -56,7 +56,7 @@ extern double left_right, up_down, in_out, left_right0, up_down0, in_out0;
 extern double cross_sec_left_right, cross_sec_up_down, cross_sec_in_out,
 	cross_sec_left_right0, cross_sec_up_down0, cross_sec_in_out0;
 extern double ortho_left, ortho_right, ortho_top, ortho_bottom,
-        ortho_left0, ortho_right0, ortho_top0, ortho_bottom0;
+	ortho_left0, ortho_right0, ortho_top0, ortho_bottom0;
 extern int ortho_redraw_flag;
 extern double xAngle, yAngle, zAngle;
 extern int mesh_width, mesh_height;
@@ -98,7 +98,7 @@ void bmMeshKeys( unsigned char key, int x, int y )
 /* 'i' zooms in on the mesh, 'o' zooms out */
 
 	switch (key) {
-  	    case 'i':
+	    case 'i':
 		if ( Perspective_flag )
 		{
 			in_out += step_sizez;
@@ -113,7 +113,7 @@ void bmMeshKeys( unsigned char key, int x, int y )
 				glutGet(GLUT_WINDOW_HEIGHT));
 		}
 		break;
-  	    case 'o':
+	    case 'o':
 		if ( Perspective_flag )
 		{
 			in_out -= step_sizez;
@@ -127,68 +127,30 @@ void bmMeshKeys( unsigned char key, int x, int y )
 			MeshReshape( glutGet(GLUT_WINDOW_WIDTH),
 				glutGet(GLUT_WINDOW_HEIGHT));
 		}
-	    	break;
-
-/* 'e' selects the element to be viewed.  */
-
-  	    case 'e':
-		color_choice = 32;
-        	input_color_flag = 0;
-  		AppliedForce_flag = 0;
-  		AppliedDisp_flag = 0;
-		Dist_Load_flag = 0;
-  		Element_flag = 1;
-  		Material_flag = 0;
-  		Node_flag = 0;
-
-		printf("\n What is the desired element number?\n");
-		scanf("%d", &ele_choice);
-  		if ( ele_choice > numel - 1 )
-		{
-			ele_choice = 0;
-		}
-	    	break;
+		break;
 
 /* These keys control the selection of viewing moments and curvatures,
    stresses and strains and displacements. */
 
-  	    case '1':
+	    case '1':
 		color_choice = 1;
-	    	break;
-  	    case '2':
-		color_choice = 2;
-	    	break;
-  	    case '3':
-		color_choice = 3;
-	    	break;
-  	    case '4':
+		break;
+	    case '4':
 		color_choice = 4;
-	    	break;
-  	    case '5':
+		break;
+	    case '5':
 		color_choice = 5;
-	    	break;
-  	    case '6':
-		color_choice = 6;
-	    	break;
+		break;
 
-  	    case '!':
+	    case '!':
 		color_choice = 10;
-	    	break;
-  	    case '@':
-		color_choice = 11;
-	    	break;
-  	    case '#':
-		color_choice = 12;
-	    	break;
-  	    case '$':
+		break;
+	    case '$':
 		color_choice = 13;
-	    	break;
-  	    case '%':
+		break;
+	    case '%':
 		color_choice = 14;
-	    	break;
-  	    case '^':
-		color_choice = 15;
-	    	break;
+		break;
 
 	    case '0':
 		color_choice = 19;
@@ -196,64 +158,84 @@ void bmMeshKeys( unsigned char key, int x, int y )
 	    case '-':
 		color_choice = 20;
 		break;
-  	    case '=':
+	    case '=':
 		color_choice = 21;
-	    	break;
-  	    case '[':
+		break;
+	    case ')':
 		color_choice = 22;
-	    	break;
-  	    case ']':
+		break;
+	    case '_':
 		color_choice = 23;
-	    	break;
-  	    case '\\':
+		break;
+	    case '+':
 		color_choice = 24;
-	    	break;
-
-/* 'm' selects the material to be viewed.  */
-
-  	    case 'm':
-		color_choice = 30;
-        	input_color_flag = 0;
-  		AppliedForce_flag = 0;
-  		AppliedDisp_flag = 0;
-		Dist_Load_flag = 0;
-  		Element_flag = 0;
-  		Material_flag = 1;
-  		Node_flag = 0;
-
-		printf("\n What is the desired material number?\n");
-		scanf("%d", &matl_choice);
-  		if ( matl_choice > nmat - 1 )
-		{
-			matl_choice = 0;
-		}
-	    	break;
+		break;
 
 /* 'n' selects the node to be viewed.  */
 
-  	    case 'n':
+	    case 'n':
 		color_choice = 31;
-        	input_color_flag = 0;
-  		AppliedForce_flag = 0;
-  		AppliedDisp_flag = 0;
-  		Dist_Load_flag = 0;
-  		Element_flag = 0;
-  		Material_flag = 0;
-  		Node_flag = 1;
+		input_color_flag = 0;
+		AppliedForce_flag = 0;
+		AppliedDisp_flag = 0;
+		Dist_Load_flag = 0;
+		Element_flag = 0;
+		Material_flag = 0;
+		Node_flag = 1;
 
 		printf("\n What is the desired node number?\n");
 		scanf("%d", &node_choice);
-  		if ( node_choice > numnp - 1 )
+		if ( node_choice > numnp - 1 )
 		{
 			node_choice = 0;
 		}
-	    	break;
+		break;
+
+/* 'e' selects the element to be viewed.  */
+
+	    case 'e':
+		color_choice = 32;
+		input_color_flag = 0;
+		AppliedForce_flag = 0;
+		AppliedDisp_flag = 0;
+		Dist_Load_flag = 0;
+		Element_flag = 1;
+		Material_flag = 0;
+		Node_flag = 0;
+
+		printf("\n What is the desired element number?\n");
+		scanf("%d", &ele_choice);
+		if ( ele_choice > numel - 1 )
+		{
+			ele_choice = 0;
+		}
+		break;
+
+/* 'm' selects the material to be viewed.  */
+
+	    case 'm':
+		color_choice = 30;
+		input_color_flag = 0;
+		AppliedForce_flag = 0;
+		AppliedDisp_flag = 0;
+		Dist_Load_flag = 0;
+		Element_flag = 0;
+		Material_flag = 1;
+		Node_flag = 0;
+
+		printf("\n What is the desired material number?\n");
+		scanf("%d", &matl_choice);
+		if ( matl_choice > nmat - 1 )
+		{
+			matl_choice = 0;
+		}
+		break;
 
 /* '>' and '<' amplify and shrink the displacements on the deformed object */
 
-  	    case '.':
-	    	if( post_flag )
-	    	{
+	    case '.':
+		if( post_flag )
+		{
 			After_flag = 1;
 			/*Amplify_flag = 1;*/
 			amplify_step = amplify_step0;
@@ -261,15 +243,15 @@ void bmMeshKeys( unsigned char key, int x, int y )
 				amplify_step = .1;
 			amplify_factor += amplify_step;
 /* Update Coordinates */
-                        for ( i = 0; i < numnp; ++i )
-                        {
+			for ( i = 0; i < numnp; ++i )
+			{
 			   *(coord + nsd*i) = *(coord0+nsd*i) +
 				*(U+ndof*i)*amplify_factor;
 			   *(coord + nsd*i+1) = *(coord0+nsd*i+1) +
 				*(U+ndof*i+1)*amplify_factor;
 			   *(coord + nsd*i+2) = *(coord0+nsd*i+2) +
 				*(U+ndof*i+2)*amplify_factor;
-                        }
+			}
 
 /* Update force graphics vectors */	
 			for( i = 0; i < bc.num_force[0]; ++i)
@@ -285,35 +267,35 @@ void bmMeshKeys( unsigned char key, int x, int y )
 			   force_vec[i].phiz = fpointz - force_vec0[i].phiz;
 			}
 /* Update distributed load graphics vectors */	
-            		for( k = 0; k < bc.num_dist_load[0]; ++k)
-            		{
-                		node0 = *(connecter+bc.dist_load[k]*npel);
-                		node1 = *(connecter+bc.dist_load[k]*npel+1);
+			for( k = 0; k < bc.num_dist_load[0]; ++k)
+			{
+				node0 = *(connecter+bc.dist_load[k]*npel);
+				node1 = *(connecter+bc.dist_load[k]*npel+1);
 
-                		*(coord_el)=*(coord+nsd*node0);
-                		*(coord_el+1)=*(coord+nsd*node0+1);
-                		*(coord_el+2)=*(coord+nsd*node0+2);
+				*(coord_el)=*(coord+nsd*node0);
+				*(coord_el+1)=*(coord+nsd*node0+1);
+				*(coord_el+2)=*(coord+nsd*node0+2);
 
-                		*(coord_el+3)=*(coord+nsd*node1);
-                		*(coord_el+4)=*(coord+nsd*node1+1);
-                		*(coord_el+5)=*(coord+nsd*node1+2);
+				*(coord_el+3)=*(coord+nsd*node1);
+				*(coord_el+4)=*(coord+nsd*node1+1);
+				*(coord_el+5)=*(coord+nsd*node1+2);
 
-			        *(vec_in) =  0.0;
-                		*(vec_in+1) =  dist_load_vec0[k].qy;
-                		*(vec_in+2) =  dist_load_vec0[k].qz;
+				*(vec_in) =  0.0;
+				*(vec_in+1) =  dist_load_vec0[k].qy;
+				*(vec_in+2) =  dist_load_vec0[k].qz;
 
-                		check = bmrotate(coord_el, vec_in, vec_out);
-                		if(!check) printf( " Problems with bmrotate \n");
+				check = bmrotate(coord_el, vec_in, vec_out);
+				if(!check) printf( " Problems with bmrotate \n");
 
-                		dist_load_vec[k].x = *(vec_out);
-                		dist_load_vec[k].y = *(vec_out+1);
-                		dist_load_vec[k].z = *(vec_out+2);
-            		}
-	    	}
-	    	break;
-  	    case ',':
-	    	if( post_flag )
-	    	{
+				dist_load_vec[k].x = *(vec_out);
+				dist_load_vec[k].y = *(vec_out+1);
+				dist_load_vec[k].z = *(vec_out+2);
+			}
+		}
+		break;
+	    case ',':
+		if( post_flag )
+		{
 			After_flag = 1;
 			/*Amplify_flag = 1;*/
 			amplify_step = amplify_step0;
@@ -322,19 +304,19 @@ void bmMeshKeys( unsigned char key, int x, int y )
 				amplify_step = .1;
 			}
 			amplify_factor -= amplify_step;
-  			if ( amplify_factor < 0.0 )
+			if ( amplify_factor < 0.0 )
 				amplify_factor = 0.0;
-        		/*printf("amplify factor %f \n", amplify_factor);*/
+			/*printf("amplify factor %f \n", amplify_factor);*/
 /* Update Coordinates */
-                        for ( i = 0; i < numnp; ++i )
-                        {
+			for ( i = 0; i < numnp; ++i )
+			{
 			   *(coord + nsd*i) = *(coord0+nsd*i) +
 				*(U+ndof*i)*amplify_factor;
 			   *(coord + nsd*i+1) = *(coord0+nsd*i+1) +
 				*(U+ndof*i+1)*amplify_factor;
 			   *(coord + nsd*i+2) = *(coord0+nsd*i+2) +
 				*(U+ndof*i+2)*amplify_factor;
-                        }
+			}
 	
 /* Update force graphics vectors */	
 			for( i = 0; i < bc.num_force[0]; ++i)
@@ -352,32 +334,32 @@ void bmMeshKeys( unsigned char key, int x, int y )
 			}
 
 /* Update distributed load graphics vectors */	
-            		for( k = 0; k < bc.num_dist_load[0]; ++k)
-            		{
-                		node0 = *(connecter+bc.dist_load[k]*npel);
-                		node1 = *(connecter+bc.dist_load[k]*npel+1);
+			for( k = 0; k < bc.num_dist_load[0]; ++k)
+			{
+				node0 = *(connecter+bc.dist_load[k]*npel);
+				node1 = *(connecter+bc.dist_load[k]*npel+1);
 
-                		*(coord_el)=*(coord+nsd*node0);
-                		*(coord_el+1)=*(coord+nsd*node0+1);
-                		*(coord_el+2)=*(coord+nsd*node0+2);
+				*(coord_el)=*(coord+nsd*node0);
+				*(coord_el+1)=*(coord+nsd*node0+1);
+				*(coord_el+2)=*(coord+nsd*node0+2);
 
-                		*(coord_el+3)=*(coord+nsd*node1);
-                		*(coord_el+4)=*(coord+nsd*node1+1);
-                		*(coord_el+5)=*(coord+nsd*node1+2);
+				*(coord_el+3)=*(coord+nsd*node1);
+				*(coord_el+4)=*(coord+nsd*node1+1);
+				*(coord_el+5)=*(coord+nsd*node1+2);
 		
-			        *(vec_in) =  0.0;
-                		*(vec_in+1) =  dist_load_vec0[k].qy;
-                		*(vec_in+2) =  dist_load_vec0[k].qz;
+				*(vec_in) =  0.0;
+				*(vec_in+1) =  dist_load_vec0[k].qy;
+				*(vec_in+2) =  dist_load_vec0[k].qz;
 
-                		check = bmrotate(coord_el, vec_in, vec_out);
-                		if(!check) printf( " Problems with bmrotate \n");
+				check = bmrotate(coord_el, vec_in, vec_out);
+				if(!check) printf( " Problems with bmrotate \n");
 
-                		dist_load_vec[k].x = *(vec_out);
-                		dist_load_vec[k].y = *(vec_out+1);
-                		dist_load_vec[k].z = *(vec_out+2);
-            		}
+				dist_load_vec[k].x = *(vec_out);
+				dist_load_vec[k].y = *(vec_out+1);
+				dist_load_vec[k].z = *(vec_out+2);
+			}
 		}
-	    	break;
+		break;
 
 /* The '<' and '>' keys move the Cross Section Plane on the Z
    Axes in the mesh window. */
@@ -395,34 +377,34 @@ void bmMeshKeys( unsigned char key, int x, int y )
 
 /* 'a' and 'b' turns on and off the deformed and undeformed mesh */
 
-  	    case 'a':
+	    case 'a':
 		After_flag = 1 - After_flag;
-	    	break; 
-  	    case 'b':
+		break; 
+	    case 'b':
 		Before_flag = 1 - Before_flag;
-	    	break; 
+		break; 
 
 /* 'd' turns on and off the applied displacement vectors */
 
-  	    case 'd':
+	    case 'd':
 		AppliedDisp_flag = 1 - AppliedDisp_flag;
-	    	break; 
+		break; 
 
 /* Reset the rotation */
 
-  	    case 'c':
+	    case 'c':
 		xAngle = 0.0;
 		yAngle = 0.0;
 		zAngle = 0.0;
-	    	break; 
+		break; 
 
 /* Reset the translation */
 
-  	    case 'v':
+	    case 'v':
 		left_right = left_right0;
 		up_down = up_down0;
 		in_out = in_out0;
-  		if ( !Perspective_flag )
+		if ( !Perspective_flag )
 		{
 			left_right = 0.0;
 			up_down = 0.0;
@@ -432,15 +414,15 @@ void bmMeshKeys( unsigned char key, int x, int y )
 			ortho_bottom = ortho_bottom0;
 			MeshReshape( glutGet(GLUT_WINDOW_WIDTH),
 				glutGet(GLUT_WINDOW_HEIGHT));
-		} 
+		}
 		cross_sec_left_right = cross_sec_left_right0;
 		cross_sec_up_down = cross_sec_up_down0;
 		cross_sec_in_out = cross_sec_in_out0;
-	    	break; 
+		break; 
 
-  	    case 'f':
+	    case 'f':
 		AppliedForce_flag = 1 - AppliedForce_flag;
-	    	break;
+		break;
 	    case 'g':
 		check = bmGetNewMesh();
 		if(!check) printf( " Problems with bmGetNewMesh\n");
@@ -453,8 +435,8 @@ void bmMeshKeys( unsigned char key, int x, int y )
 		if(!check) printf( " Problems with bmset \n");
 		if ( !Perspective_flag )
 		{
-                	MeshReshape( glutGet(GLUT_WINDOW_WIDTH),
-                		glutGet(GLUT_WINDOW_HEIGHT));
+			MeshReshape( glutGet(GLUT_WINDOW_WIDTH),
+				glutGet(GLUT_WINDOW_HEIGHT));
 		}
 		break;
 	    case 'p':
@@ -464,15 +446,15 @@ void bmMeshKeys( unsigned char key, int x, int y )
 		left_right = left_right0;
 		up_down = up_down0;
 		/*in_out = in_out0;*/
-  		if ( !Perspective_flag )
+		if ( !Perspective_flag )
 		{
 			left_right = 0.0;
 			up_down = 0.0;
-		} 
-	    	break;
-  	    case 'q':
+		}
+		break;
+	    case 'q':
 		exit(1);
-	    	break;
+		break;
 	    case 's':
 		CrossSection_flag = 1 - CrossSection_flag;
 		break;
@@ -482,27 +464,27 @@ void bmMeshKeys( unsigned char key, int x, int y )
 	    case 'w':
 		Dist_Load_flag = 1 - Dist_Load_flag;
 		break;
-  	    case 'x':
+	    case 'x':
 		Axes_flag = 1 - Axes_flag;
 		break;
 	    case 'y':
-        	ScreenShot( mesh_width, mesh_height );
-                break;
+		ScreenShot( mesh_width, mesh_height );
+		break;
 	    case 27:
 		exit(0);
 		break;
 	}
 
-        input_color_flag = 0;
-        if( color_choice < 10)
-             input_color_flag = 1;
-        if( color_choice > 15 && color_choice < 19)
-             input_color_flag = 1;
-        if( post_flag > 0 && color_choice < 30)
-             input_color_flag = 1;
+	input_color_flag = 0;
+	if( color_choice < 10)
+	     input_color_flag = 1;
+	if( color_choice > 15 && color_choice < 19)
+	     input_color_flag = 1;
+	if( post_flag > 0 && color_choice < 30)
+	     input_color_flag = 1;
 
-        if(!post_flag) After_flag = 0;
-        if(!input_flag) Before_flag = 0;
+	if(!post_flag) After_flag = 0;
+	if(!input_flag) Before_flag = 0;
 
 	glutPostRedisplay();
 }

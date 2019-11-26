@@ -1,12 +1,12 @@
 /*
     This library function reads in data for a finite element 
-    program which does analysis on a truss 
+    program which does analysis on a truss.
 
-	Updated on 8/6/04
+	Updated on 9/30/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -24,7 +24,7 @@ extern int dof, nmat, nmode, numel, numnp;
 extern int stress_read_flag;
 
 int tsreader( BOUND bc, int *connect, double *coord, int *el_matl, double *force,
-	MATL *matl, FILE *o1, STRESS *stress, double *U)
+	MATL *matl, FILE *o1, SDIM *stress, double *U)
 {
 	int i,j,dum,dum2;
 	char *ccheck;
@@ -40,8 +40,8 @@ int tsreader( BOUND bc, int *connect, double *coord, int *el_matl, double *force
 	{
 	   fscanf( o1, "%d ",&dum);
 	   printf( "material (%3d) Emod, density, Area ",dum);
-	   fscanf( o1, " %lf %lf %lf\n",&matl[dum].E, &matl[dum].rho, &matl[dum].area);
-	   printf( " %7.3e %7.3e %7.3e\n",matl[dum].E, matl[dum].rho, matl[dum].area);
+	   fscanf( o1, " %lf %lf %lf\n", &matl[dum].E, &matl[dum].rho, &matl[dum].area);
+	   printf( " %7.3e %7.3e %7.3e\n", matl[dum].E, matl[dum].rho, matl[dum].area);
 	}
 	fgets( buf, BUFSIZ, o1 );
 	printf( "\n");
@@ -53,7 +53,7 @@ int tsreader( BOUND bc, int *connect, double *coord, int *el_matl, double *force
 	   for( j = 0; j < npel; ++j )
 	   {
 		fscanf( o1, "%d",(connect+npel*dum+j));
-		printf( "%d ",*(connect+npel*dum+j));
+		printf( "%6d ",*(connect+npel*dum+j));
 	   }
 	   fscanf( o1,"%d\n",(el_matl+dum));
 	   printf( " with matl %3d\n",*(el_matl+dum));
@@ -64,12 +64,12 @@ int tsreader( BOUND bc, int *connect, double *coord, int *el_matl, double *force
 	for( i = 0; i < numnp; ++i )
 	{
 	   fscanf( o1,"%d ",&dum);
-	   printf( "coordinate (%d) ",dum);
+	   printf( "coordinate (%6d) ",dum);
 	   printf( "coordinates ");
 	   for( j = 0; j < nsd; ++j )
 	   {
 		fscanf( o1, "%lf ",(coord+nsd*dum+j));
-		printf( "%9.6e ",*(coord+nsd*dum+j));
+		printf( "%14.6e ",*(coord+nsd*dum+j));
 	   }
 	   fscanf( o1,"\n");
 	   printf( "\n");
@@ -79,51 +79,54 @@ int tsreader( BOUND bc, int *connect, double *coord, int *el_matl, double *force
 
 	dum= 0;
 	fscanf( o1,"%d",&bc.fix[dum].x);
-	printf( "node (%4d) has an x prescribed displacement of: ",bc.fix[dum].x);
+	printf( "node (%6d) has an x prescribed displacement of: ",bc.fix[dum].x);
 	while( bc.fix[dum].x > -1 )
 	{
 		fscanf( o1,"%lf\n%d",(U+ndof*bc.fix[dum].x),
 			&bc.fix[dum+1].x);
 		printf( "%14.6e\n",*(U+ndof*bc.fix[dum].x));
-		printf( "node (%4d) has an x prescribed displacement of: ",
+		printf( "node (%6d) has an x prescribed displacement of: ",
 			bc.fix[dum+1].x);
 		++dum;
 	}
 	bc.num_fix[0].x=dum;
+	if(dum > numnp) printf( "too many prescribed displacements x\n");
 	fscanf( o1,"\n");
 	fgets( buf, BUFSIZ, o1 );
 	printf( "\n\n");
 
 	dum= 0;
 	fscanf( o1,"%d",&bc.fix[dum].y);
-	printf( "node (%4d) has an y prescribed displacement of: ",bc.fix[dum].y);
+	printf( "node (%6d) has an y prescribed displacement of: ",bc.fix[dum].y);
 	while( bc.fix[dum].y > -1 )
 	{
 		fscanf( o1,"%lf\n%d",(U+ndof*bc.fix[dum].y+1),
 			&bc.fix[dum+1].y);
 		printf( "%14.6e\n",*(U+ndof*bc.fix[dum].y+1));
-		printf( "node (%4d) has an y prescribed displacement of: ",
+		printf( "node (%6d) has an y prescribed displacement of: ",
 			bc.fix[dum+1].y);
 		++dum;
 	}
 	bc.num_fix[0].y=dum;
+	if(dum > numnp) printf( "too many prescribed displacements y\n");
 	fscanf( o1,"\n");
 	fgets( buf, BUFSIZ, o1 );
 	printf( "\n\n");
 
 	dum= 0;
 	fscanf( o1,"%d",&bc.fix[dum].z);
-	printf( "node (%4d) has an z prescribed displacement of: ",bc.fix[dum].z);
+	printf( "node (%6d) has an z prescribed displacement of: ",bc.fix[dum].z);
 	while( bc.fix[dum].z > -1 )
 	{
 		fscanf( o1,"%lf\n%d",(U+ndof*bc.fix[dum].z+2),
 			&bc.fix[dum+1].z);
 		printf( "%14.6e\n",*(U+ndof*bc.fix[dum].z+2));
-		printf( "node (%4d) has an z prescribed displacement of: ",
+		printf( "node (%6d) has an z prescribed displacement of: ",
 			bc.fix[dum+1].z);
 		++dum;
 	}
 	bc.num_fix[0].z=dum;
+	if(dum > numnp) printf( "too many prescribed displacements z\n");
 	fscanf( o1,"\n");
 	fgets( buf, BUFSIZ, o1 );
 	printf( "\n\n");
@@ -131,7 +134,7 @@ int tsreader( BOUND bc, int *connect, double *coord, int *el_matl, double *force
 	dum= 0;
 	printf("force vector for node: ");
 	fscanf( o1,"%d",&bc.force[dum]);
-	printf( "(%4d)",bc.force[dum]);
+	printf( "(%6d)",bc.force[dum]);
 	while( bc.force[dum] > -1 )
 	{
 	   for( j = 0; j < ndof; ++j )
@@ -144,9 +147,10 @@ int tsreader( BOUND bc, int *connect, double *coord, int *el_matl, double *force
 	   printf("force vector for node: ");
 	   ++dum;
 	   fscanf( o1,"%d",&bc.force[dum]);
-	   printf( "(%4d)",bc.force[dum]);
+	   printf( "(%6d)",bc.force[dum]);
 	}
 	bc.num_force[0]=dum;
+	if(dum > numnp) printf( "too many forces\n");
 	fscanf( o1,"\n");
 	fgets( buf, BUFSIZ, o1 );
 	printf( "\n\n");
@@ -155,7 +159,7 @@ int tsreader( BOUND bc, int *connect, double *coord, int *el_matl, double *force
 	{
 	   printf("stress for ele: ");
 	   fscanf( o1,"%d",&dum);
-	   printf( "(%4d)",dum);
+	   printf( "(%6d)",dum);
 	   while( dum > -1 )
 	   {
 		fscanf( o1,"%lf ",&stress[dum].xx);
@@ -164,7 +168,7 @@ int tsreader( BOUND bc, int *connect, double *coord, int *el_matl, double *force
 		printf( "\n");
 		printf("stress for ele: ");
 		fscanf( o1,"%d",&dum);
-		printf( "(%4d)",dum);
+		printf( "(%6d)",dum);
 	   }
 	}
 	printf( "\n\n");

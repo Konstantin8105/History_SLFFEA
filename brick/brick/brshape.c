@@ -1,6 +1,6 @@
 /*
      SLFFEA source file
-     Version:  1.3
+     Version:  1.4
      Copyright (C) 1999, 2000, 2001, 2002  San Le
 
      The source code contained in this file is released under the
@@ -36,37 +36,37 @@ int brshl( double g, double *shl, double *w)
        k       = INTEGRATION POINT
        num_int = NUMBER OF INTEGRATION POINTS, EQ. 1 OR 8
 
-			Updated 4/7/00
+                        Updated 4/7/00
 */
 
-        double ra[]={-0.50, 0.50, 0.50,-0.50,-0.50, 0.50, 0.50,-0.50};
-        double sa[]={-0.50,-0.50, 0.50, 0.50,-0.50,-0.50, 0.50, 0.50};
-        double ta[]={-0.50,-0.50,-0.50,-0.50, 0.50, 0.50, 0.50, 0.50};
+	double ra[]={-0.50, 0.50, 0.50,-0.50,-0.50, 0.50, 0.50,-0.50};
+	double sa[]={-0.50,-0.50, 0.50, 0.50,-0.50,-0.50, 0.50, 0.50};
+	double ta[]={-0.50,-0.50,-0.50,-0.50, 0.50, 0.50, 0.50, 0.50};
 	double temps,tempr,tempt,r,s,t;
 	int i,j,k;
 
-        for( k = 0; k < num_int; ++k )
-        {
+	for( k = 0; k < num_int; ++k )
+	{
 		*(w+k)=1.0;
 	}
-        for( k = 0; k < num_int; ++k )
-        {
-        	r=g*(*(ra+k));
-        	s=g*(*(sa+k));
-        	t=g*(*(ta+k));
-        	for( i = 0; i < npel ; ++i )
-        	{
-        	   tempr=pt5+*(ra+i)*r;
-        	   temps=pt5+*(sa+i)*s;
-        	   tempt=pt5+*(ta+i)*t;
-        	   *(shl+npel*(nsd+1)*k+i)=*(ra+i)*temps*tempt;
-        	   *(shl+npel*(nsd+1)*k+npel*1+i)=tempr*(*(sa+i))*tempt;
-        	   *(shl+npel*(nsd+1)*k+npel*2+i)=tempr*temps*(*(ta+i));
-	           *(shl+npel*(nsd+1)*k+npel*3+i)=tempr*temps*tempt;
+	for( k = 0; k < num_int; ++k )
+	{
+		r=g*(*(ra+k));
+		s=g*(*(sa+k));
+		t=g*(*(ta+k));
+		for( i = 0; i < npel ; ++i )
+		{
+		   tempr=pt5+*(ra+i)*r;
+		   temps=pt5+*(sa+i)*s;
+		   tempt=pt5+*(ta+i)*t;
+		   *(shl+npel*(nsd+1)*k+i)=*(ra+i)*temps*tempt;
+		   *(shl+npel*(nsd+1)*k+npel*1+i)=tempr*(*(sa+i))*tempt;
+		   *(shl+npel*(nsd+1)*k+npel*2+i)=tempr*temps*(*(ta+i));
+		   *(shl+npel*(nsd+1)*k+npel*3+i)=tempr*temps*tempt;
 		}
-               	/*printf("\n");*/
+		/*printf("\n");*/
 	}
-        return 1;
+	return 1;
 }
 
 int brshl_node2(double *shl_node2)
@@ -75,11 +75,11 @@ int brshl_node2(double *shl_node2)
    This subroutine is a condensed version of the shape function shl_node.  I have
    removed all of the zero terms which made up 75% of all the values in shl_node.
 
-			Updated 4/7/00
+                        Updated 4/7/00
 */
 
 /* For node 0 */
-        *(shl_node2) =   -0.50; *(shl_node2+1) =  0.50; *(shl_node2+2) = -0.50;
+	*(shl_node2) =   -0.50; *(shl_node2+1) =  0.50; *(shl_node2+2) = -0.50;
 	*(shl_node2+3) =  0.50; *(shl_node2+4) = -0.50; *(shl_node2+5) =  0.50;
 
 /* For node 1 */
@@ -110,7 +110,7 @@ int brshl_node2(double *shl_node2)
 	*(shl_node2+42) =  0.50; *(shl_node2+43) = -0.50; *(shl_node2+44) = -0.50;
 	*(shl_node2+45) =  0.50; *(shl_node2+46) = -0.50; *(shl_node2+47) =  0.50;
 
-        return 1;
+	return 1;
 }
 
 
@@ -141,60 +141,60 @@ int brshg( double *det, int el, double *shl, double *shg, double *xl)
           j    = GLOBAL COORDINATE NUMBER
           k    = INTEGRATION-POINT NUMBER
        num_int    = NUMBER OF INTEGRATION POINTS, EQ.1 OR 8
-		
-			Updated 9/25/01
+
+                        Updated 9/25/01
 */
 
-        double xs[9],temp[9],col1[nsd],col2[nsd];
+	double xs[9],temp[9],col1[nsd],col2[nsd];
 	int check,i,j,k;
 
 	memcpy(shg,shl,sosh*sizeof(double));
 
-        for( k = 0; k < num_int; ++k )
+	for( k = 0; k < num_int; ++k )
 	{
 
 /* The jacobian, dx/dc, is calculated below */
 
-           for( j = 0; j < nsd; ++j )
+	   for( j = 0; j < nsd; ++j )
 	   {
-        	for( i = 0; i < nsd; ++i )
-        	{
-	     	   check=dotX((xs+nsd*i+j),(shg+npel*(nsd+1)*k+npel*j),
+		for( i = 0; i < nsd; ++i )
+		{
+		   check=dotX((xs+nsd*i+j),(shg+npel*(nsd+1)*k+npel*j),
 			(xl+npel*i),npel);
 		}
 	   }
 
-           *(temp)=*(xs+4)*(*(xs+8))-*(xs+7)*(*(xs+5));
-           *(temp+3)=*(xs+6)*(*(xs+5))-*(xs+3)*(*(xs+8));
+	   *(temp)=*(xs+4)*(*(xs+8))-*(xs+7)*(*(xs+5));
+	   *(temp+3)=*(xs+6)*(*(xs+5))-*(xs+3)*(*(xs+8));
 	   *(temp+6)=*(xs+3)*(*(xs+7))-*(xs+6)*(*(xs+4));
 
-           *(det+k)=*(xs)*(*(temp))+*(xs+1)*(*(temp+3))+*(xs+2)*(*(temp+6));
-           /*printf("%d %f\n", k, *(det+k));*/
+	   *(det+k)=*(xs)*(*(temp))+*(xs+1)*(*(temp+3))+*(xs+2)*(*(temp+6));
+	   /*printf("%d %f\n", k, *(det+k));*/
 
-           if(*(det+k) <= 0.0 ) 
+	   if(*(det+k) <= 0.0 ) 
 	   {
-                printf("the element (%d) is inverted; det:%f; integ pt.:%d\n",
+		printf("the element (%d) is inverted; det:%f; integ pt.:%d\n",
 			el,*(det+k),k);
 		return 0;
 	   }
 
 /* The inverse of the jacobian, dc/dx, is calculated below */
 
-           *(temp+1)=*(xs+7)*(*(xs+2))-*(xs+1)*(*(xs+8));
-           *(temp+4)=*(xs)*(*(xs+8))-*(xs+6)*(*(xs+2));
-           *(temp+7)=*(xs+6)*(*(xs+1))-*(xs)*(*(xs+7));
-           *(temp+2)=*(xs+1)*(*(xs+5))-*(xs+4)*(*(xs+2));
-           *(temp+5)=*(xs+3)*(*(xs+2))-*(xs)*(*(xs+5));
-           *(temp+8)=*(xs)*(*(xs+4))-*(xs+3)*(*(xs+1));
+	   *(temp+1)=*(xs+7)*(*(xs+2))-*(xs+1)*(*(xs+8));
+	   *(temp+4)=*(xs)*(*(xs+8))-*(xs+6)*(*(xs+2));
+	   *(temp+7)=*(xs+6)*(*(xs+1))-*(xs)*(*(xs+7));
+	   *(temp+2)=*(xs+1)*(*(xs+5))-*(xs+4)*(*(xs+2));
+	   *(temp+5)=*(xs+3)*(*(xs+2))-*(xs)*(*(xs+5));
+	   *(temp+8)=*(xs)*(*(xs+4))-*(xs+3)*(*(xs+1));
 
-           for( j = 0; j < nsd; ++j )
+	   for( j = 0; j < nsd; ++j )
 	   {
-        	for( i = 0; i < nsd; ++i )
-        	{
-    		   *(xs+nsd*i+j)=*(temp+nsd*i+j)/(*(det+k));
+		for( i = 0; i < nsd; ++i )
+		{
+		   *(xs+nsd*i+j)=*(temp+nsd*i+j)/(*(det+k));
 		}
 	   }
-           for( i = 0; i < npel; ++i )
+	   for( i = 0; i < npel; ++i )
 	   {
 		*(col1)=*(shg+npel*(nsd+1)*k+i);
 		*(col1+1)=*(shg+npel*(nsd+1)*k+npel*1+i);
@@ -202,21 +202,21 @@ int brshg( double *det, int el, double *shl, double *shg, double *xl)
 		*(col2)=*(xs);
 		*(col2+1)=*(xs+nsd*1);
 		*(col2+2)=*(xs+nsd*2);
-           	check=dotX((shg+npel*(nsd+1)*k+i),(col2),(col1),nsd);
+		check=dotX((shg+npel*(nsd+1)*k+i),(col2),(col1),nsd);
 		*(col2)=*(xs+1);
 		*(col2+1)=*(xs+nsd*1+1);
 		*(col2+2)=*(xs+nsd*2+1);
-           	check=dotX((shg+npel*(nsd+1)*k+npel*1+i),(col2),(col1),nsd);
+		check=dotX((shg+npel*(nsd+1)*k+npel*1+i),(col2),(col1),nsd);
 		*(col2)=*(xs+2);
 		*(col2+1)=*(xs+nsd*1+2);
 		*(col2+2)=*(xs+nsd*2+2);
-           	check=dotX((shg+npel*(nsd+1)*k+npel*2+i),(col2),(col1),nsd);
-               	/*printf("%d %f %f %f\n", i, *(shg+npel*(nsd+1)*k+i),
+		check=dotX((shg+npel*(nsd+1)*k+npel*2+i),(col2),(col1),nsd);
+		/*printf("%d %f %f %f\n", i, *(shg+npel*(nsd+1)*k+i),
 			*(shg+npel*(nsd+1)*k+npel*1+i), 
 			*(shg+npel*(nsd+1)*k+npel*2+i));*/
 	   }
 	}
-        return 1; 
+	return 1; 
 }
 
 
@@ -247,41 +247,41 @@ int brshg_mass( double *det, int el, double *shg, double *xl)
           j    = GLOBAL COORDINATE NUMBER
           k    = INTEGRATION-POINT NUMBER
        num_int    = NUMBER OF INTEGRATION POINTS, EQ.1 OR 8
-		
-			Updated 9/25/01
+
+                        Updated 9/25/01
 */
 
-        double xs[9],temp[9],col1[nsd],col2[nsd];
+	double xs[9],temp[9],col1[nsd],col2[nsd];
 	int check,i,j,k;
 
-        for( k = 0; k < num_int; ++k )
+	for( k = 0; k < num_int; ++k )
 	{
 
 /* The jacobian, dx/dc, is calculated below */
 
-           for( j = 0; j < nsd; ++j )
+	   for( j = 0; j < nsd; ++j )
 	   {
-        	for( i = 0; i < nsd; ++i )
-        	{
-	     	   check=dotX((xs+nsd*i+j),(shg+npel*(nsd+1)*k+npel*j),
+		for( i = 0; i < nsd; ++i )
+		{
+		   check=dotX((xs+nsd*i+j),(shg+npel*(nsd+1)*k+npel*j),
 			(xl+npel*i),npel);
 		}
 	   }
 
-           *(temp)=*(xs+4)*(*(xs+8))-*(xs+7)*(*(xs+5));
-           *(temp+3)=*(xs+6)*(*(xs+5))-*(xs+3)*(*(xs+8));
+	   *(temp)=*(xs+4)*(*(xs+8))-*(xs+7)*(*(xs+5));
+	   *(temp+3)=*(xs+6)*(*(xs+5))-*(xs+3)*(*(xs+8));
 	   *(temp+6)=*(xs+3)*(*(xs+7))-*(xs+6)*(*(xs+4));
 
-           *(det+k)=*(xs)*(*(temp))+*(xs+1)*(*(temp+3))+*(xs+2)*(*(temp+6));
-           /*printf(" element %d int. pt. %d determinant %f\n", el, k, *(det+k));*/
+	   *(det+k)=*(xs)*(*(temp))+*(xs+1)*(*(temp+3))+*(xs+2)*(*(temp+6));
+	   /*printf(" element %d int. pt. %d determinant %f\n", el, k, *(det+k));*/
 
-           if(*(det+k) <= 0.0 ) 
+	   if(*(det+k) <= 0.0 ) 
 	   {
-                printf("the element (%d) is inverted; det:%f; integ pt.:%d\n",
+		printf("the element (%d) is inverted; det:%f; integ pt.:%d\n",
 			el,*(det+k),k);
 		return 0;
 	   }
 	}
-        return 1; 
+	return 1; 
 }
 

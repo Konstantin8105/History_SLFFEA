@@ -1,11 +1,11 @@
 /*
     This file contains the structures of the quad FEM code.
 
-	Updated 5/24/00
+	Updated 9/20/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -19,34 +19,36 @@
 #include "qdconst.h"
 
 typedef struct {
-        double xx,yy,xy,I,II;
+	double xx,yy,xy,I,II;
 } SDIM;
 
 typedef struct {
-        double x, y;
-} XYF;
+	double x, y, z;
+} XYZF;
 
 typedef struct {
-        int x, y;
-} XYI;
+	int x, y, z;
+} XYZI;
 
 typedef struct {
-	XYI *num_fix;
+	XYZI *num_fix;
 	int *num_force;
-	XYI *fix;
+	XYZI *fix;
 	int *force;
 } BOUND;
 
 typedef struct {
-        double E;
-        double nu;
-        double rho;
+	double E;
+	double nu;
+	double rho;
+	double thick;
+	int extrathick;
 } MATL;
 
 typedef struct {
-        SDIM pt[num_int];
+	SDIM pt[num_int];
 } STRESS;
 
 typedef struct {
-        SDIM pt[num_int];
+	SDIM pt[num_int];
 } STRAIN;

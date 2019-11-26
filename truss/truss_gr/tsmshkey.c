@@ -2,11 +2,11 @@
     This program contains the mesh key routine for the FEM GUI
     for truss elements.
   
-                        Last Update 8/18/06
+                  Last Update 8/18/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -34,11 +34,11 @@ extern double *U;
 extern int *connecter;
 extern BOUND bc;
 extern double *force;
-extern STRESS *stress;
-extern STRAIN *strain;
+extern SDIM *stress;
+extern SDIM *strain;
 extern XYZF *force_vec, *force_vec0;
-extern ISTRESS *stress_color;
-extern ISTRAIN *strain_color;
+extern ISDIM *stress_color;
+extern ISDIM *strain_color;
 extern int *U_color;
 
 extern GLfloat MeshColor[boxnumber+5][4];
@@ -69,8 +69,8 @@ extern double amplify_factor, amplify_step, amplify_step0;
 
 void ScreenShot( int , int );
 
-int tsset( BOUND , double *, XYZF *, STRAIN *, ISTRAIN *, STRESS *,
-	ISTRESS *, double *, int *);
+int tsset( BOUND , double *, XYZF *, SDIM *, ISDIM *, SDIM *,
+	ISDIM *, double *, int *);
 
 void tsReGetparameter(void);
 
@@ -88,7 +88,7 @@ void tsMeshKeys( unsigned char key, int x, int y )
 /* 'i' zooms in on the mesh, 'o' zooms out */
 
 	switch (key) {
-  	    case 'i':
+	    case 'i':
 		if ( Perspective_flag )
 		{
 			in_out += step_sizez;
@@ -102,8 +102,8 @@ void tsMeshKeys( unsigned char key, int x, int y )
 			MeshReshape( glutGet(GLUT_WINDOW_WIDTH),
 				glutGet(GLUT_WINDOW_HEIGHT));
 		}
-	    	break;
-  	    case 'o':
+		break;
+	    case 'o':
 		if ( Perspective_flag )
 		{
 			in_out -= step_sizez;
@@ -117,37 +117,18 @@ void tsMeshKeys( unsigned char key, int x, int y )
 			MeshReshape( glutGet(GLUT_WINDOW_WIDTH),
 				glutGet(GLUT_WINDOW_HEIGHT));
 		}
-	    	break;
-
-/* 'e' selects the element to be viewed.  */
-
-  	    case 'e':
-		color_choice = 32;
-        	input_color_flag = 0;
-  		AppliedForce_flag = 0;
-  		AppliedDisp_flag = 0;
-  		Element_flag = 1;
-  		Material_flag = 0;
-  		Node_flag = 0;
-
-		printf("\n What is the desired element number?\n");
-		scanf("%d", &ele_choice);
-  		if ( ele_choice > numel - 1 )
-		{
-			ele_choice = 0;
-		}
-	    	break;
+		break;
 
 /* These keys control the selection of viewing stresses and strains and
    displacements. */
 
-  	    case '1':
+	    case '1':
 		color_choice = 1;
-	    	break;
+		break;
 
-  	    case '!':
+	    case '!':
 		color_choice = 10;
-	    	break;
+		break;
 
 
 	    case '0':
@@ -156,53 +137,72 @@ void tsMeshKeys( unsigned char key, int x, int y )
 	    case '-':
 		color_choice = 20;
 		break;
-  	    case '=':
+	    case '=':
 		color_choice = 21;
-	    	break;
-
-/* 'm' selects the material to be viewed.  */
-
-  	    case 'm':
-		color_choice = 30;
-        	input_color_flag = 0;
-  		AppliedForce_flag = 0;
-  		AppliedDisp_flag = 0;
-  		Element_flag = 0;
-  		Material_flag = 1;
-  		Node_flag = 0;
-
-		printf("\n What is the desired material number?\n");
-		scanf("%d", &matl_choice);
-  		if ( matl_choice > nmat - 1 )
-		{
-			matl_choice = 0;
-		}
-	    	break;
+		break;
 
 /* 'n' selects the node to be viewed.  */
 
-  	    case 'n':
+	    case 'n':
 		color_choice = 31;
-        	input_color_flag = 0;
-  		AppliedForce_flag = 0;
-  		AppliedDisp_flag = 0;
-  		Element_flag = 0;
-  		Material_flag = 0;
-  		Node_flag = 1;
+		input_color_flag = 0;
+		AppliedForce_flag = 0;
+		AppliedDisp_flag = 0;
+		Element_flag = 0;
+		Material_flag = 0;
+		Node_flag = 1;
 
 		printf("\n What is the desired node number?\n");
 		scanf("%d", &node_choice);
-  		if ( node_choice > numnp - 1 )
+		if ( node_choice > numnp - 1 )
 		{
 			node_choice = 0;
 		}
-	    	break;
+		break;
+
+/* 'e' selects the element to be viewed.  */
+
+	    case 'e':
+		color_choice = 32;
+		input_color_flag = 0;
+		AppliedForce_flag = 0;
+		AppliedDisp_flag = 0;
+		Element_flag = 1;
+		Material_flag = 0;
+		Node_flag = 0;
+
+		printf("\n What is the desired element number?\n");
+		scanf("%d", &ele_choice);
+		if ( ele_choice > numel - 1 )
+		{
+			ele_choice = 0;
+		}
+		break;
+
+/* 'm' selects the material to be viewed.  */
+
+	    case 'm':
+		color_choice = 30;
+		input_color_flag = 0;
+		AppliedForce_flag = 0;
+		AppliedDisp_flag = 0;
+		Element_flag = 0;
+		Material_flag = 1;
+		Node_flag = 0;
+
+		printf("\n What is the desired material number?\n");
+		scanf("%d", &matl_choice);
+		if ( matl_choice > nmat - 1 )
+		{
+			matl_choice = 0;
+		}
+		break;
 
 /* '>' and '<' amplify and shrink the displacements on the deformed object */
 
-  	    case '.':
-	    	if( post_flag )
-	    	{
+	    case '.':
+		if( post_flag )
+		{
 			After_flag = 1;
 			/*Amplify_flag = 1;*/
 			amplify_step = amplify_step0;
@@ -210,15 +210,15 @@ void tsMeshKeys( unsigned char key, int x, int y )
 				amplify_step = .1;
 			amplify_factor += amplify_step;
 /* Update Coordinates */
-                        for ( i = 0; i < numnp; ++i )
-                        {
+			for ( i = 0; i < numnp; ++i )
+			{
 			   *(coord + nsd*i) = *(coord0+nsd*i) +
 				*(U+ndof*i)*amplify_factor;
 			   *(coord + nsd*i+1) = *(coord0+nsd*i+1) +
 				*(U+ndof*i+1)*amplify_factor;
 			   *(coord + nsd*i+2) = *(coord0+nsd*i+2) +
 				*(U+ndof*i+2)*amplify_factor;
-                        }
+			}
 
 /* Update force graphics vectors */	
 			for( i = 0; i < bc.num_force[0]; ++i)
@@ -230,11 +230,11 @@ void tsMeshKeys( unsigned char key, int x, int y )
 			   force_vec[i].y = fpointy - force_vec0[i].y;
 			   force_vec[i].z = fpointz - force_vec0[i].z;
 			}
-	    	}
-	    	break;
-  	    case ',':
-	    	if( post_flag )
-	    	{
+		}
+		break;
+	    case ',':
+		if( post_flag )
+		{
 			After_flag = 1;
 			/*Amplify_flag = 1;*/
 			amplify_step = amplify_step0;
@@ -243,19 +243,19 @@ void tsMeshKeys( unsigned char key, int x, int y )
 				amplify_step = .1;
 			}
 			amplify_factor -= amplify_step;
-  			if ( amplify_factor < 0.0 )
+			if ( amplify_factor < 0.0 )
 				amplify_factor = 0.0;
-        		/*printf("amplify factor %f \n", amplify_factor);*/
+			/*printf("amplify factor %f \n", amplify_factor);*/
 /* Update Coordinates */
-                        for ( i = 0; i < numnp; ++i )
-                        {
+			for ( i = 0; i < numnp; ++i )
+			{
 			   *(coord + nsd*i) = *(coord0+nsd*i) +
 				*(U+ndof*i)*amplify_factor;
 			   *(coord + nsd*i+1) = *(coord0+nsd*i+1) +
 				*(U+ndof*i+1)*amplify_factor;
 			   *(coord + nsd*i+2) = *(coord0+nsd*i+2) +
 				*(U+ndof*i+2)*amplify_factor;
-                        }
+			}
 	
 /* Update force graphics vectors */	
 			for( i = 0; i < bc.num_force[0]; ++i)
@@ -269,7 +269,7 @@ void tsMeshKeys( unsigned char key, int x, int y )
 			   force_vec[i].z = fpointz - force_vec0[i].z;
 			}
 		}
-	    	break;
+		break;
 
 /* The '<' and '>' keys move the Cross Section Plane on the Z
    Axes in the mesh window. */
@@ -287,34 +287,34 @@ void tsMeshKeys( unsigned char key, int x, int y )
 
 /* 'a' and 'b' turns on and off the deformed and undeformed mesh */
 
-  	    case 'a':
+	    case 'a':
 		After_flag = 1 - After_flag;
-	    	break; 
-  	    case 'b':
+		break; 
+	    case 'b':
 		Before_flag = 1 - Before_flag;
-	    	break; 
+		break; 
 
 /* 'd' turns on and off the applied displacement vectors */
 
-  	    case 'd':
+	    case 'd':
 		AppliedDisp_flag = 1 - AppliedDisp_flag;
-	    	break; 
+		break; 
 
 /* Reset the rotation */
 
-  	    case 'c':
+	    case 'c':
 		xAngle = 0.0;
 		yAngle = 0.0;
 		zAngle = 0.0;
-	    	break; 
+		break; 
 
 /* Reset the translation */
 
-  	    case 'v':
+	    case 'v':
 		left_right = left_right0;
 		up_down = up_down0;
 		in_out = in_out0;
-  		if ( !Perspective_flag )
+		if ( !Perspective_flag )
 		{
 			left_right = 0.0;
 			up_down = 0.0;
@@ -324,20 +324,20 @@ void tsMeshKeys( unsigned char key, int x, int y )
 			ortho_bottom = ortho_bottom0;
 			MeshReshape( glutGet(GLUT_WINDOW_WIDTH),
 				glutGet(GLUT_WINDOW_HEIGHT));
-		} 
+		}
 		cross_sec_left_right = cross_sec_left_right0;
 		cross_sec_up_down = cross_sec_up_down0;
 		cross_sec_in_out = cross_sec_in_out0;
-	    	break; 
+		break; 
 
-  	    case 'f':
+	    case 'f':
 		AppliedForce_flag = 1 - AppliedForce_flag;
-	    	break;
+		break;
 	    case 'g':
 		check = tsGetNewMesh();
 		if(!check) printf( " Problems with tsGetNewMesh\n");
 		break;
-  	    case 'h':
+	    case 'h':
 		tsReGetparameter();
 		check = tsset( bc, force, force_vec0, strain, strain_color, stress,
 			stress_color, U, U_color);
@@ -347,50 +347,50 @@ void tsMeshKeys( unsigned char key, int x, int y )
 			MeshReshape( glutGet(GLUT_WINDOW_WIDTH),
 				glutGet(GLUT_WINDOW_HEIGHT));
 		}
-	    	break;
-  	    case 'p':
+		break;
+	    case 'p':
 		Perspective_flag = 1 - Perspective_flag;
 		MeshReshape( glutGet(GLUT_WINDOW_WIDTH),
 			glutGet(GLUT_WINDOW_HEIGHT));
 		left_right = left_right0;
 		up_down = up_down0;
 		/*in_out = in_out0;*/
-  		if ( !Perspective_flag )
+		if ( !Perspective_flag )
 		{
 			left_right = 0.0;
 			up_down = 0.0;
-		} 
-	    	break;
-  	    case 'q':
+		}
+		break;
+	    case 'q':
 		exit(1);
-	    	break;
+		break;
 	    case 's':
 		CrossSection_flag = 1 - CrossSection_flag;
 		break;
 	    case 't':
 		Transparent_flag = 1 - Transparent_flag;
 		break;
-  	    case 'x':
+	    case 'x':
 		Axes_flag = 1 - Axes_flag;
-	    	break;
+		break;
 	    case 'y':
-        	ScreenShot( mesh_width, mesh_height );
-                break;
+		ScreenShot( mesh_width, mesh_height );
+		break;
 	    case 27:
 		exit(0);
 		break;
 	}
 
-        input_color_flag = 0;
-        if( color_choice < 10)
-             input_color_flag = 1;
-        if( color_choice > 15 && color_choice < 19)
-             input_color_flag = 1;
-        if( post_flag > 0 && color_choice < 30)
-             input_color_flag = 1;
+	input_color_flag = 0;
+	if( color_choice < 10)
+	     input_color_flag = 1;
+	if( color_choice > 15 && color_choice < 19)
+	     input_color_flag = 1;
+	if( post_flag > 0 && color_choice < 30)
+	     input_color_flag = 1;
 
-        if(!post_flag) After_flag = 0;
-        if(!input_flag) Before_flag = 0;
+	if(!post_flag) After_flag = 0;
+	if(!input_flag) Before_flag = 0;
 
 	glutPostRedisplay();
 }

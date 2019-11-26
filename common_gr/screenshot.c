@@ -17,7 +17,7 @@
     acs654@my-dejanews.com
   
     SLFFEA source file
-    Version:  1.3
+    Version:  1.4
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -110,7 +110,7 @@ void ScreenShot( int width, int height)
         Updated 4/2/01
   
     SLFFEA source file
-    Version:  1.3
+    Version:  1.4
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.

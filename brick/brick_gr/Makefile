@@ -1,5 +1,5 @@
 # SLFFEA Makefile
-# Version:  1.3
+# Version:  1.4
 # Copyright (C) 1999, 2000  San Le (slffea@yahoo.com)
 # http://slffea.com/
 #
@@ -26,7 +26,7 @@ LIB1 = -I/usr/local/include -O2 -funroll-loops -ansi -pedantic \
 LIB2 = -L/usr/local/lib -lglut -lGLU -lGL -lm -L/usr/X11/lib \
 	-L/usr/X11R6/lib -lX11 -lXext -lXmu -lXt -lXi -lSM -lICE
 
-OBJECTS_BR = ../brick/brmemory.o ../brick/brreader.o 
+OBJECTS_BR = ../brick/memory.o ../brick/brreader.o 
 
 OBJECTS_BRH = ../brick/brconst.h ../brick/brstruct.h 
 
@@ -51,42 +51,42 @@ CC = /usr/bin/gcc
 LIBS = -lm
 
 brpost: brpost.o \
-		brmemgr.o \
-		brreadgr.o \
-		brreadgr2.o \
-		brparam.o \
-		brparam2.o \
-		brset.o \
+		memgr.o \
+		readgr.o \
+		con_surf_read.o \
+		param.o \
+		regetparam.o \
+		set.o \
 		brnorm_vec.o \
-		brbc_vec.o \
-		brmshdsp.o \
+		bc_vec.o \
+		mshdsp.o \
 		brmesh.o \
-		brmshkey.o \
-		brmenu.o \
+		mshkey.o \
+		menu.o \
 		brgetnew.o \
-		brcrtldsp.o \
-		brcrtlmse.o \
+		crtldsp.o \
+		crtlmse.o \
 		brrender.o \
 		$(OBJECTS_BRH) \
 		$(OBJECTS_GRH) \
 		brgui.h \
 		brstrcgr.h 
 	$(CC) -o brpost $(LIB1) brpost.o \
-		brmemgr.o \
-		brreadgr.o \
-		brreadgr2.o \
-		brparam.o \
-		brparam2.o \
-		brset.o \
+		memgr.o \
+		readgr.o \
+		con_surf_read.o \
+		param.o \
+		regetparam.o \
+		set.o \
 		brnorm_vec.o \
-		brbc_vec.o \
-		brmshdsp.o \
+		bc_vec.o \
+		mshdsp.o \
 		brmesh.o \
-		brmshkey.o \
-		brmenu.o \
+		mshkey.o \
+		menu.o \
 		brgetnew.o \
-		brcrtldsp.o \
-		brcrtlmse.o \
+		crtldsp.o \
+		crtlmse.o \
 		brrender.o \
 		$(OBJECTS_BR) $(OBJECTS_GR) $(OBJECTS2) $(LIB2) 
 
@@ -101,50 +101,50 @@ pvbr.o: brinvent.c
 brrender.o: brrender.c 
 	$(CC) -c brrender.c -DBRICK1
 
-brcrtlmse.o: brcrtlmse.c 
-	$(CC) -c brcrtlmse.c 
+crtlmse.o: $(COMMON_GR)/crtlmse.c 
+	$(CC) -c $(COMMON_GR)/crtlmse.c -DBRICK1
 
-brcrtldsp.o: brcrtldsp.c 
-	$(CC) -c brcrtldsp.c -DBRICK1
+crtldsp.o: $(COMMON_GR)/crtldsp.c 
+	$(CC) -c $(COMMON_GR)/crtldsp.c -DBRICK1
 
 brgetnew.o: brgetnew.c 
 	$(CC) -c brgetnew.c 
 
-brmenu.o: brmenu.c 
-	$(CC) -c brmenu.c 
+menu.o: $(COMMON_GR)/menu.c 
+	$(CC) -c $(COMMON_GR)/menu.c -DBRICK1
 
-brmshkey.o: brmshkey.c 
-	$(CC) -c brmshkey.c 
+mshkey.o: $(COMMON_GR)/mshkey.c 
+	$(CC) -c $(COMMON_GR)/mshkey.c -DBRICK1
 
 brmesh.o: brmesh.c 
 	$(CC) -c brmesh.c -DBRICK1
 
-brmshdsp.o: brmshdsp.c 
-	$(CC) -c brmshdsp.c -DBRICK1
+mshdsp.o: $(COMMON_GR)/mshdsp.c 
+	$(CC) -c $(COMMON_GR)/mshdsp.c -DBRICK1
 
-brbc_vec.o: brbc_vec.c 
-	$(CC) -c brbc_vec.c -DBRICK1
+bc_vec.o: $(COMMON_GR)/bc_vec.c 
+	$(CC) -c $(COMMON_GR)/bc_vec.c -DBRICK1
 
 brnorm_vec.o: brnorm_vec.c 
 	$(CC) -c brnorm_vec.c 
 
-brset.o: brset.c 
-	$(CC) -c brset.c 
+set.o: $(COMMON_GR)/set.c 
+	$(CC) -c $(COMMON_GR)/set.c -DBRICK1
 
-brparam2.o: brparam2.c 
-	$(CC) -c brparam2.c 
+regetparam.o: $(COMMON_GR)/regetparam.c 
+	$(CC) -c $(COMMON_GR)/regetparam.c -DBRICK1
 
-brparam.o: brparam.c 
-	$(CC) -c brparam.c 
+param.o: $(COMMON_GR)/param.c 
+	$(CC) -c $(COMMON_GR)/param.c -DBRICK1
 
-brreadgr2.o: brreadgr2.c 
-	$(CC) -c brreadgr2.c -DBRICK1
+con_surf_read.o: $(COMMON_GR)/con_surf_read.c 
+	$(CC) -c $(COMMON_GR)/con_surf_read.c -DBRICK1
 
-brreadgr.o: brreadgr.c 
-	$(CC) -c brreadgr.c -DBRICK1
+readgr.o: $(COMMON_GR)/readgr.c 
+	$(CC) -c $(COMMON_GR)/readgr.c -DBRICK1
 
-brmemgr.o: brmemgr.c 
-	$(CC) -c brmemgr.c -DBRICK1
+memgr.o: $(COMMON_GR)/memgr.c 
+	$(CC) -c $(COMMON_GR)/memgr.c -DBRICK1
 
 brpost.o: brpost.c 
 	$(CC) -c brpost.c

@@ -2,11 +2,11 @@
     This program calculates and writes the parameters for
     the FEM GUI for shell elements.
   
-   			Last Update 9/26/06
+                  Last Update 10/10/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -48,20 +48,20 @@ extern double init_right, init_left, init_top,
 extern SDIM del_stress, del_strain, max_stress, min_stress,
 	max_strain, min_strain;
 extern double max_Uphi_x, min_Uphi_x, del_Uphi_x, max_Uphi_y, min_Uphi_y, del_Uphi_y,
-       	max_Ux, min_Ux, del_Ux, max_Uy, min_Uy, del_Uy,
-       	max_Uz, min_Uz, del_Uz, absolute_max_U, absolute_max_coord;
+	max_Ux, min_Ux, del_Ux, max_Uy, min_Uy, del_Uy,
+	max_Uz, min_Uz, del_Uz, absolute_max_U, absolute_max_coord;
 
 int shparameter( double *coord, SDIM *strain_node, SDIM *stress_node, double *U )
 {
-        int i, j, check;
-        int node_Ux_max, node_Ux_min, node_Uy_max, node_Uy_min, node_Uz_max, node_Uz_min,
+	int i, j, check;
+	int node_Ux_max, node_Ux_min, node_Uy_max, node_Uy_min, node_Uz_max, node_Uz_min,
 		node_Uphi_x_max, node_Uphi_x_min, node_Uphi_y_max, node_Uphi_y_min;
-        ISDIM max_stress_node, min_stress_node, max_strain_node, min_strain_node;
-        FILE *shdata;
+	ISDIM node_stress_max, node_stress_min, node_strain_max, node_strain_min;
+	FILE *shdata;
 
 /*   shdata contains all the parameters and extreme values
 */
-        shdata = fopen( "shview.dat","w" );
+	shdata = fopen( "shview.dat","w" );
 
 /* Initialize parameters */
 
@@ -75,30 +75,30 @@ int shparameter( double *coord, SDIM *strain_node, SDIM *stress_node, double *U 
 	max_Uphi_x = - BIG; min_Uphi_x = BIG;
 	max_Uphi_y = - BIG; min_Uphi_y = BIG;
 
-	node_Ux_max = 0; node_Ux_min = IBIG;
-	node_Uy_max = 0; node_Uy_min = IBIG;
-	node_Uz_max = 0; node_Uz_min = IBIG;
+	node_Ux_max = 0; node_Ux_min = 0;
+	node_Uy_max = 0; node_Uy_min = 0;
+	node_Uz_max = 0; node_Uz_min = 0;
 
-	node_Uphi_x_max = 0; node_Uphi_x_min = IBIG;
-	node_Uphi_y_max = 0; node_Uphi_y_min = IBIG;
+	node_Uphi_x_max = 0; node_Uphi_x_min = 0;
+	node_Uphi_y_max = 0; node_Uphi_y_min = 0;
 
- 	max_strain_node.xx = 0; min_strain_node.xx = IBIG;
- 	max_strain_node.yy = 0; min_strain_node.yy = IBIG;
- 	max_strain_node.xy = 0; min_strain_node.xy = IBIG;
- 	max_strain_node.zx = 0; min_strain_node.zx = IBIG;
- 	max_strain_node.yz = 0; min_strain_node.yz = IBIG;
- 	max_strain_node.I = 0; min_strain_node.I = IBIG;
- 	max_strain_node.II = 0; min_strain_node.II = IBIG;
- 	max_strain_node.III = 0; min_strain_node.III = IBIG;
+	node_strain_max.xx = 0; node_strain_min.xx = 0;
+	node_strain_max.yy = 0; node_strain_min.yy = 0;
+	node_strain_max.xy = 0; node_strain_min.xy = 0;
+	node_strain_max.zx = 0; node_strain_min.zx = 0;
+	node_strain_max.yz = 0; node_strain_min.yz = 0;
+	node_strain_max.I = 0; node_strain_min.I = 0;
+	node_strain_max.II = 0; node_strain_min.II = 0;
+	node_strain_max.III = 0; node_strain_min.III = 0;
 
- 	max_stress_node.xx = 0; min_stress_node.xx = IBIG;
- 	max_stress_node.yy = 0; min_stress_node.yy = IBIG;
- 	max_stress_node.xy = 0; min_stress_node.xy = IBIG;
- 	max_stress_node.zx = 0; min_stress_node.zx = IBIG;
- 	max_stress_node.yz = 0; min_stress_node.yz = IBIG;
- 	max_stress_node.I = 0; min_stress_node.I = IBIG;
- 	max_stress_node.II = 0; min_stress_node.II = IBIG;
- 	max_stress_node.III = 0; min_stress_node.III = IBIG;
+	node_stress_max.xx = 0; node_stress_min.xx = 0;
+	node_stress_max.yy = 0; node_stress_min.yy = 0;
+	node_stress_max.xy = 0; node_stress_min.xy = 0;
+	node_stress_max.zx = 0; node_stress_min.zx = 0;
+	node_stress_max.yz = 0; node_stress_min.yz = 0;
+	node_stress_max.I = 0; node_stress_min.I = 0;
+	node_stress_max.II = 0; node_stress_min.II = 0;
+	node_stress_max.III = 0; node_stress_min.III = 0;
 
 /* Initialize largest and smallest strains */
 
@@ -126,35 +126,35 @@ int shparameter( double *coord, SDIM *strain_node, SDIM *stress_node, double *U 
  
 /* Search for extreme values of displacement, angle, and nodal point */
 
-        for( i = 0; i < numnp; ++i )
-        {
+	for( i = 0; i < numnp; ++i )
+	{
 
 /* Search for extreme nodal coordinates for parameters when object is
    viewed orthographically */
 
-                if( init_right < *(coord+nsd*i))
-                        init_right=*(coord+nsd*i);
+		if( init_right < *(coord+nsd*i))
+			init_right=*(coord+nsd*i);
 
-                if( init_right < *(coord+nsd*(i+numnp)))
-                        init_right=*(coord+nsd*(i+numnp));
+		if( init_right < *(coord+nsd*(i+numnp)))
+			init_right=*(coord+nsd*(i+numnp));
 
-                if( init_left > *(coord+nsd*i))
-                        init_left=*(coord+nsd*i);
+		if( init_left > *(coord+nsd*i))
+			init_left=*(coord+nsd*i);
 
-                if( init_left > *(coord+nsd*(i+numnp)))
-                        init_left=*(coord+nsd*(i+numnp));
+		if( init_left > *(coord+nsd*(i+numnp)))
+			init_left=*(coord+nsd*(i+numnp));
 
-                if( init_top < *(coord+nsd*i+1))
-                        init_top=*(coord+nsd*i+1);
+		if( init_top < *(coord+nsd*i+1))
+			init_top=*(coord+nsd*i+1);
 
-                if( init_top < *(coord+nsd*(i+numnp)+1))
-                        init_top=*(coord+nsd*(i+numnp)+1);
+		if( init_top < *(coord+nsd*(i+numnp)+1))
+			init_top=*(coord+nsd*(i+numnp)+1);
 
-                if( init_bottom > *(coord+nsd*i+1))
-                        init_bottom=*(coord+nsd*i+1);
+		if( init_bottom > *(coord+nsd*i+1))
+			init_bottom=*(coord+nsd*i+1);
 
-                if( init_bottom > *(coord+nsd*(i+numnp)+1))
-                        init_bottom=*(coord+nsd*(i+numnp)+1);
+		if( init_bottom > *(coord+nsd*(i+numnp)+1))
+			init_bottom=*(coord+nsd*(i+numnp)+1);
 
 		if( init_near < *(coord+nsd*i+2))
 			init_near=*(coord+nsd*i+2);
@@ -170,58 +170,58 @@ int shparameter( double *coord, SDIM *strain_node, SDIM *stress_node, double *U 
 
 /* Search for extreme nodal displacements and angles */
 
-                if( max_Ux < *(U+ndof*i))
+		if( max_Ux < *(U+ndof*i))
 		{
-                        max_Ux=*(U+ndof*i);
+			max_Ux=*(U+ndof*i);
 			node_Ux_max = i;
 		}
-                if( min_Ux > *(U+ndof*i))
+		if( min_Ux > *(U+ndof*i))
 		{
-                        min_Ux=*(U+ndof*i);
+			min_Ux=*(U+ndof*i);
 			node_Ux_min = i;
 		}
-                if( max_Uy < *(U+ndof*i+1))
+		if( max_Uy < *(U+ndof*i+1))
 		{
-                        max_Uy=*(U+ndof*i+1);
+			max_Uy=*(U+ndof*i+1);
 			node_Uy_max = i;
 		}
-                if( min_Uy > *(U+ndof*i+1))
+		if( min_Uy > *(U+ndof*i+1))
 		{
-                        min_Uy=*(U+ndof*i+1);
+			min_Uy=*(U+ndof*i+1);
 			node_Uy_min = i;
 		}
-                if( max_Uz < *(U+ndof*i+2))
+		if( max_Uz < *(U+ndof*i+2))
 		{
-                        max_Uz=*(U+ndof*i+2);
+			max_Uz=*(U+ndof*i+2);
 			node_Uz_max = i;
 		}
-                if( min_Uz > *(U+ndof*i+2))
+		if( min_Uz > *(U+ndof*i+2))
 		{
-                        min_Uz=*(U+ndof*i+2);
+			min_Uz=*(U+ndof*i+2);
 			node_Uz_min = i;
 		}
-                if( max_Uphi_x < *(U+ndof*i+3))
+		if( max_Uphi_x < *(U+ndof*i+3))
 		{
-                        max_Uphi_x=*(U+ndof*i+3);
+			max_Uphi_x=*(U+ndof*i+3);
 			node_Uphi_x_max = i;
 		}
-                if( min_Uphi_x > *(U+ndof*i+3))
+		if( min_Uphi_x > *(U+ndof*i+3))
 		{
-                        min_Uphi_x=*(U+ndof*i+3);
+			min_Uphi_x=*(U+ndof*i+3);
 			node_Uphi_x_min = i;
 		}
-                if( max_Uphi_y < *(U+ndof*i+4))
+		if( max_Uphi_y < *(U+ndof*i+4))
 		{
-                        max_Uphi_y=*(U+ndof*i+4);
+			max_Uphi_y=*(U+ndof*i+4);
 			node_Uphi_y_max = i;
 		}
-                if( min_Uphi_y > *(U+ndof*i+4))
+		if( min_Uphi_y > *(U+ndof*i+4))
 		{
-                        min_Uphi_y=*(U+ndof*i+4);
+			min_Uphi_y=*(U+ndof*i+4);
 			node_Uphi_y_min = i;
 		}
 
-        }
+	}
 
 /* Because Mesa has problems with Meshes that have dimensions larger than 1000
    or smaller than .1, I am rescaling everything so that things are on the order
@@ -256,18 +256,23 @@ int shparameter( double *coord, SDIM *strain_node, SDIM *stress_node, double *U 
 	{
 		for( i = 0; i < numnp; ++i )
 		{
-                        *(coord+nsd*i) /= coord_rescale;
-                        *(coord+nsd*i+1) /= coord_rescale;
-                        *(coord+nsd*i+2) /= coord_rescale;
+			*(coord+nsd*i) /= coord_rescale;
+			*(coord+nsd*i+1) /= coord_rescale;
+			*(coord+nsd*i+2) /= coord_rescale;
 
 			*(coord+nsd*(i+numnp)) /= coord_rescale;
 			*(coord+nsd*(i+numnp) + 1) /= coord_rescale;
 			*(coord+nsd*(i+numnp) + 2) /= coord_rescale;
 
-                        *(U+ndof*i) /= coord_rescale;
-                        *(U+ndof*i+1) /= coord_rescale;
-                        *(U+ndof*i+2) /= coord_rescale;
-
+/* Note that I rescale the displacements related to distance but no angle.  This
+   is because when the deformation is amplified, the "coord_rescale" factor which
+   U is divided by is also contained in Uz_fib, which is multiplied with all the
+   angle rotations when coordinates are updated through amplification of the
+   deformation.
+*/
+			*(U+ndof*i) /= coord_rescale;
+			*(U+ndof*i+1) /= coord_rescale;
+			*(U+ndof*i+2) /= coord_rescale;
 		}
 
 		init_left /= coord_rescale;
@@ -299,177 +304,177 @@ int shparameter( double *coord, SDIM *strain_node, SDIM *stress_node, double *U 
 	if( absolute_max_U < fabs(max_Uz))
 		absolute_max_U = fabs(max_Uz);
 
-        if( init_far > true_far)
+	if( init_far > true_far)
 		init_far=true_far;
 
-        for( i = 0; i < 2*numnp; ++i )
-        {
+	for( i = 0; i < 2*numnp; ++i )
+	{
 
 /* Find extreme strains */
 
-                if( max_strain.xx < strain_node[i].xx )
+		if( max_strain.xx < strain_node[i].xx )
 		{
-                        max_strain.xx = strain_node[i].xx;
-			max_strain_node.xx = i;
+			max_strain.xx = strain_node[i].xx;
+			node_strain_max.xx = i;
 		}
-                if( min_strain.xx > strain_node[i].xx )
+		if( min_strain.xx > strain_node[i].xx )
 		{
-                        min_strain.xx = strain_node[i].xx;
-			min_strain_node.xx = i;
+			min_strain.xx = strain_node[i].xx;
+			node_strain_min.xx = i;
 		}
-                if( max_strain.yy < strain_node[i].yy )
+		if( max_strain.yy < strain_node[i].yy )
 		{
-                        max_strain.yy = strain_node[i].yy;
-			max_strain_node.yy = i;
+			max_strain.yy = strain_node[i].yy;
+			node_strain_max.yy = i;
 		}
-                if( min_strain.yy > strain_node[i].yy )
+		if( min_strain.yy > strain_node[i].yy )
 		{
-                        min_strain.yy = strain_node[i].yy;
-			min_strain_node.yy = i;
+			min_strain.yy = strain_node[i].yy;
+			node_strain_min.yy = i;
 		}
-                if( max_strain.xy < strain_node[i].xy )
+		if( max_strain.xy < strain_node[i].xy )
 		{
-                        max_strain.xy = strain_node[i].xy;
-			max_strain_node.xy = i;
+			max_strain.xy = strain_node[i].xy;
+			node_strain_max.xy = i;
 		}
-                if( min_strain.xy > strain_node[i].xy )
+		if( min_strain.xy > strain_node[i].xy )
 		{
-                        min_strain.xy = strain_node[i].xy;
-			min_strain_node.xy = i;
+			min_strain.xy = strain_node[i].xy;
+			node_strain_min.xy = i;
 		}
-                if( max_strain.zx < strain_node[i].zx )
+		if( max_strain.zx < strain_node[i].zx )
 		{
-                        max_strain.zx = strain_node[i].zx;
-			max_strain_node.zx = i;
+			max_strain.zx = strain_node[i].zx;
+			node_strain_max.zx = i;
 		}
-                if( min_strain.zx > strain_node[i].zx )
+		if( min_strain.zx > strain_node[i].zx )
 		{
-                        min_strain.zx = strain_node[i].zx;
-			min_strain_node.zx = i;
+			min_strain.zx = strain_node[i].zx;
+			node_strain_min.zx = i;
 		}
-                if( max_strain.yz < strain_node[i].yz )
+		if( max_strain.yz < strain_node[i].yz )
 		{
-                        max_strain.yz = strain_node[i].yz;
-			max_strain_node.yz = i;
+			max_strain.yz = strain_node[i].yz;
+			node_strain_max.yz = i;
 		}
-                if( min_strain.yz > strain_node[i].yz )
+		if( min_strain.yz > strain_node[i].yz )
 		{
-                        min_strain.yz = strain_node[i].yz;
-			min_strain_node.yz = i;
+			min_strain.yz = strain_node[i].yz;
+			node_strain_min.yz = i;
 		}
-                if( max_strain.I < strain_node[i].I )
+		if( max_strain.I < strain_node[i].I )
 		{
-                        max_strain.I = strain_node[i].I;
-			max_strain_node.I = i;
+			max_strain.I = strain_node[i].I;
+			node_strain_max.I = i;
 		}
-                if( min_strain.I > strain_node[i].I )
+		if( min_strain.I > strain_node[i].I )
 		{
-                        min_strain.I = strain_node[i].I;
-			min_strain_node.I = i;
+			min_strain.I = strain_node[i].I;
+			node_strain_min.I = i;
 		}
-                if( max_strain.II < strain_node[i].II )
+		if( max_strain.II < strain_node[i].II )
 		{
-                        max_strain.II = strain_node[i].II;
-			max_strain_node.II = i;
+			max_strain.II = strain_node[i].II;
+			node_strain_max.II = i;
 		}
-                if( min_strain.II > strain_node[i].II )
+		if( min_strain.II > strain_node[i].II )
 		{
-                        min_strain.II = strain_node[i].II;
-			min_strain_node.II = i;
+			min_strain.II = strain_node[i].II;
+			node_strain_min.II = i;
 		}
-                if( max_strain.III < strain_node[i].III )
+		if( max_strain.III < strain_node[i].III )
 		{
-                        max_strain.III = strain_node[i].III;
-			max_strain_node.III = i;
+			max_strain.III = strain_node[i].III;
+			node_strain_max.III = i;
 		}
-                if( min_strain.III > strain_node[i].III )
+		if( min_strain.III > strain_node[i].III )
 		{
-                        min_strain.III = strain_node[i].III;
-			min_strain_node.III = i;
+			min_strain.III = strain_node[i].III;
+			node_strain_min.III = i;
 		}
 /* Find extreme stresses */
 
-                if( max_stress.xx < stress_node[i].xx )
+		if( max_stress.xx < stress_node[i].xx )
 		{
-                        max_stress.xx = stress_node[i].xx;
-			max_stress_node.xx = i;
+			max_stress.xx = stress_node[i].xx;
+			node_stress_max.xx = i;
 		}
-                if( min_stress.xx > stress_node[i].xx )
+		if( min_stress.xx > stress_node[i].xx )
 		{
-                        min_stress.xx = stress_node[i].xx;
-			min_stress_node.xx = i;
+			min_stress.xx = stress_node[i].xx;
+			node_stress_min.xx = i;
 		}
-                if( max_stress.yy < stress_node[i].yy )
+		if( max_stress.yy < stress_node[i].yy )
 		{
-                        max_stress.yy = stress_node[i].yy;
-			max_stress_node.yy = i;
+			max_stress.yy = stress_node[i].yy;
+			node_stress_max.yy = i;
 		}
-                if( min_stress.yy > stress_node[i].yy )
+		if( min_stress.yy > stress_node[i].yy )
 		{
-                        min_stress.yy = stress_node[i].yy;
-			min_stress_node.yy = i;
+			min_stress.yy = stress_node[i].yy;
+			node_stress_min.yy = i;
 		}
-                if( max_stress.xy < stress_node[i].xy )
+		if( max_stress.xy < stress_node[i].xy )
 		{
-                        max_stress.xy = stress_node[i].xy;
-			max_stress_node.xy = i;
+			max_stress.xy = stress_node[i].xy;
+			node_stress_max.xy = i;
 		}
-                if( min_stress.xy > stress_node[i].xy )
+		if( min_stress.xy > stress_node[i].xy )
 		{
-                        min_stress.xy = stress_node[i].xy;
-			min_stress_node.xy = i;
+			min_stress.xy = stress_node[i].xy;
+			node_stress_min.xy = i;
 		}
-                if( max_stress.zx < stress_node[i].zx )
+		if( max_stress.zx < stress_node[i].zx )
 		{
-                        max_stress.zx = stress_node[i].zx;
-			max_stress_node.zx = i;
+			max_stress.zx = stress_node[i].zx;
+			node_stress_max.zx = i;
 		}
-                if( min_stress.zx > stress_node[i].zx )
+		if( min_stress.zx > stress_node[i].zx )
 		{
-                        min_stress.zx = stress_node[i].zx;
-			min_stress_node.zx = i;
+			min_stress.zx = stress_node[i].zx;
+			node_stress_min.zx = i;
 		}
-                if( max_stress.yz < stress_node[i].yz )
+		if( max_stress.yz < stress_node[i].yz )
 		{
-                        max_stress.yz = stress_node[i].yz;
-			max_stress_node.yz = i;
+			max_stress.yz = stress_node[i].yz;
+			node_stress_max.yz = i;
 		}
-                if( min_stress.yz > stress_node[i].yz )
+		if( min_stress.yz > stress_node[i].yz )
 		{
-                        min_stress.yz = stress_node[i].yz;
-			min_stress_node.yz = i;
+			min_stress.yz = stress_node[i].yz;
+			node_stress_min.yz = i;
 		}
-                if( max_stress.I < stress_node[i].I )
+		if( max_stress.I < stress_node[i].I )
 		{
-                        max_stress.I = stress_node[i].I;
-			max_stress_node.I = i;
+			max_stress.I = stress_node[i].I;
+			node_stress_max.I = i;
 		}
-                if( min_stress.I > stress_node[i].I )
+		if( min_stress.I > stress_node[i].I )
 		{
-                        min_stress.I = stress_node[i].I;
-			min_stress_node.I = i;
+			min_stress.I = stress_node[i].I;
+			node_stress_min.I = i;
 		}
-                if( max_stress.II < stress_node[i].II )
+		if( max_stress.II < stress_node[i].II )
 		{
-                        max_stress.II = stress_node[i].II;
-			max_stress_node.II = i;
+			max_stress.II = stress_node[i].II;
+			node_stress_max.II = i;
 		}
-                if( min_stress.II > stress_node[i].II )
+		if( min_stress.II > stress_node[i].II )
 		{
-                        min_stress.II = stress_node[i].II;
-			min_stress_node.II = i;
+			min_stress.II = stress_node[i].II;
+			node_stress_min.II = i;
 		}
-                if( max_stress.III < stress_node[i].III )
+		if( max_stress.III < stress_node[i].III )
 		{
-                        max_stress.III = stress_node[i].III;
-			max_stress_node.III = i;
+			max_stress.III = stress_node[i].III;
+			node_stress_max.III = i;
 		}
-                if( min_stress.III > stress_node[i].III )
+		if( min_stress.III > stress_node[i].III )
 		{
-                        min_stress.III = stress_node[i].III;
-			min_stress_node.III = i;
+			min_stress.III = stress_node[i].III;
+			node_stress_min.III = i;
 		}
-        }
+	}
 
 
 
@@ -528,10 +533,10 @@ int shparameter( double *coord, SDIM *strain_node, SDIM *stress_node, double *U 
 
 /* Calculate orthographic viewport parameters */
 
-        right = init_right + (init_right - init_left) / 10.0;
-        left = init_left - (init_right - init_left) / 10.0;
-        top = init_top + (init_top - init_bottom) / 10.0;
-        bottom = init_bottom - (init_top - init_bottom) / 10.0;
+	right = init_right + (init_right - init_left) / 10.0;
+	left = init_left - (init_right - init_left) / 10.0;
+	top = init_top + (init_top - init_bottom) / 10.0;
+	bottom = init_bottom - (init_top - init_bottom) / 10.0;
 	near = init_near + (init_near - init_far) / 10.0;
 	far = init_far - (init_near - init_far) / 10.0;
 
@@ -573,8 +578,8 @@ int shparameter( double *coord, SDIM *strain_node, SDIM *stress_node, double *U 
 	cross_sec_up_down = cross_sec_up_down0;
 	cross_sec_in_out = cross_sec_in_out0;
 
-    	mesh_width=mesh_width0;
-    	mesh_height=mesh_height0;
+	mesh_width=mesh_width0;
+	mesh_height=mesh_height0;
 
 /* Print the above data in the file "shview.dat" */
 
@@ -587,47 +592,47 @@ int shparameter( double *coord, SDIM *strain_node, SDIM *stress_node, double *U 
 	fprintf( shdata,"displacement Uz        %5d %5d   %14.6e %14.6e\n", node_Uz_min,
 		node_Uz_max, min_Uz*coord_rescale, max_Uz*coord_rescale);
         fprintf( shdata,"angle phi x            %5d %5d   %14.6e %14.6e\n", node_Uphi_x_min,
-                node_Uphi_x_max, min_Uphi_x, max_Uphi_x);
+		node_Uphi_x_max, min_Uphi_x, max_Uphi_x);
         fprintf( shdata,"angle phi y            %5d %5d   %14.6e %14.6e\n", node_Uphi_y_min,
                 node_Uphi_y_max, min_Uphi_y, max_Uphi_y);
 	fprintf( shdata,"\n");
 	fprintf( shdata, "                            node\n");
 	fprintf( shdata, "                        min       max         min           max\n");
-	fprintf( shdata,"stress xx            %5d     %5d   %14.6e %14.6e\n", min_stress_node.xx,
-		max_stress_node.xx, min_stress.xx, max_stress.xx);
-	fprintf( shdata,"stress yy            %5d     %5d   %14.6e %14.6e\n", min_stress_node.yy,
-		max_stress_node.yy, min_stress.yy, max_stress.yy);
-	fprintf( shdata,"stress xy            %5d     %5d   %14.6e %14.6e\n", min_stress_node.xy,
-		max_stress_node.xy, min_stress.xy, max_stress.xy);
-	fprintf( shdata,"stress zx            %5d     %5d   %14.6e %14.6e\n", min_stress_node.zx,
-		max_stress_node.zx, min_stress.zx, max_stress.zx);
-	fprintf( shdata,"stress yz            %5d     %5d   %14.6e %14.6e\n", min_stress_node.yz,
-		max_stress_node.yz, min_stress.yz, max_stress.yz);
-	fprintf( shdata,"stress I             %5d     %5d   %14.6e %14.6e\n", min_stress_node.I,
-		max_stress_node.I, min_stress.I, max_stress.I);
-	fprintf( shdata,"stress II            %5d     %5d   %14.6e %14.6e\n", min_stress_node.II,
-		max_stress_node.II, min_stress.II, max_stress.II);
-	fprintf( shdata,"stress III           %5d     %5d   %14.6e %14.6e\n", min_stress_node.III,
-		max_stress_node.III, min_stress.III, max_stress.III);
+	fprintf( shdata,"stress xx            %5d     %5d   %14.6e %14.6e\n", node_stress_min.xx,
+		node_stress_max.xx, min_stress.xx, max_stress.xx);
+	fprintf( shdata,"stress yy            %5d     %5d   %14.6e %14.6e\n", node_stress_min.yy,
+		node_stress_max.yy, min_stress.yy, max_stress.yy);
+	fprintf( shdata,"stress xy            %5d     %5d   %14.6e %14.6e\n", node_stress_min.xy,
+		node_stress_max.xy, min_stress.xy, max_stress.xy);
+	fprintf( shdata,"stress zx            %5d     %5d   %14.6e %14.6e\n", node_stress_min.zx,
+		node_stress_max.zx, min_stress.zx, max_stress.zx);
+	fprintf( shdata,"stress yz            %5d     %5d   %14.6e %14.6e\n", node_stress_min.yz,
+		node_stress_max.yz, min_stress.yz, max_stress.yz);
+	fprintf( shdata,"stress I             %5d     %5d   %14.6e %14.6e\n", node_stress_min.I,
+		node_stress_max.I, min_stress.I, max_stress.I);
+	fprintf( shdata,"stress II            %5d     %5d   %14.6e %14.6e\n", node_stress_min.II,
+		node_stress_max.II, min_stress.II, max_stress.II);
+	fprintf( shdata,"stress III           %5d     %5d   %14.6e %14.6e\n", node_stress_min.III,
+		node_stress_max.III, min_stress.III, max_stress.III);
 	fprintf( shdata,"\n");
-	fprintf( shdata,"strain xx            %5d     %5d   %14.6e %14.6e\n", min_strain_node.xx,
-		max_strain_node.xx, min_strain.xx, max_strain.xx);
-	fprintf( shdata,"strain yy            %5d     %5d   %14.6e %14.6e\n", min_strain_node.yy,
-		max_strain_node.yy, min_strain.yy, max_strain.yy);
-	fprintf( shdata,"strain xy            %5d     %5d   %14.6e %14.6e\n", min_strain_node.xy,
-		max_strain_node.xy, min_strain.xy, max_strain.xy);
-	fprintf( shdata,"strain zx            %5d     %5d   %14.6e %14.6e\n", min_strain_node.zx,
-		max_strain_node.zx, min_strain.zx, max_strain.zx);
-	fprintf( shdata,"strain yz            %5d     %5d   %14.6e %14.6e\n", min_strain_node.yz,
-		max_strain_node.yz, min_strain.yz, max_strain.yz);
-	fprintf( shdata,"strain I             %5d     %5d   %14.6e %14.6e\n", min_strain_node.I,
-		max_strain_node.I, min_strain.I, max_strain.I);
-	fprintf( shdata,"strain II            %5d     %5d   %14.6e %14.6e\n", min_strain_node.II,
-		max_strain_node.II, min_strain.II, max_strain.II);
-	fprintf( shdata,"strain III           %5d     %5d   %14.6e %14.6e\n", min_strain_node.III,
-		max_strain_node.III, min_strain.III, max_strain.III);
+	fprintf( shdata,"strain xx            %5d     %5d   %14.6e %14.6e\n", node_strain_min.xx,
+		node_strain_max.xx, min_strain.xx, max_strain.xx);
+	fprintf( shdata,"strain yy            %5d     %5d   %14.6e %14.6e\n", node_strain_min.yy,
+		node_strain_max.yy, min_strain.yy, max_strain.yy);
+	fprintf( shdata,"strain xy            %5d     %5d   %14.6e %14.6e\n", node_strain_min.xy,
+		node_strain_max.xy, min_strain.xy, max_strain.xy);
+	fprintf( shdata,"strain zx            %5d     %5d   %14.6e %14.6e\n", node_strain_min.zx,
+		node_strain_max.zx, min_strain.zx, max_strain.zx);
+	fprintf( shdata,"strain yz            %5d     %5d   %14.6e %14.6e\n", node_strain_min.yz,
+		node_strain_max.yz, min_strain.yz, max_strain.yz);
+	fprintf( shdata,"strain I             %5d     %5d   %14.6e %14.6e\n", node_strain_min.I,
+		node_strain_max.I, min_strain.I, max_strain.I);
+	fprintf( shdata,"strain II            %5d     %5d   %14.6e %14.6e\n", node_strain_min.II,
+		node_strain_max.II, min_strain.II, max_strain.II);
+	fprintf( shdata,"strain III           %5d     %5d   %14.6e %14.6e\n", node_strain_min.III,
+		node_strain_max.III, min_strain.III, max_strain.III);
 	fprintf( shdata,"\n");
-	fprintf( shdata,"Orthographic viewport parameters(right, left, top, bootom, near, far)\n ");
+	fprintf( shdata,"Orthographic viewport parameters(right, left, top, bottom, near, far)\n ");
 	fprintf( shdata,"%14.6e %14.6e %14.6e %14.6e %14.6e %14.6e\n", ortho_right, ortho_left,
 		ortho_top, ortho_bottom, near, 1000.0);
 	fprintf( shdata,"Perspective viewport parameters( mesh width and height)\n ");
@@ -639,5 +644,5 @@ int shparameter( double *coord, SDIM *strain_node, SDIM *stress_node, double *U 
 
 	fclose( shdata );
 
-  	return 1;    /* ANSI C requires main to return int. */
+	return 1;    /* ANSI C requires main to return int. */
 }

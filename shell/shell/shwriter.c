@@ -5,7 +5,7 @@
 		Updated 10/17/06
 
     SLFFEA source file
-    Version:  1.3
+    Version:  1.4
     Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
 
     The source code contained in this file is released under the
@@ -20,16 +20,18 @@
 #include "shconst.h"
 #include "shstruct.h"
 
+#define      OLD_COMPARE    0
+
 extern int dof, integ_flag, doubly_curved_flag, nmat, nmode, numel, numnp;
 extern int static_flag, element_stress_print_flag, gauss_stress_flag;
 
 int shwriter ( BOUND bc, int *connect, double *coord, int *el_matl, double *force,
-	int *id, MATL *matl, char *name, STRAIN *strain, SDIM *strain_node,
-	STRESS *stress, SDIM *stress_node, double *U, double *Uz_fib)
+	int *id, double *fiber_xyz, MATL *matl, char *name, STRAIN *strain,
+	SDIM *strain_node, STRESS *stress, SDIM *stress_node, double *U, double *Uz_fib)
 {
 	int i,j,dum,check, node, name_length;
 	char *ccheck;
-	double fpointx, fpointy, fpointz;
+	double fpointx, fpointy, fpointz, fdum;
 	char out[30], stress_dat[40], stress_type[6];
 	FILE *o3, *o4;
 
@@ -81,13 +83,21 @@ int shwriter ( BOUND bc, int *connect, double *coord, int *el_matl, double *forc
 	fprintf( o3, "node no., coordinates \n");
 	for( i = 0; i < numnp; ++i )
 	{
+/* I have tried 4 methods of calculating the updated coordinates. */
+
 #if 0
+
+/* The first is simply adding the nodal U which comes from the solution vecter.
+*/
 	   fpointx = *(coord+nsd*i) + *(U+ndof*i);
 	   fpointy = *(coord+nsd*i+1) + *(U+ndof*i+1);
 	   fpointz = *(coord+nsd*i+2) + *(U+ndof*i+2);
 	   fprintf( o3, "%4d %14.6f %14.6f %14.6f\n",
 		i, fpointx, fpointy, fpointz );
 
+/* The second adds to the x and y coordinates the global displacement in z multiplied
+   by the local angle y and x respectively.
+*/
 	   fpointx = *(coord+nsd*i) + *(U+ndof*i) +
 		*(U+ndof*i+2)*(*(U+ndof*i+4));
 	   fpointy = *(coord+nsd*i+1) + *(U+ndof*i+1) -
@@ -96,6 +106,11 @@ int shwriter ( BOUND bc, int *connect, double *coord, int *el_matl, double *forc
 	   fprintf( o3, "%4d %14.6f %14.6f %14.6f\n",
 		i, fpointx, fpointy, fpointz );
 #endif
+
+#if OLD_COMPARE
+/* The third adds to the x and y coordinates the normal projection of the displacement
+   vector in the fiber direction multiplied by the local angle y and x respectively.
+*/
 	   fpointx = *(coord+nsd*i) + *(U+ndof*i) +
 		*(Uz_fib+i)*(*(U+ndof*i+4));
 	   fpointy = *(coord+nsd*i+1) + *(U+ndof*i+1) -
@@ -103,6 +118,36 @@ int shwriter ( BOUND bc, int *connect, double *coord, int *el_matl, double *forc
 	   fpointz = *(coord+nsd*i+2) + *(U+ndof*i+2);
 	   fprintf( o3, "%4d %14.6f %14.6f %14.6f\n",
 		i, fpointx, fpointy, fpointz );
+
+#endif
+
+#if !OLD_COMPARE
+/* The fourth method is probably the most correct.  It is based on equations 6.2.20-6.2.24 of
+   "The Finite Element Method" by Thomas Hughes, page 388-389.  (David Benson, in "AMES 232 B
+   Course Notes" page 50, does the same as Hughes.)  I have made some modifications,
+   specifically, I replace za in equation 6.2.23 with "Uz_fib" which is the projection of the
+   displacement at a node in the fiber "e3" direction. 
+
+   It should be noted that in the "ANSYS User's Manual", page 12-12, these same equations mistakenly
+   switch the fiber vectors e1 and e2(which are called "a" and "b" in ANSYS).  The first time these
+   equations appear are in 12.5.1, 12.5.2, 12.5.3.  They also appear incorrectly like this later.
+*/
+	   fdum = - *(fiber_xyz + nsdsq*i + 1*nsd)*(*(U+ndof*i+3)) +
+		*(fiber_xyz + nsdsq*i)*(*(U+ndof*i+4)); 
+	   fpointx = *(coord+nsd*i) + *(U+ndof*i) +
+		*(Uz_fib+i)*fdum;
+	   fdum = - *(fiber_xyz + nsdsq*i + 1*nsd + 1)*(*(U+ndof*i+3)) +
+		*(fiber_xyz + nsdsq*i + 1)*(*(U+ndof*i+4)); 
+	   fpointy = *(coord+nsd*i+1) + *(U+ndof*i+1) +
+		*(Uz_fib+i)*fdum;
+	   fdum = - *(fiber_xyz + nsdsq*i + 1*nsd + 2)*(*(U+ndof*i+3)) +
+		*(fiber_xyz + nsdsq*i + 2)*(*(U+ndof*i+4)); 
+	   fpointz = *(coord+nsd*i+2) + *(U+ndof*i+2) +
+		*(Uz_fib+i)*fdum;
+	   fprintf( o3, "%4d %14.6f %14.6f %14.6f\n",
+		i, fpointx, fpointy, fpointz );
+#endif
+
 	}
 
 	if(doubly_curved_flag)
@@ -110,13 +155,21 @@ int shwriter ( BOUND bc, int *connect, double *coord, int *el_matl, double *forc
 	    fprintf( o3, "The corresponding top nodes are: \n");
 	    for( i = 0; i < numnp; ++i )
 	    {
+/* I have tried 4 methods of calculating the updated coordinates. */
+
 #if 0
+
+/* The first is simply adding the nodal U which comes from the solution vecter.
+*/
 		fpointx = *(coord+nsd*(numnp+i)) + *(U+ndof*i);
 		fpointy = *(coord+nsd*(numnp+i)+1) + *(U+ndof*i+1);
 		fpointz = *(coord+nsd*(numnp+i)+2) + *(U+ndof*i+2);
 		fprintf( o3, "%4d %14.6f %14.6f %14.6f\n",
 		    i, fpointx, fpointy, fpointz );
 
+/* The second adds to the x and y coordinates the global displacement in z multiplied
+   by the local angle y and x respectively.
+*/
 		fpointx = *(coord+nsd*(numnp+i)) + *(U+ndof*i) +
 		    *(U+ndof*i+2)*(*(U+ndof*i+4));
 		fpointy = *(coord+nsd*(numnp+i)+1) + *(U+ndof*i+1) -
@@ -125,6 +178,11 @@ int shwriter ( BOUND bc, int *connect, double *coord, int *el_matl, double *forc
 		fprintf( o3, "%4d %14.6f %14.6f %14.6f\n",
 		    i, fpointx, fpointy, fpointz );
 #endif
+
+#if OLD_COMPARE
+/* The third adds to the x and y coordinates the normal projection of the displacement
+   vector in the fiber direction multiplied by the local angle y and x respectively.
+*/
 		fpointx = *(coord+nsd*(numnp+i)) + *(U+ndof*i) +
 		    *(Uz_fib+i)*(*(U+ndof*i+4));
 		fpointy = *(coord+nsd*(numnp+i)+1) + *(U+ndof*i+1) -
@@ -132,6 +190,28 @@ int shwriter ( BOUND bc, int *connect, double *coord, int *el_matl, double *forc
 		fpointz = *(coord+nsd*(numnp+i)+2) + *(U+ndof*i+2);
 		fprintf( o3, "%4d %14.6f %14.6f %14.6f\n",
 		    i, fpointx, fpointy, fpointz );
+
+#endif
+
+#if !OLD_COMPARE
+
+/* See notes above for the top nodes. */
+
+		fdum = - *(fiber_xyz + nsdsq*i + 1*nsd)*(*(U+ndof*i+3)) +
+		    *(fiber_xyz + nsdsq*i)*(*(U+ndof*i+4));
+		fpointx = *(coord+nsd*(numnp+i)) + *(U+ndof*i) +
+		    *(Uz_fib+i)*fdum;
+		fdum = - *(fiber_xyz + nsdsq*i + 1*nsd + 1)*(*(U+ndof*i+3)) +
+		    *(fiber_xyz + nsdsq*i + 1)*(*(U+ndof*i+4));
+		fpointy = *(coord+nsd*(numnp+i)+1) + *(U+ndof*i+1) +
+		    *(Uz_fib+i)*fdum;
+		fdum = - *(fiber_xyz + nsdsq*i + 1*nsd + 2)*(*(U+ndof*i+3)) +
+		    *(fiber_xyz + nsdsq*i + 2)*(*(U+ndof*i+4));
+		fpointz = *(coord+nsd*(numnp+i)+2) + *(U+ndof*i+2) +
+		    *(Uz_fib+i)*fdum;
+		fprintf( o3, "%4d %14.6f %14.6f %14.6f\n",
+		    i, fpointx, fpointy, fpointz );
+#endif
 	    }
 	}
 

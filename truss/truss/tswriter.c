@@ -2,11 +2,11 @@
     This library function writes the resulting data for a finite element
     program which does analysis on a truss 
 
-		Updated 5/2/05
+		Updated 1/22/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -24,7 +24,7 @@ extern int dof, nmat, nmode, numel, numnp;
 extern int static_flag;
 
 int tswriter ( BOUND bc, int *connect, double *coord, int *el_matl, double *force,
-	int *id, MATL *matl, char *name, STRAIN *strain, STRESS *stress, double *U)
+	int *id, MATL *matl, char *name, SDIM *strain, SDIM *stress, double *U)
 {
 	int i,j,dum,check, node, name_length;
 	char *ccheck;

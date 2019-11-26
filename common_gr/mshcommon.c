@@ -3,8 +3,8 @@
     for every FEM GUI program.
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -41,9 +41,13 @@ void MeshKey_Special(int key, int x, int y)
 {
 /*
     This program contains the mesh special keys routine for every
-    FEM GUI program.
+    FEM GUI program.  Look in:
+
+      /usr/include/GL/glut.h
+
+   for a list of the special keys.
   
-                        Last Update 5/27/01
+	                Last Update 5/27/01
 */
 
   if(CrossSection_flag)
@@ -93,7 +97,7 @@ void MeshKey_Special(int key, int x, int y)
 	    case GLUT_KEY_RIGHT:
 		left_right += step_sizex;
 		break;
-  	}
+	}
   }
   glutPostRedisplay();
 }
@@ -107,35 +111,35 @@ void MeshKey_Special(int key, int x, int y)
 
 void MeshReshape(int w, int h)
 {
-   	double ratio;
+	double ratio;
 
 	mesh_width = w;
-        mesh_height = h;
+	mesh_height = h;
 
-   	ratio = (double) mesh_width / (double) mesh_height;
-    	glViewport (0, 0, mesh_width, mesh_height);    /*  define the viewport */
-    	glMatrixMode (GL_PROJECTION);       /*  prepare for and then  */
-    	glLoadIdentity ();  
-    	/*glOrtho (-2.0, 2.0, -2.0, 2.0,1, 40.0); 
-        glOrtho (left,right,bottom,top, near,1000);*/
+	ratio = (double) mesh_width / (double) mesh_height;
+	glViewport (0, 0, mesh_width, mesh_height);    /*  define the viewport */
+	glMatrixMode (GL_PROJECTION);       /*  prepare for and then  */
+	glLoadIdentity ();  
+	/*glOrtho (-2.0, 2.0, -2.0, 2.0,1, 40.0); 
+	glOrtho (left,right,bottom,top, near,1000);*/
 
 
-    	if(Perspective_flag)
-    	{
-    		glFrustum (-ratio, ratio, -1.0, 1.0, 2.0, 1000.0); 
+	if(Perspective_flag)
+	{
+		glFrustum (-ratio, ratio, -1.0, 1.0, 2.0, 1000.0); 
 		/*up_down = up_down0;*/
-    	}
-    	else
-    	{
-        	glOrtho ( ortho_left, ortho_right, ortho_bottom,
+	}
+	else
+	{
+		glOrtho ( ortho_left, ortho_right, ortho_bottom,
 			ortho_top, near, 1000);
 		/*up_down = up_down0;*/
-    	}
+	}
 	
-    	/*glFrustum (-2.0, 2.0, -2.0, 2.0,1, 40.0); */
-    	/*glFrustum (left,right,bottom,top, near,far);*/
-    	glMatrixMode (GL_MODELVIEW);       /*  back to modelview matrix    */
-   	glLoadIdentity();
+	/*glFrustum (-2.0, 2.0, -2.0, 2.0,1, 40.0); */
+	/*glFrustum (left,right,bottom,top, near,far);*/
+	glMatrixMode (GL_MODELVIEW);       /*  back to modelview matrix    */
+	glLoadIdentity();
 }
 
 /*
@@ -167,11 +171,11 @@ void MeshInit(void)
 
 /*The lines below do shaded rendering*/
 
-    	glLoadIdentity ();  
-        glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
-        glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
-        glEnable(GL_LIGHTING);
-        glShadeModel(GL_SMOOTH);
+	glLoadIdentity ();  
+	glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+	glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+	glEnable(GL_LIGHTING);
+	glShadeModel(GL_SMOOTH);
    }
    else
    {

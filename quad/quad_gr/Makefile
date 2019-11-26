@@ -1,5 +1,5 @@
 # SLFFEA Makefile
-# Version:  1.3
+# Version:  1.4
 # Copyright (C) 1999, 2000  San Le (slffea@yahoo.com)
 # http://slffea.com/
 #
@@ -26,7 +26,7 @@ LIB1 = -I/usr/local/include -O2 -funroll-loops -ansi -pedantic \
 LIB2 = -L/usr/local/lib -lglut -lGLU -lGL -lm -L/usr/X11/lib \
 	-L/usr/X11R6/lib -lX11 -lXext -lXmu -lXt -lXi -lSM -lICE
 
-OBJECTS_QD = ../quad/qdmemory.o ../quad/qdreader.o 
+OBJECTS_QD = ../quad/memory.o ../quad/qdreader.o 
 
 OBJECTS_QDH = ../quad/qdconst.h ../quad/qdstruct.h 
 
@@ -50,82 +50,87 @@ PROGS = qdpost
 CC = /usr/bin/gcc
 
 qdpost: qdpost.o \
-		qdmemgr.o \
-		qdreadgr.o \
-		qdparam.o \
-		qdparam2.o \
+		memgr.o \
+		readgr2.o \
+		param2.o \
+		regetparam2.o \
 		qdset.o \
-		qdbc_vec.o \
-		qdmshdsp.o \
+		qdnorm_vec.o \
+		bc_vec.o \
+		mshdsp.o \
 		qdmesh.o \
-		qdmshkey.o \
-		qdmenu.o \
+		mshkey2.o \
+		menu.o \
 		qdgetnew.o \
-		qdcrtldsp.o \
-		qdcrtlmse.o \
+		crtldsp2.o \
+		crtlmse2.o \
 		qdrender.o \
 		$(OBJECTS_QDH) \
 		$(OBJECTS_GRH) \
 		qdgui.h \
 		qdstrcgr.h 
 	$(CC) -o qdpost $(LIB1) qdpost.o \
-		qdmemgr.o \
-		qdreadgr.o \
-		qdparam.o \
-		qdparam2.o \
+		memgr.o \
+		readgr2.o \
+		param2.o \
+		regetparam2.o \
 		qdset.o \
-		qdbc_vec.o \
-		qdmshdsp.o \
+		qdnorm_vec.o \
+		bc_vec.o \
+		mshdsp.o \
 		qdmesh.o \
-		qdmshkey.o \
-		qdmenu.o \
+		mshkey2.o \
+		menu.o \
 		qdgetnew.o \
-		qdcrtldsp.o \
-		qdcrtlmse.o \
+		crtldsp2.o \
+		crtlmse2.o \
 		qdrender.o \
 		$(OBJECTS_QD) $(OBJECTS_GR) $(OBJECTS2) $(LIB2) 
 
 qdrender.o: qdrender.c 
 	$(CC) -c qdrender.c 
 
-qdcrtlmse.o: qdcrtlmse.c 
-	$(CC) -c qdcrtlmse.c 
+crtlmse2.o: $(COMMON_GR)/crtlmse2.c 
+	$(CC) -c $(COMMON_GR)/crtlmse2.c -DQUAD1
 
-qdcrtldsp.o: qdcrtldsp.c 
-	$(CC) -c qdcrtldsp.c 
+crtldsp2.o: $(COMMON_GR)/crtldsp2.c 
+	$(CC) -c $(COMMON_GR)/crtldsp2.c -DQUAD1
 
 qdgetnew.o: qdgetnew.c 
 	$(CC) -c qdgetnew.c 
 
-qdmenu.o: qdmenu.c 
-	$(CC) -c qdmenu.c 
+menu.o: $(COMMON_GR)/menu.c
+	$(CC) -c $(COMMON_GR)/menu.c -DQUAD1
 
-qdmshkey.o: qdmshkey.c 
-	$(CC) -c qdmshkey.c 
+mshkey2.o: $(COMMON_GR)/mshkey2.c 
+	$(CC) -c $(COMMON_GR)/mshkey2.c -DQUAD1
 
 qdmesh.o: qdmesh.c 
 	$(CC) -c qdmesh.c 
 
-qdmshdsp.o: qdmshdsp.c 
-	$(CC) -c qdmshdsp.c 
+mshdsp.o: $(COMMON_GR)/mshdsp.c 
+	$(CC) -c $(COMMON_GR)/mshdsp.c -DQUAD1
 
-qdbc_vec.o: qdbc_vec.c 
-	$(CC) -c qdbc_vec.c 
+bc_vec.o: $(COMMON_GR)/bc_vec.c 
+	$(CC) -c $(COMMON_GR)/bc_vec.c -DQUAD1
+
+qdnorm_vec.o: qdnorm_vec.c 
+	$(CC) -c qdnorm_vec.c -DQUAD1
 
 qdset.o: qdset.c 
 	$(CC) -c qdset.c 
 
-qdparam2.o: qdparam2.c 
-	$(CC) -c qdparam2.c 
+regetparam2.o: $(COMMON_GR)/regetparam2.c 
+	$(CC) -c $(COMMON_GR)/regetparam2.c -DQUAD1
 
-qdparam.o: qdparam.c 
-	$(CC) -c qdparam.c 
+param2.o: $(COMMON_GR)/param2.c 
+	$(CC) -c $(COMMON_GR)/param2.c -DQUAD1
 
-qdreadgr.o: qdreadgr.c 
-	$(CC) -c qdreadgr.c 
+readgr2.o: $(COMMON_GR)/readgr2.c 
+	$(CC) -c $(COMMON_GR)/readgr2.c -DQUAD1
 
-qdmemgr.o: qdmemgr.c 
-	$(CC) -c qdmemgr.c 
+memgr.o: $(COMMON_GR)/memgr.c 
+	$(CC) -c $(COMMON_GR)/memgr.c -DQUAD1
 
 qdpost.o: qdpost.c 
 	$(CC) -c qdpost.c

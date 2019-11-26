@@ -1,5 +1,5 @@
 # SLFFEA Makefile
-# Version:  1.3
+# Version:  1.4
 # Copyright (C) 1999, 2000  San Le (slffea@yahoo.com)
 # http://slffea.com/
 #
@@ -43,6 +43,7 @@ shl: femsh.o \
 		shmemory.o \
 		shreader.o \
 		shcoord.o \
+		shlocal_vec.o \
 		shid.o \
 		shshape.o \
 		shellb.o \
@@ -60,6 +61,7 @@ shl: femsh.o \
 		shmemory.o \
 		shreader.o \
 		shcoord.o \
+		shlocal_vec.o \
 		shid.o \
 		shshape.o \
 		shellb.o \
@@ -124,6 +126,9 @@ shid.o: shid.c
 
 shcoord.o: shcoord.c
 	$(CC) -c shcoord.c
+
+shlocal_vec.o: shlocal_vec.c
+	$(CC) -c shlocal_vec.c
 
 shreader.o: shreader.c
 	$(CC) -c shreader.c

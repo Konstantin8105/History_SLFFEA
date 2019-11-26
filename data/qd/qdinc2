@@ -68,6 +68,6 @@ node with point load and load vector in x,y,z
 11   10000.0  0.0  
 15   10000.0  0.0  
    -10
-element no. and gauss pt. no. with stress and stress vector in xx,yy,zz,yz,zx,xy
+node no. with stress and stress vector in lamina xx,yy,xy
 -10
 

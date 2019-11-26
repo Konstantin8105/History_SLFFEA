@@ -4,11 +4,11 @@
     algorithm for ames 232 fall 1996.  
 
 	Implemented by San Le.
-                
+
                 Updated 9/30/99 
 
     SLFFEA source file
-    Version:  1.3
+    Version:  1.4
     Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
@@ -32,13 +32,13 @@ int dotX(double *,double *, double *, int );
 
 int solve(double *A,double *f,int *idiag, int neq)
 {
-        int i,j, k, iloci, ri, rj, ipntr, len, check;
+	int i,j, k, iloci, ri, rj, ipntr, len, check;
 	double p; 
 
 
 /* forward substitution */
 
-        for( i = 1; i < neq; ++i )
+	for( i = 1; i < neq; ++i )
 	{
 /* Calculate the fist row in column k */
 		ri = i + 1 + *(idiag + i - 1 ) - *(idiag + i);
@@ -52,7 +52,7 @@ int solve(double *A,double *f,int *idiag, int neq)
 	}
 /* diagonal scaling */
 
-        for( i = 0; i < neq; ++i )
+	for( i = 0; i < neq; ++i )
 	{
 		if( *(A + *(idiag + i)) != 0)
 		{
@@ -60,14 +60,14 @@ int solve(double *A,double *f,int *idiag, int neq)
 		}
 	}
 /* Backward substitution */ 
-        for( j = neq-1; j > 0; --j )
+	for( j = neq-1; j > 0; --j )
 	{
 /* Calculate the fist row in column j */
 		rj = j + 1 + *(idiag + j - 1 ) - *(idiag + j);
 		if( rj <= j - 1)
 		{
 			ipntr = *(idiag + j) - j;
-        		for( i = rj; i < j ; ++i )
+			for( i = rj; i < j ; ++i )
 			{
 				*(f + i) -= *(f + j)*(*(A + ipntr + i));
 			}
@@ -80,11 +80,11 @@ int solve(double *A,double *f,int *idiag, int neq)
 /* This program performs LU decomposition on a skylined matrix */
 int decomp(double *A,int *idiag,int neq)
 {
-        int i,j,k,rk,ri, check;
+	int i,j,k,rk,ri, check;
 	int iloci, ilock, iloc, len;
 	double p, t;
 
-        for( k = 1; k < neq; ++k )
+	for( k = 1; k < neq; ++k )
 	{
 /* Calculate the fist row in column k */
 
@@ -92,10 +92,10 @@ int decomp(double *A,int *idiag,int neq)
 		
 		if( rk + 1 <=  k - 1)
 		{
-          		for( i = rk + 1; i < k ; ++i )
-          		{
+			for( i = rk + 1; i < k ; ++i )
+			{
 /* Calculate the fist row in column i */
-		           ri = i + 1 + *(idiag + i - 1 ) - *(idiag + i);
+			   ri = i + 1 + *(idiag + i - 1 ) - *(idiag + i);
 /* Calculate where the overlap begins  */
 			   j = MAX(ri,rk);
 			   iloci = *(idiag + i) - (i-j);
@@ -110,7 +110,7 @@ int decomp(double *A,int *idiag,int neq)
 /* Calculate dk  */
 		if( rk <= k - 1)
 		{
-          		for( i = rk; i < k ; ++i)
+			for( i = rk; i < k ; ++i)
 			{
 /* Calculate contribution to u(transpose)Du  */
 			   iloc = *(idiag + k) - (k - i);

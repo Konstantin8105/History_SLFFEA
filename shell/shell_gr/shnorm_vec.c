@@ -5,7 +5,7 @@
  		Last Update 3/10/01
 
     SLFFEA source file
-    Version:  1.3
+    Version:  1.4
     Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
@@ -25,9 +25,9 @@ int normcrossX(double *, double *, double *);
 
 int shnormal_vectors(int *connecter, double *coord, NORM *norm)
 {
-        int i, i2, j, k, sdof_el[npel*nsd], ii, check, counter, node;
+	int i, i2, j, k, sdof_el[npel*nsd], ii, check, counter, node;
 	int l,m,n;
-        double coord_el[npel*3];
+	double coord_el[npel*3];
 	double d1[3], d2[3], norm_temp[3];
 
 	for( k = 0; k < numel; ++k )
@@ -60,7 +60,7 @@ int shnormal_vectors(int *connecter, double *coord, NORM *norm)
 			*(coord_el+3*npell+3*j+2)=
 				*(coord+*(sdof_el+nsd*npell+nsd*j+2));
 
-    			/*printf( "coord %9.5f %9.5f %9.5f \n",*(coord_el+3*j),
+			/*printf( "coord %9.5f %9.5f %9.5f \n",*(coord_el+3*j),
 				*(coord_el+3*j+1),*(coord_el+3*j+2));*/
 		}
 

@@ -37,10 +37,20 @@
 
     and modified by San Le.
 
-                Updated 4/26/01
+    I downloaded a new version of Mesa on 11/20/06, Mesa-6.4.2, and this
+    function is now called:
+
+      _math_matrix_rotate
+
+    which is found in the file:
+
+      /usr/local/Mesa-6.4.2/src/mesa/math/m_matrix.c
+
+
+                Updated 8/13/07
 
     SLFFEA source file
-    Version:  1.3
+    Version:  1.4
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.

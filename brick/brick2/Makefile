@@ -41,32 +41,32 @@ PROGS = br2
 all: br2
 
 br2: fembr2.o \
-		brmemory.o \
+		memory.o \
 		br2reader.o \
 		br2id.o \
-		brid.o \
+		id.o \
 		br2shape.o \
 		brick2b.o \
 		brcasmbl.o \
 		br2conj.o \
 		br2bound.o \
-		brbound.o \
+		bound.o \
 		br2kasmbl.o \
 		br2writer.o \
 		brarea.o \
 		../brick/brconst.h \
 		br2struct.h 
 	$(CC) -o br2 fembr2.o \
-		brmemory.o \
+		memory.o \
 		br2reader.o \
 		br2id.o \
-		brid.o \
+		id.o \
 		br2shape.o \
 		brick2b.o \
 		brcasmbl.o \
 		br2conj.o \
 		br2bound.o \
-		brbound.o \
+		bound.o \
 		br2kasmbl.o \
 		br2writer.o \
 		brarea.o $(OBJECTS_BR) $(OBJECTS) $(LIBS)
@@ -86,8 +86,8 @@ brick2b.o: brick2b.c
 br2shape.o: br2shape.c
 	$(CC) -c br2shape.c 
 
-brbound.o: ../brick/brbound.c
-	$(CC) -c ../brick/brbound.c -DBRICK2
+bound.o: $(COMMON)/bound.c
+	$(CC) -c $(COMMON)/bound.c -DBRICK2
 
 br2bound.o: br2bound.c
 	$(CC) -c br2bound.c 
@@ -98,8 +98,8 @@ br2conj.o: br2conj.c
 brcasmbl.o: brcasmbl.c
 	$(CC) -c brcasmbl.c 
 
-brid.o: ../brick/brid.c
-	$(CC) -c ../brick/brid.c -DBRICK2
+id.o: $(COMMON)/id.c
+	$(CC) -c $(COMMON)/id.c -DBRICK2
 
 br2id.o: br2id.c
 	$(CC) -c br2id.c
@@ -107,8 +107,8 @@ br2id.o: br2id.c
 br2reader.o: br2reader.c
 	$(CC) -c br2reader.c
 
-brmemory.o: ../brick/brmemory.c
-	$(CC) -c ../brick/brmemory.c -DBRICK2
+memory.o: $(COMMON)/memory.c
+	$(CC) -c $(COMMON)/memory.c -DBRICK2
 
 fembr2.o: fembr2.c
 	$(CC) -c fembr2.c

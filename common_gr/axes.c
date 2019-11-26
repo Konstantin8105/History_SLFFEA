@@ -8,8 +8,8 @@
   
                                   San Le
   
-   			Last Update 5/1/01
-  
+                  Last Update 1/25/06
+ 
     You can reach him at:
   
     Philip Winston - 4/11/95
@@ -17,7 +17,7 @@
     http://www.cs.hmc.edu/people/pwinston
   
     SLFFEA source file
-    Version:  1.3
+    Version:  1.4
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -36,7 +36,7 @@
 #include <GL/glut.h>
 
 extern GLfloat yellow[4], orange[4], orangeRed[4], red[4], green[4], 
- 	violetRed[4], magenta[4], purple[4], blue[4],
+	violetRed[4], magenta[4], purple[4], blue[4],
 	white[4], grey[4], black[4];
 
 extern double AxisMax_x, AxisMax_y, AxisMax_z,
@@ -66,64 +66,64 @@ void agvMakeAxesList(GLuint displaylistnum)
     glPointSize(4);
     glBegin(GL_POINTS);
 /* Draw the x axis points */
-      	dum = (int) (AxisLength_x/AxisPoint_step);
-    	glBegin(GL_POINTS);
-        glColor4fv(black);
+	dum = (int) (AxisLength_x/AxisPoint_step);
+	glBegin(GL_POINTS);
+	glColor4fv(black);
 	fdum = IAxisMin_x;
-        for( i = 0; i < dum; ++i)
-        {
-                glVertex3f( fdum, 0, 0);
+	for( i = 0; i < dum; ++i)
+	{
+		glVertex3f( fdum, 0, 0);
 		fdum += AxisPoint_step;
-        }
+	}
 /* Draw the y axis points */
-      	dum = (int) (AxisLength_y/AxisPoint_step);
-    	glBegin(GL_POINTS);
-        glColor4fv(black);
+	dum = (int) (AxisLength_y/AxisPoint_step);
+	glBegin(GL_POINTS);
+	glColor4fv(black);
 	fdum = IAxisMin_y;
-        for( i = 0; i < dum; ++i)
-        {
-                glVertex3f( 0, fdum, 0);
+	for( i = 0; i < dum; ++i)
+	{
+		glVertex3f( 0, fdum, 0);
 		fdum += AxisPoint_step;
-        }
+	}
 /* Draw the z axis points */
-      	dum = (int) (AxisLength_z/AxisPoint_step);
-    	glBegin(GL_POINTS);
-        glColor4fv(black);
+	dum = (int) (AxisLength_z/AxisPoint_step);
+	glBegin(GL_POINTS);
+	glColor4fv(black);
 	fdum = IAxisMin_z;
-        for( i = 0; i < dum; ++i)
-        {
-                glVertex3f( 0, 0, fdum);
+	for( i = 0; i < dum; ++i)
+	{
+		glVertex3f( 0, 0, fdum);
 		fdum += AxisPoint_step;
-        }
+	}
     glEnd();
 /* Draw the x axis label */
-        textmove = AxisMax_x + 1.5*AxisLength_max;
+	textmove = AxisMax_x + 1.5*AxisLength_max;
 	fdum = AxisLength_max + textmove;
-        glBegin(GL_LINES);
+	glBegin(GL_LINES);
 	  glColor4fv(white);
-          glVertex3f(fdum, 0, 0); glVertex3f(textmove, 0, AxisLength_max);
-          glVertex3f(textmove, 0, 0); glVertex3f(fdum, 0, AxisLength_max);
-        glEnd();
+	  glVertex3f(fdum, 0, 0); glVertex3f(textmove, 0, AxisLength_max);
+	  glVertex3f(textmove, 0, 0); glVertex3f(fdum, 0, AxisLength_max);
+	glEnd();
 /* Draw the y axis label */
-        textmove = AxisMax_y + 1.5*AxisLength_max;
+	textmove = AxisMax_y + 1.5*AxisLength_max;
 	fdum = .5*AxisLength_max + textmove;
 	fdum2 = .5*AxisLength_max;
 	fdum3 = AxisLength_max + textmove;
-        glBegin(GL_LINES);
+	glBegin(GL_LINES);
 	  glColor4fv(grey);
-          glVertex3f(0, textmove, 0); glVertex3f(0, fdum, 0);
-          glVertex3f(0, fdum, 0); glVertex3f(fdum2, fdum3, 0);
-          glVertex3f(0, fdum, 0); glVertex3f(-fdum2, fdum3, 0);
-        glEnd();
+	  glVertex3f(0, textmove, 0); glVertex3f(0, fdum, 0);
+	  glVertex3f(0, fdum, 0); glVertex3f(fdum2, fdum3, 0);
+	  glVertex3f(0, fdum, 0); glVertex3f(-fdum2, fdum3, 0);
+	glEnd();
 /* Draw the z axis label */
-        textmove = AxisMax_z + 1.5*AxisLength_max;
+	textmove = AxisMax_z + 1.5*AxisLength_max;
 	fdum = AxisLength_max + textmove;
-        glBegin(GL_LINES);
+	glBegin(GL_LINES);
 	  glColor4fv(black);
-          glVertex3f(0, 0, textmove); glVertex3f(AxisLength_max, 0, textmove);
-          glVertex3f(AxisLength_max, 0, textmove); glVertex3f(0, 0, fdum);
-          glVertex3f(0, 0, fdum); glVertex3f(AxisLength_max, 0, fdum);
-        glEnd();
+	  glVertex3f(0, 0, textmove); glVertex3f(AxisLength_max, 0, textmove);
+	  glVertex3f(AxisLength_max, 0, textmove); glVertex3f(0, 0, fdum);
+	  glVertex3f(0, 0, fdum); glVertex3f(AxisLength_max, 0, fdum);
+	glEnd();
   glPopAttrib();
   glEndList();
 }

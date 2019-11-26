@@ -2,10 +2,10 @@
     This program compares 2 slffea 1.3 output files to see if they match.
     It does this by comparing the displacement data.
   
-  	Updated 5/9/05
+             Updated 5/9/05
 
     SLFFEA source file
-    Version:  1.3
+    Version:  1.4
     Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005  San Le 
 
     The source code contained in this file is released under the

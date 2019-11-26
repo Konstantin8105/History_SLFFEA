@@ -1,5 +1,5 @@
 # SLFFEA Makefile
-# Version:  1.3
+# Version:  1.4
 # Copyright (C) 1999, 2000  San Le (slffea@yahoo.com)
 # http://slffea.com/
 #
@@ -55,9 +55,9 @@ tspost: tspost.o \
 		tsmemgr.o \
 		tsreadgr.o \
 		tsparam.o \
-		tsparam2.o \
+		tsregetparam.o \
 		tsset.o \
-		tsbc_vec.o \
+		bc_vec.o \
 		tsmshdsp.o \
 		tsmesh.o \
 		tsmshkey.o \
@@ -73,9 +73,9 @@ tspost: tspost.o \
 		tsmemgr.o \
 		tsreadgr.o \
 		tsparam.o \
-		tsparam2.o \
+		tsregetparam.o \
 		tsset.o \
-		tsbc_vec.o \
+		bc_vec.o \
 		tsmshdsp.o \
 		tsmesh.o \
 		tsmshkey.o \
@@ -106,14 +106,14 @@ tsmesh.o: tsmesh.c
 tsmshdsp.o: tsmshdsp.c 
 	$(CC) -c tsmshdsp.c 
 
-tsbc_vec.o: tsbc_vec.c 
-	$(CC) -c tsbc_vec.c 
+bc_vec.o: $(COMMON_GR)/bc_vec.c
+	$(CC) -c $(COMMON_GR)/bc_vec.c -DTRUSS1
 
 tsset.o: tsset.c 
 	$(CC) -c tsset.c 
 
-tsparam2.o: tsparam2.c 
-	$(CC) -c tsparam2.c 
+tsregetparam.o: tsregetparam.c 
+	$(CC) -c tsregetparam.c 
 
 tsparam.o: tsparam.c 
 	$(CC) -c tsparam.c 

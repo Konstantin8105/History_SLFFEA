@@ -85,7 +85,7 @@ void drawLetter(CP *l)
     }
 }
 
-/*  Create a display list for each of 6 characters	*/
+/*  Create a display list for each of 6 characters */
 void make_character_lists (void)
 {
     GLuint base;

@@ -32,8 +32,8 @@ BRICK = ../brick
 OBJECTS = $(COMMON)/matxt.o $(COMMON)/matx.o $(COMMON)/crossx.o \
 	$(COMMON)/dotx.o $(COMMON)/cubic.o 
 OBJECTS2 = $(COMMON)/crossx.o 
-OBJECTS_BR = $(BRICK)/brmemory.o $(BRICK)/brreader.o $(BRICK)/brid.o $(BRICK)/brshape.o \
-	$(BRICK)/brickb.o $(BRICK)/brbound.o $(BRICK)/brwriter.o $(BRICK)/brvolume.o  \
+OBJECTS_BR = $(BRICK)/memory.o $(BRICK)/brreader.o $(BRICK)/id.o $(BRICK)/brshape.o \
+	$(BRICK)/brickb.o $(BRICK)/bound.o $(BRICK)/brwriter.o $(BRICK)/brvolume.o  \
 	$(BRICK)/brwriter2.o $(BRICK)/brconj.o 
 
 #PROGS = nbr pvv

@@ -1,10 +1,10 @@
 /*
-    This utility function uses the conjugate gradient method
+    This utility code uses the conjugate gradient method
     to solve the linear system [K][U] = [f] for a finite
-    element program which does analysis on a quad.  The first
+    element program which does analysis on a quad.  The first function
     assembles the P matrix.  It is called by the second function
-    which allocates the memory.  These go with the calculation of
-    displacement.
+    which allocates the memory and goes through the steps of the algorithm.
+    These go with the calculation of displacement.
 
 		Updated 11/2/00
 
@@ -29,7 +29,7 @@
 
 extern int analysis_flag, dof, numed, numel, numnp, plane_stress_flag, sof;
 extern int LU_decomp_flag, numel_EM, numel_P;
-extern double shg[sosh], shl[sosh], w[num_int], *Area0;
+extern double double dcdx[nsdsq*num_int], shg[sosh], shl[sosh], w[num_int], *Area0;
 extern int  iteration_max, iteration_const, iteration;
 extern double tolerance;
 
@@ -39,7 +39,7 @@ int matXT(double *, double *, double *, int, int, int);
 
 int quadB(double *,double *);
 
-int qdshg( double *, int, double *, double *, double *, double *);
+int qd3shg( double *, double *, int, double *, double *, double *, double *);
 
 int dotX(double *, double *, double *, int);
 
@@ -145,7 +145,7 @@ int qd3ConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL 
 
 /* Assembly of the shg matrix for each integration point */
 
-		check = qd3shg(det, k, shl, shg, coord_el_trans, &fdum);
+		check = qd3shg( dcdx, det, k, shl, shg, coord_el_trans, &fdum);
 		if(!check) printf( "Problems with qd3shg \n");
 
 /* The loop over j below calculates the 4 points of the gaussian integration 
@@ -306,8 +306,8 @@ int qd3ConjGrad(double *A, BOUND bc, int *connect, double *coord, int *el_matl,
             	    /*printf( "%4d %14.5f  %14.5f  %14.5f  %14.5f %14.5f\n",j,alpha,
 			*(U+j),*(r+j),*(P_global+j),*(force+j));
             	    printf( "%4d %14.8f  %14.8f  %14.8f  %14.8f %14.8f\n",j,
-			*(U+j)*bet,*(r+j)*bet,*(P_global+j)*alp/(*(mass+j)),
-			*(force+j)*alp/(*(mass+j)));*/
+			*(U+j)*beta,*(r+j)*beta,*(P_global+j)*alpha,
+			*(force+j)*alpha);*/
             	    *(p+j) = *(z+j)+beta*(*(p+j));
 
 		}

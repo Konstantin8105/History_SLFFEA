@@ -3,18 +3,18 @@
     Control Display Window for a plate.  It also gives you the
     structure of how the text is placed.
 
-              Updated 9/7/00
+              Updated 9/24/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
  
 */
 
-char ControlText[][90] = {
+char ControlText[][108] = {
 "     VIEW OPTIONS","",
 "","",
 " On ","   Off   Solid",
@@ -48,14 +48,23 @@ char ControlText[][90] = {
 " YY","    YY      ",
 " XY","    XY      ",
 " stress/","strain ",
+" XX","    XX      ",
+" YY","    YY      ",
+" XY","    XY      ",
 " ZX","    ZX      ",
 " YZ","    YZ      ",
 " principal","     ",
 " moment/","curve  ",
 " I  ","   I       ",
 " II ","   II      ",
+" principal","     ",
+" stress/","strain ",
+" I  ","   I       ",
+" II ","   II      ",
+" III","   III     ",
 "","               ",
 " disp/","angle    ",
-" Z  ","   X       ",
-"    ","   Y       ",
+" X  ","   X       ",
+" Y  ","   Y       ",
+" Z  ","   Z       ",
 };

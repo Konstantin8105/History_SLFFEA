@@ -1,6 +1,6 @@
 /*
     This is the include file "qdconst.h" for the finite element progam 
-    which uses quadrialteral elements
+    which uses quadrialteral elements.
 
                 Updated 11/2/00
 
@@ -19,10 +19,10 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define	pt5     .5 
-#define	pt25    .25
-#define	pt1667  .166666666667
-#define	sq3    1.732050808 
+#define pt5     .5 
+#define pt25    .25
+#define pt1667  .166666666667
+#define sq3    1.732050808 
 
 #define nsd           2                      /* spatial dimensions per node */
 #define ndof          2                      /* degrees of freedom per node */

@@ -1,5 +1,5 @@
    numel numnp nmat nmode  (This is for a tower)
-     96   24  1   0
+     96   24  1   -4
 matl no., E mod, density, Area, 
 0   30000000.0000   3210.0000    2.0000
 el no., connectivity, matl no

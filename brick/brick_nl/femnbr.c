@@ -6,11 +6,11 @@
     assumed to be hypo-elastic and the stress is updated using the
     Jaumann Stress Rate.
 
-	        Udated 1/24/06
+	        Udated 12/4/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -35,11 +35,11 @@ int brConnectSurfwriter ( int *, int *, char *);
 int brVolume( int *, double *, double *);
 
 int brwriter ( BOUND , int *, double *, int *, double *, int *, MATL *,
-        char *, STRAIN *, SDIM *, STRESS *, SDIM *, double *);
+	char *, STRAIN *, SDIM *, STRESS *, SDIM *, double *);
 
 int matX(double *,double *,double *, int ,int ,int );
 
-int brBoundary( double *, BOUND );
+int Boundary( double *, BOUND );
 
 int brPassemble(int *, double *, double *, int *, MATL *, double *, STRESS *,
 	double * );
@@ -50,15 +50,15 @@ int br2Passemble(int *, double *, double *, int *, MATL *, double *, STRESS *,
 int brFMassemble(int *, double *, double *, int *, double *, double *, MATL *,
 	double *);
 
-int brformid( BOUND, int *);
+int formid( BOUND, int *);
 
 int brshg( double *, int, double *, double *, double *);
 
 int brreader( BOUND , int *, double *, int *, double *, MATL *, char *, FILE *,
-        STRESS *, SDIM *, double *);
+	STRESS *, SDIM *, double *);
 
-int brMemory( double **, int, int **, int, MATL **, int , XYZI **, int,
-        SDIM **, int, STRAIN **, STRESS **, int );
+int Memory( double **, int, int **, int, MATL **, int , XYZI **, int,
+	SDIM **, int, STRAIN **, STRESS **, int );
 
 int brshl(double, double *, double * );
 
@@ -70,7 +70,7 @@ int static_flag;
 int Passemble_flag, Passemble_CG_flag;
 
 int numel_K, numel_P;
-       
+
 double shg[sosh], shgh[sosh], shl[sosh],w[num_int], *Vol0;
 double dt,cc;
 int iteration, iteration_max;
@@ -82,24 +82,24 @@ int main(int argc, char** argv)
 	int *id, check, name_length, counter, counter2, MemoryCounter, dum;
 	double  d_iteration_max, iteration_const;
 	int matl_num;
-        double Emod, G, K, Pois;
+	double Emod, G, K, Pois;
 	XYZI *mem_XYZI;
 	int *mem_int, sofmi, sofmf, sofmSTRESS, sofmXYZI, sofmSDIM, ptr_inc;
 	MATL *matl;
 	double *mem_double;
-        double fpointx, fpointy, fpointz;
+	double fpointx, fpointy, fpointz;
 	int *connect, *connect_surf, *el_matl, *el_matl_surf, node;
 	double *coord, *coord0, *force, *P_global, *U, *dU, *V, *dUm1,
 		*Voln, *mass, *node_counter;
-        double coord_el_trans[neqel], *coordh;
+	double coord_el_trans[neqel], *coordh;
 	char name[30], buf[ BUFSIZ ];
-        FILE *o1, *o2, *o3, *o4;
+	FILE *o1, *o2, *o3, *o4;
 	double det[num_int], wXdet;
 	BOUND bc;
 	STRESS *stress;
 	STRAIN *strain;
 	SDIM *stress_node, *strain_node, *mem_SDIM;
-        double invariant[nsd], yzsq, zxsq, xysq, xxyy;
+	double invariant[nsd], yzsq, zxsq, xysq, xxyy;
 	double g;
 	double hydro;
 	long timec;
@@ -109,33 +109,33 @@ int main(int argc, char** argv)
 	int surf_el_counter, surface_el_flag;
 
 	double *mem_double2, *A;
-        double *p, *P_global_CG, *r, *z;
-        double alpha, alpha2, beta;
-        double fdum, fdum2;
-        int sofmf2;
+	double *p, *P_global_CG, *r, *z;
+	double alpha, alpha2, beta;
+	double fdum, fdum2;
+	int sofmf2;
 
-        sof = sizeof(double);
+	sof = sizeof(double);
 
 /* Create local shape funcions */
 
 	g = 2.0/sq3;
-        check = brshl(g, shl, w );
-        if(!check) printf( "Problems with brshl \n");
+	check = brshl(g, shl, w );
+	if(!check) printf( "Problems with brshl \n");
 
-        memset(name,0,30*sizeof(char));
+	memset(name,0,30*sizeof(char));
 	
-    	printf("What is the name of the file containing the \n");
-    	printf("brick structural data? \n");
-    	scanf( "%30s",name);
+	printf("What is the name of the file containing the \n");
+	printf("brick structural data? (example: nsquash)\n");
+	scanf( "%30s",name);
 
 /*   o1 contains all the structural data */
 /*   o2 contains input parameters */
 /*   o4 contains dynamic data   */
 
-        o1 = fopen( name,"r" );
-        o2 = fopen( "brinput","r" );
-        o3 = fopen( "data","w" );
-        o4 = fopen( "brdynam.dat","r" );
+	o1 = fopen( name,"r" );
+	o2 = fopen( "brinput","r" );
+	o3 = fopen( "data","w" );
+	o4 = fopen( "brdynam.dat","r" );
 
 	if(o1 == NULL ) {
 		printf("Can't find file %30s\n",name);
@@ -173,9 +173,9 @@ int main(int argc, char** argv)
 		exit(1);
 	}
 
-        fgets( buf, BUFSIZ, o1 );
-        fscanf( o1, "%d %d %d %d\n ",&numel,&numnp,&nmat,&nmode);
-        dof=numnp*ndof;
+	fgets( buf, BUFSIZ, o1 );
+	fscanf( o1, "%d %d %d %d\n ",&numel,&numnp,&nmat,&nmode);
+	dof=numnp*ndof;
 	sdof=numnp*nsd;
 	static_flag = 1;
 
@@ -208,14 +208,14 @@ int main(int argc, char** argv)
 	MemoryCounter += sofmSTRESS*sizeof(STRESS) + sofmSTRESS*sizeof(STRAIN);
 	printf( "\n Memory requrement for STRESS doubles is %15d bytes\n",MemoryCounter);
 
-	check = brMemory( &mem_double, sofmf, &mem_int, sofmi, &matl, nmat,
+	check = Memory( &mem_double, sofmf, &mem_int, sofmi, &matl, nmat,
 		&mem_XYZI, sofmXYZI, &mem_SDIM, sofmSDIM, &strain, &stress,
 		sofmSTRESS );
 
-	if(!check) printf( "Problems with brMemory \n");
+	if(!check) printf( "Problems with Memory \n");
 
 /* For the doubles */
-					        ptr_inc=0; 
+	                                        ptr_inc=0; 
 	coord0=(mem_double+ptr_inc);            ptr_inc += sdof;
 	coord=(mem_double+ptr_inc);             ptr_inc += sdof;
 	coordh=(mem_double+ptr_inc);            ptr_inc += sdof;
@@ -225,14 +225,14 @@ int main(int argc, char** argv)
 	dUm1=(mem_double+ptr_inc);              ptr_inc += dof;
 	V=(mem_double+ptr_inc);                 ptr_inc += dof;
 	mass=(mem_double+ptr_inc);              ptr_inc += dof;
-	P_global=(mem_double+ptr_inc); 	        ptr_inc += dof;
-	Voln=(mem_double+ptr_inc);             	ptr_inc += numel; 
+	P_global=(mem_double+ptr_inc);          ptr_inc += dof;
+	Voln=(mem_double+ptr_inc);              ptr_inc += numel; 
 	Vol0=(mem_double+ptr_inc);              ptr_inc += numel;
 	node_counter=(mem_double+ptr_inc);      ptr_inc += numnp; 
 
 /* For the integers */
-						ptr_inc = 0; 
-	connect=(mem_int+ptr_inc); 		ptr_inc += numel*npel; 
+	                                        ptr_inc = 0; 
+	connect=(mem_int+ptr_inc);              ptr_inc += numel*npel; 
 	connect_surf=(mem_int+ptr_inc);         ptr_inc += numel*npel;
 	id=(mem_int+ptr_inc);                   ptr_inc += dof;
         el_matl=(mem_int+ptr_inc);              ptr_inc += numel;
@@ -241,7 +241,7 @@ int main(int argc, char** argv)
         bc.num_force=(mem_int+ptr_inc);         ptr_inc += 1;
 
 /* For the XYZI integers */
-					  ptr_inc = 0; 
+	                                  ptr_inc = 0; 
 	bc.fix =(mem_XYZI+ptr_inc);       ptr_inc += numnp;
 	bc.num_fix=(mem_XYZI+ptr_inc);    ptr_inc += 1;
 
@@ -253,22 +253,22 @@ int main(int argc, char** argv)
 	timec = clock();
 	timef = 0;
 
-        for( k = 0; k < numel; ++k )
-        {
-        	for( j = 0; j < num_int; ++j )
-        	{
-                 	stress[k].pt[j].xx=.0;
-                 	stress[k].pt[j].yy=.0;
-                 	stress[k].pt[j].zz=.0;
-                 	stress[k].pt[j].xy=.0;
-                 	stress[k].pt[j].zx=.0;
-                 	stress[k].pt[j].yz=.0;
+	for( k = 0; k < numel; ++k )
+	{
+		for( j = 0; j < num_int; ++j )
+		{
+			stress[k].pt[j].xx=.0;
+			stress[k].pt[j].yy=.0;
+			stress[k].pt[j].zz=.0;
+			stress[k].pt[j].xy=.0;
+			stress[k].pt[j].zx=.0;
+			stress[k].pt[j].yz=.0;
 		}
 	}
 
 	stress_read_flag = 1;
-        check = brreader( bc, connect, coord0, el_matl, force, matl, name, o1,
-        	stress, stress_node, U);
+	check = brreader( bc, connect, coord0, el_matl, force, matl, name, o1,
+		stress, stress_node, U);
 	if(!check) printf( "Problems with reader \n");
 
 	printf(" \n\n");
@@ -280,8 +280,8 @@ int main(int argc, char** argv)
 /* Because this is a dynamic code, the id array is not needed except for
    the brwriter subroutine */
 
-	check = brformid( bc, id );
-	if(!check) printf( "Problems with brformid \n");
+	check = formid( bc, id );
+	if(!check) printf( "Problems with formid \n");
 
 	for( i = 0; i < dof; ++i )
 	{
@@ -307,21 +307,21 @@ int main(int argc, char** argv)
 /* Initializing the data for the Volume */
 
 	check = brVolume( connect, coord0, Vol0);
-        if(!check) printf( "Problems with brVolume \n");
+	if(!check) printf( "Problems with brVolume \n");
 
 	for( k = 0; k < numel; ++k )
 	{
-       	   	printf(" \n");
-	   	printf("Volume for element %d %14.5f ", k, *(Vol0+k));
+		printf(" \n");
+		printf("Volume for element %d %14.5f ", k, *(Vol0+k));
 	}
 	printf("\n\n");
 
 /* The mass matrix */
 
-       	printf(" \n");
+	printf(" \n");
 	printf("mass  matrix\n");
 
-    	check = brFMassemble(connect, coord, coordh, el_matl, force, mass, matl, U );
+	check = brFMassemble(connect, coord, coordh, el_matl, force, mass, matl, U );
 	if(!check) printf( "Problems with brFMassemble \n");
 
 	printf( "\n\n This is the mass matrix \n");
@@ -458,7 +458,7 @@ int main(int argc, char** argv)
 
     timer = iteration*dt
 
-         V = U_fixed/(iteration_max*dt)
+	 V = U_fixed/(iteration_max*dt)
      coord = coord0 + [U_fixed/(iteration_max*dt)]*timer
     coordh = coord0 + [U_fixed/(iteration_max*dt)]*(timer - dt/2.0)
 */
@@ -504,18 +504,18 @@ int main(int argc, char** argv)
 /* The Conjugate Gradient Method is used below */
 /* The code below uses brPassemble and brConjPassemble */
 
-        for( j = 0; j < dof; ++j )
+	for( j = 0; j < dof; ++j )
 	{
 		*(mass + j) /= 100.0;
 		*(r+j) = *(force+j);
 		*(z + j) = *(r + j)/(*(mass + j));
 		*(p+j) = *(z+j);
 	}
-	check = brBoundary (r, bc);
-	if(!check) printf( "Problems with brBoundary \n");
+	check = Boundary (r, bc);
+	if(!check) printf( "Problems with Boundary \n");
 
-	check = brBoundary (p, bc);
-	if(!check) printf( "Problems with brBoundary \n");
+	check = Boundary (p, bc);
+	if(!check) printf( "Problems with Boundary \n");
 
 	alpha = 0.0;
 	alpha2 = 0.0;
@@ -528,9 +528,9 @@ int main(int argc, char** argv)
 	numel_K = 0;
 
 	printf("\n iteration %3d iteration max %3d \n", iteration, iteration_max);
-        /*for( iteration = 0; iteration < iteration_max; ++iteration )*/
+	/*for( iteration = 0; iteration < iteration_max; ++iteration )*/
 	while(fdum2 > tolerance && counter < iteration_max )
-        {
+	{
 
 		printf( "\n %3d %16.8e\n",counter, fdum2);
 
@@ -544,20 +544,20 @@ int main(int argc, char** argv)
 			stress, dU);
 		if(!check) printf( "Problems with brPassemble \n");
 
-		check = brBoundary (P_global_CG, bc);
-		if(!check) printf( "Problems with brBoundary \n");
+		check = Boundary (P_global_CG, bc);
+		if(!check) printf( "Problems with Boundary \n");
 		check = dotX(&alpha2, p, P_global_CG, dof);	
 		alpha = fdum/(SMALL + alpha2);
-        	for( j = 0; j < dof; ++j )
+		for( j = 0; j < dof; ++j )
 		{
-            	    /* printf( "%4d %14.5e  %14.5e  %14.5e  %14.5e  %14.5e %14.5e\n",j,alpha,
+		    /* printf( "%4d %14.5e  %14.5e  %14.5e  %14.5e  %14.5e %14.5e\n",j,alpha,
 			beta,*(U+j),*(r+j),*(P_global_CG+j),*(p+j));*/
-    		    *(U+j) += alpha*(*(p+j));
+		    *(U+j) += alpha*(*(p+j));
 		    /**(r+j) =  *(force + j) - *(P_global_CG+j);*/
 		    *(r+j) -=  alpha*(*(P_global_CG+j));
 		    *(z + j) = *(r + j)/(*(mass + j));
 
-    		    *(dU+j) = alpha*(*(p+j));
+		    *(dU+j) = alpha*(*(p+j));
 
 		}
 
@@ -565,21 +565,21 @@ int main(int argc, char** argv)
 		beta = fdum2/(SMALL + fdum);
 		fdum = fdum2;
 		
-        	for( j = 0; j < dof; ++j )
-        	{
-       		    /*printf("\n  %3d %12.7f  %14.5f ",j,*(U+j),*(P_global_CG+j));*/
-            	    /*printf( "%4d %14.5f  %14.5f  %14.5f  %14.5f %14.5f\n",j,alpha,
+		for( j = 0; j < dof; ++j )
+		{
+		    /*printf("\n  %3d %12.7f  %14.5f ",j,*(U+j),*(P_global_CG+j));*/
+		    /*printf( "%4d %14.5f  %14.5f  %14.5f  %14.5f %14.5f\n",j,alpha,
 			*(U+j),*(r+j),*(P_global_CG+j),*(force+j));
-            	    printf( "%4d %14.8f  %14.8f  %14.8f  %14.8f %14.8f\n",j,
+		    printf( "%4d %14.8f  %14.8f  %14.8f  %14.8f %14.8f\n",j,
 			*(U+j)*bet,*(r+j)*bet,*(P_global_CG+j)*alp/(*(mass+j)),
 			*(force+j)*alp/(*(mass+j)));*/
-            	    *(p+j) = *(z+j)+beta*(*(p+j));
+		    *(p+j) = *(z+j)+beta*(*(p+j));
 
 		}
-		check = brBoundary (p, bc);
-		if(!check) printf( "Problems with brBoundary \n");
+		check = Boundary (p, bc);
+		if(!check) printf( "Problems with Boundary \n");
 
-        	for( j = 0; j < numnp; ++j )
+		for( j = 0; j < numnp; ++j )
 		{
 
 /* Update of the XYZ coordinate matrix  */
@@ -663,14 +663,14 @@ The lines below are for testing the quality of the calculation:
 	}
 */
 
-        for( i = 0; i < numnp; ++i )
-        {
+	for( i = 0; i < numnp; ++i )
+	{
 		*(coord+nsd*i) = *(U+ndof*i) + *(coord0+nsd*i);
 		*(coord+nsd*i+1) = *(U+ndof*i + 1) + *(coord0+nsd*i+1);
 		*(coord+nsd*i+2) = *(U+ndof*i + 2) + *(coord0+nsd*i+2);
 	}
 
-        printf( " %15.6e \n",fdum2);
+	printf( " %15.6e \n",fdum2);
 	/*exit(1);*/
 #endif
 
@@ -682,9 +682,9 @@ The lines below are for testing the quality of the calculation:
    possibly mimic the resetting of the initial guess step
    as given in the paper:
 
-        Stranden, I. and M. Lidauer, Solving Large Mixed Linear Models Using
-        Preconditioned Conjugate Gradient Iteration, Journal of Dairy Science,
-        Vol. 82 No. 12, 1999, page 2779-2787.
+	Stranden, I. and M. Lidauer, Solving Large Mixed Linear Models Using
+	Preconditioned Conjugate Gradient Iteration, Journal of Dairy Science,
+	Vol. 82 No. 12, 1999, page 2779-2787.
 
  */
 
@@ -702,11 +702,11 @@ The lines below are for testing the quality of the calculation:
 		    *(V+j) = 0.0;
 		}
 
-		check = brBoundary (r, bc);
-		if(!check) printf( "Problems with brBoundary \n");
+		check = Boundary (r, bc);
+		if(!check) printf( "Problems with Boundary \n");
 
-		check = brBoundary (p, bc);
-		if(!check) printf( "Problems with brBoundary \n");
+		check = Boundary (p, bc);
+		if(!check) printf( "Problems with Boundary \n");
 
 		alpha = 0.0;
 		alpha2 = 0.0;
@@ -734,8 +734,8 @@ The lines below are for testing the quality of the calculation:
 			stress, dU);
 		    if(!check) printf( "Problems with brPassemble \n");
 
-		    check = brBoundary (P_global_CG, bc);
-		    if(!check) printf( "Problems with brBoundary \n");
+		    check = Boundary (P_global_CG, bc);
+		    if(!check) printf( "Problems with Boundary \n");
 		    check = dotX(&alpha2, p, P_global_CG, dof);
 		    alpha = fdum/(SMALL + alpha2);
 		    for( j = 0; j < dof; ++j )
@@ -765,8 +765,8 @@ The lines below are for testing the quality of the calculation:
 			*(force+j)*alp/(*(mass+j)));*/
 			*(p+j) = *(z+j)+beta*(*(p+j));
 		    }
-		    check = brBoundary (p, bc);
-		    if(!check) printf( "Problems with brBoundary \n");
+		    check = Boundary (p, bc);
+		    if(!check) printf( "Problems with Boundary \n");
 
 		    for( j = 0; j < numnp; ++j )
 		    {
@@ -876,9 +876,9 @@ The lines below are for testing the quality of the calculation:
    possibly mimic the resetting of the initial guess step
    as given in the paper:
 
-        Stranden, I. and M. Lidauer, Solving Large Mixed Linear Models Using
-        Preconditioned Conjugate Gradient Iteration, Journal of Dairy Science,
-        Vol. 82 No. 12, 1999, page 2779-2787.
+	Stranden, I. and M. Lidauer, Solving Large Mixed Linear Models Using
+	Preconditioned Conjugate Gradient Iteration, Journal of Dairy Science,
+	Vol. 82 No. 12, 1999, page 2779-2787.
 
  */
 
@@ -897,11 +897,11 @@ The lines below are for testing the quality of the calculation:
 		    *(V+j) = 0.0;
 		}
 
-		check = brBoundary (r, bc);
-		if(!check) printf( "Problems with brBoundary \n");
+		check = Boundary (r, bc);
+		if(!check) printf( "Problems with Boundary \n");
 
-		check = brBoundary (p, bc);
-		if(!check) printf( "Problems with brBoundary \n");
+		check = Boundary (p, bc);
+		if(!check) printf( "Problems with Boundary \n");
 
 		alpha = 0.0;
 		alpha2 = 0.0;
@@ -943,8 +943,8 @@ The lines below are for testing the quality of the calculation:
 
 		    /*printf( "\n %3d %16.8e %16.8e\n",counter, *(P_global + 44), *(P_global_CG + 44));*/
 
-		    check = brBoundary (P_global_CG, bc);
-		    if(!check) printf( "Problems with brBoundary \n");
+		    check = Boundary (P_global_CG, bc);
+		    if(!check) printf( "Problems with Boundary \n");
 		    check = dotX(&alpha2, p, P_global_CG, dof);
 		    alpha = fdum/(SMALL + alpha2);
 		    for( j = 0; j < dof; ++j )
@@ -973,8 +973,8 @@ The lines below are for testing the quality of the calculation:
 			*(force+j)*alp/(*(mass+j)));*/
 			*(p+j) = *(z+j)+beta*(*(p+j));
 		    }
-		    check = brBoundary (p, bc);
-		    if(!check) printf( "Problems with brBoundary \n");
+		    check = Boundary (p, bc);
+		    if(!check) printf( "Problems with Boundary \n");
 
 		    for( j = 0; j < numnp; ++j )
 		    {
@@ -1087,14 +1087,14 @@ The lines below are for testing the quality of the calculation:
 /* Calculating the final value of the Volumes */
 
 	check = brVolume( connect, coord, Voln);
-        if(!check) printf( "Problems with brVolume \n");
+	if(!check) printf( "Problems with brVolume \n");
 
 /*
-        printf("\nThis is the Volume\n");
-        for( i = 0; i < numel; ++i )
-        {
-                printf("%4i %12.4e\n",i, *(Voln + i));
-        }
+	printf("\nThis is the Volume\n");
+	for( i = 0; i < numel; ++i )
+	{
+		printf("%4i %12.4e\n",i, *(Voln + i));
+	}
 */
 
 /* Set reaction forces */
@@ -1102,29 +1102,29 @@ The lines below are for testing the quality of the calculation:
 	for( i = 0; i < numnp; ++i )
 	{
 	   if( *(id+ndof*i) < 0 || *(id+ndof*i+1) < 0 || *(id+ndof*i+2) < 0 )
-           {
+	   {
 		*(force+ndof*i) = *(P_global+ndof*i);
 		*(force+ndof*i+1) = *(P_global+ndof*i+1);
 		*(force+ndof*i+2) = *(P_global+ndof*i+2);
 	   }
 	}
 
-        printf(" \n");
-        /*printf( "%f %f %f \n",*(force+7),*(P_global+7),*(dU+7));*/
+	printf(" \n");
+	/*printf( "%f %f %f \n",*(force+7),*(P_global+7),*(dU+7));*/
 /*
-       	printf(" \n\n");
-        for( i = 0; i < numnp; i+=4 )
-        {
-		printf("\n %3d        %7.4f    %7.4f    %7.4f",i+1,
+	printf(" \n\n");
+	for( i = 0; i < numnp; i+=4 )
+	{
+		printf("\n %3d	%7.4f    %7.4f    %7.4f",i+1,
 			*(coord+nsd*i), *(coord+nsd*i+1),*(coord+nsd*i+2));
-		printf("\n %3d        %7.4f    %7.4f    %7.4f",i+2,
+		printf("\n %3d	%7.4f    %7.4f    %7.4f",i+2,
 			*(coord+nsd*(i+3)), *(coord+nsd*(i+3)+1),*(coord+nsd*(i+3)+2));
-		printf("\n %3d        %7.4f    %7.4f    %7.4f", i+3,
+		printf("\n %3d	%7.4f    %7.4f    %7.4f", i+3,
 			*(coord+nsd*(i+1)), *(coord+nsd*(i+1)+1),*(coord+nsd*(i+1)+2));
-		printf("\n %3d        %7.4f    %7.4f    %7.4f",i+4,
+		printf("\n %3d	%7.4f    %7.4f    %7.4f",i+4,
 			*(coord+nsd*(i+2)), *(coord+nsd*(i+2)+1),*(coord+nsd*(i+2)+2));
 	}
-       	printf(" \n\n");
+	printf(" \n\n");
 */
 	for( k = 0; k < numel; ++k )
 	{
@@ -1302,7 +1302,7 @@ The lines below are for testing the quality of the calculation:
 /*
 	for( i = 0; i < numnp; ++i )
 	{
-	   	printf("\n  %3d   %14.5f  %14.5f  %14.5f",nsd*i,*(coord+nsd*i),
+		printf("\n  %3d   %14.5f  %14.5f  %14.5f",nsd*i,*(coord+nsd*i),
 			*(P_global+nsd*i), *(force+nsd*i));
 		printf("\n  %3d   %14.5f  %14.5f  %14.5f",nsd*i+1,*(coord+nsd*i+1),
 			*(P_global+nsd*i+1), *(force+nsd*i+1));

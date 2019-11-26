@@ -9,7 +9,7 @@
                         Updated 9/2/00  
 
     SLFFEA source file
-    Version:  1.3
+    Version:  1.4
     Copyright (C) 1999, 2000, 2001, 2002  San Le
 
     The source code contained in this file is released under the
@@ -85,7 +85,7 @@ int QR2X2( double *evector, double *T_diag, double *T_upper,
 	s = *(T_upper);
 
 	check = givens(&c,&s);
-        if(!check) printf( " Problems with givens \n");
+	if(!check) printf( " Problems with givens \n");
 
 /*
            | T_diag    T_upper     |
@@ -105,12 +105,12 @@ sub_T  =   | T_upper   T_diag + 1  |
 	*(sub_T + 2) = *(T_upper);
 	*(sub_T + 3) = *(T_diag + 1);
 
-/* Apply rotation to T: G0(transpose)*T*G0 matrix */
+/* Apply rotation to T: G(0)(transpose)*T*(G(0)) matrix */
 
 /* G(transpose)*T */
 
 	check = matXT(temp, G, sub_T, 2, 2, 2);
-        if(!check) printf( " Problems with matXT \n");
+	if(!check) printf( " Problems with matXT \n");
 
 /* T*G */
 
@@ -128,13 +128,13 @@ sub_T  =   | T_upper   T_diag + 1  |
 
 	for( i = 0; i < num_eigen; ++i )
 	{
-         	fdum = *(evector + num_eigen*i + shrink2)*c -
+		fdum = *(evector + num_eigen*i + shrink2)*c -
 			*(evector + num_eigen*i + shrink2 + 1)*s;
-         	fdum2 = *(evector + num_eigen*i + shrink2)*s +
+		fdum2 = *(evector + num_eigen*i + shrink2)*s +
 			*(evector + num_eigen*i + shrink2 + 1)*c;
 
-         	*(evector + num_eigen*i + shrink2) = fdum;
-         	*(evector + num_eigen*i + shrink2 + 1) = fdum2;
+		*(evector + num_eigen*i + shrink2) = fdum;
+		*(evector + num_eigen*i + shrink2 + 1) = fdum2;
 	}
 
 	return 1;
@@ -166,12 +166,12 @@ int QR( double *evector, double *T_diag, double *T_upper,
 	s = *(T_upper);
 
 	check = givens(&c,&s);
-        if(!check) printf( " Problems with givens \n");
+	if(!check) printf( " Problems with givens \n");
 
 	nonzero = 0.0;
 /*
-        printf( "sine cosine\n ");
-        printf( "%8.6e %8.6e\n ",s,c);
+	printf( "sine cosine\n ");
+	printf( "%8.6e %8.6e\n ",s,c);
 */
 
 /*
@@ -202,12 +202,12 @@ sub_T  =   | T_upper   T_diag + 1     T_upper + 1  |
 	*(temp + 7) = *(sub_T + 7);
 	*(temp + 8) = *(sub_T + 8);
 
-/* Apply rotation to T: G0(transpose)*T*G0 matrix */
+/* Apply rotation to T: G(0)(transpose)*T*(G(0)) matrix */
 
 /* G(transpose)*T */
 
 	check = matXT(temp, G, sub_T, 2, 3, 2);
-        if(!check) printf( " Problems with matXT \n");
+	if(!check) printf( " Problems with matXT \n");
 
 /* T*G */
 
@@ -234,22 +234,22 @@ sub_T  =   | T_upper   T_diag + 1     T_upper + 1  |
 
 	for( i = 0; i < num_eigen; ++i )
 	{
-         	fdum = *(evector + num_eigen*i + shrink2)*c -
+		fdum = *(evector + num_eigen*i + shrink2)*c -
 			*(evector + num_eigen*i + shrink2 + 1)*s;
-         	fdum2 = *(evector + num_eigen*i + shrink2)*s +
+		fdum2 = *(evector + num_eigen*i + shrink2)*s +
 			*(evector + num_eigen*i + shrink2 + 1)*c;
 
-         	*(evector + num_eigen*i + shrink2) = fdum;
-         	*(evector + num_eigen*i + shrink2 + 1) = fdum2;
+		*(evector + num_eigen*i + shrink2) = fdum;
+		*(evector + num_eigen*i + shrink2 + 1) = fdum2;
 	}
 
-        for( k = 0; k < n2-3; ++k )
-        {
+	for( k = 0; k < n2-3; ++k )
+	{
 	    c = *(T_upper + k );
 	    s = nonzero;
 
 	    check = givens(&c,&s);
-            if(!check) printf( " Problems with givens \n");
+	    if(!check) printf( " Problems with givens \n");
 
 /*
            | T_diag + k   T_upper + k        nonzero            0.0             |
@@ -268,7 +268,7 @@ sub_T  =   | T_upper + k  T_diag + k + 1     T_upper + k + 1    0.0             
 	    *(G + 2) = -s;
 	    *(G + 3) = c;
 
-/* Apply rotation to T: G(transpose)*T*G matrix */
+/* Apply rotation to T: G(k)(transpose)*T*(G(k)) matrix */
 
 /* G(transpose)*T */
 
@@ -300,7 +300,7 @@ sub_T  =   | T_upper + k  T_diag + k + 1     T_upper + k + 1    0.0             
 	    *(temp + 15) = *(sub_T + 15);
 
 	    check = matXT((temp+4), G, (sub_T+4), 2, 4, 2);
-            if(!check) printf( " Problems with matXT \n");
+	    if(!check) printf( " Problems with matXT \n");
 
 /* T*G */
 
@@ -332,23 +332,23 @@ sub_T  =   | T_upper + k  T_diag + k + 1     T_upper + k + 1    0.0             
 
 /* Calculate eigenvectors */
 
-            for( i = 0; i < num_eigen; ++i )
-            {
-           	fdum = *(evector + num_eigen*i + shrink2 + k+1)*c -
+	    for( i = 0; i < num_eigen; ++i )
+	    {
+		fdum = *(evector + num_eigen*i + shrink2 + k+1)*c -
 			*(evector + num_eigen*i + shrink2 + k+2)*s;
-           	fdum2 = *(evector + num_eigen*i + shrink2 + k+1)*s +
+		fdum2 = *(evector + num_eigen*i + shrink2 + k+1)*s +
 			*(evector + num_eigen*i + shrink2 + k+2)*c;
 
-           	*(evector + num_eigen*i + shrink2 + k+1) = fdum;
-           	*(evector + num_eigen*i + shrink2 + k+2) = fdum2;
-            }
+		*(evector + num_eigen*i + shrink2 + k+1) = fdum;
+		*(evector + num_eigen*i + shrink2 + k+2) = fdum2;
+	    }
 	}
 
 	c = *(T_upper + n2 - 3 );
 	s = nonzero;
 
 	check = givens(&c,&s);
-        if(!check) printf( " Problems with givens \n");
+	if(!check) printf( " Problems with givens \n");
 
 /*
            | T_diag + n2 - 3    T_upper + n2 - 3    nonzero           |
@@ -385,7 +385,7 @@ sub_T  =   | T_upper + n2 - 3   T_diag + n2 - 2     T_upper + n2 - 2  |
 /* G(transpose)*T */
 
 	check = matXT((temp+3), G, (sub_T+3), 2, 3, 2);
-        if(!check) printf( " Problems with matXT \n");
+	if(!check) printf( " Problems with matXT \n");
 
 /* T*G */
 
@@ -412,13 +412,13 @@ sub_T  =   | T_upper + n2 - 3   T_diag + n2 - 2     T_upper + n2 - 2  |
 	{
 		for( i = 0; i < num_eigen; ++i )
 		{
-           	    fdum = *(evector + num_eigen*i + shrink2 + n2-2)*c -
+		    fdum = *(evector + num_eigen*i + shrink2 + n2-2)*c -
 			*(evector + num_eigen*i + shrink2 + n2-1)*s;
-           	    fdum2 = *(evector + num_eigen*i + shrink2 + n2-2)*s +
+		    fdum2 = *(evector + num_eigen*i + shrink2 + n2-2)*s +
 			*(evector + num_eigen*i + shrink2 + n2-1)*c;
 
-           	    *(evector + num_eigen*i + shrink2 + n2-2) = fdum;
-           	    *(evector + num_eigen*i + shrink2 + n2-1) = fdum2;
+		    *(evector + num_eigen*i + shrink2 + n2-2) = fdum;
+		    *(evector + num_eigen*i + shrink2 + n2-1) = fdum2;
 		}
 	}
 
@@ -450,8 +450,8 @@ int QR_check(double *evector, double *T_diag, double *T_upper, int iteration_max
 	*(T_upper + 2) = 6.0;
 #endif
 
-        for( i = 0; i < num_eigen; ++i )
-        {
+	for( i = 0; i < num_eigen; ++i )
+	{
 		*(evector + num_eigen*i + i) = 1.0;
 	}
 
@@ -475,23 +475,23 @@ int QR_check(double *evector, double *T_diag, double *T_upper, int iteration_max
 	shrink = num_eigen - 2;
 	shrink2 = 0;
 	n2 = num_eigen;
-        while( n2 > 1 )
-        {
+	while( n2 > 1 )
+	{
 		if( n2 > 2)
 		{
-        	    check = QR(evector, (T_diag + shrink2), (T_upper + shrink2),
+		    check = QR(evector, (T_diag + shrink2), (T_upper + shrink2),
 			num_eigen, n2, shrink2);
 		}
 		else
 		{
 /* For n2 = 2 */
-        	    check = QR2X2(evector, (T_diag + shrink2), (T_upper + shrink2),
+		    check = QR2X2(evector, (T_diag + shrink2), (T_upper + shrink2),
 			num_eigen, n2, shrink2);
 		}
 
 		fdum = fabs(*( T_upper + shrink ));
-        	while( fdum < SMALL )
-        	{
+		while( fdum < SMALL )
+		{
 			*( T_upper + shrink ) = 0.0;
 			--shrink;
 			fdum = fabs(*( T_upper + shrink ));
@@ -499,8 +499,8 @@ int QR_check(double *evector, double *T_diag, double *T_upper, int iteration_max
 		}
 		n2 = shrink + 2;
 		fdum = fabs(*( T_upper + shrink2 ));
-        	while( fdum < SMALL )
-        	{
+		while( fdum < SMALL )
+		{
 			*( T_upper + shrink2 ) = 0.0;
 			++shrink2;
 			fdum = fabs(*( T_upper + shrink2 ));

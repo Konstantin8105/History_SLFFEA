@@ -1,5 +1,5 @@
 # SLFFEA Makefile
-# Version:  1.3
+# Version:  1.4
 # Copyright (C) 1999, 2000  San Le (slffea@yahoo.com)
 # http://slffea.com/
 #
@@ -26,7 +26,7 @@ LIB1 = -I/usr/local/include -O2 -funroll-loops -ansi -pedantic \
 LIB2 = -L/usr/local/lib -lglut -lGLU -lGL -lm -L/usr/X11/lib \
 	-L/usr/X11R6/lib -lX11 -lXext -lXmu -lXt -lXi -lSM -lICE
 
-OBJECTS_TE = ../tetra/tememory.o ../tetra/tereader.o 
+OBJECTS_TE = ../tetra/memory2.o ../tetra/tereader.o 
 
 OBJECTS_TEH = ../tetra/teconst.h ../tetra/testruct.h 
 
@@ -51,71 +51,71 @@ CC = /usr/bin/gcc
 LIBS = -lm
 
 tepost: tepost.o \
-		tememgr.o \
-		tereadgr.o \
-		tereadgr2.o \
-		teparam.o \
-		teparam2.o \
+		memgr2.o \
+		readgr.o \
+		con_surf_read.o \
+		param.o \
+		regetparam.o \
 		teset.o \
 		tenorm_vec.o \
-		tebc_vec.o \
-		temshdsp.o \
+		bc_vec.o \
+		mshdsp.o \
 		temesh.o \
-		temshkey.o \
-		temenu.o \
+		mshkey.o \
+		menu2.o \
 		tegetnew.o \
-		tecrtldsp.o \
-		tecrtlmse.o \
+		crtldsp.o \
+		crtlmse.o \
 		terender.o \
 		$(OBJECTS_TEH) \
 		$(OBJECTS_GRH) \
 		tegui.h \
 		testrcgr.h 
 	$(CC) -o tepost $(LIB1) tepost.o \
-		tememgr.o \
-		tereadgr.o \
-		tereadgr2.o \
-		teparam.o \
-		teparam2.o \
+		memgr2.o \
+		readgr.o \
+		con_surf_read.o \
+		param.o \
+		regetparam.o \
 		teset.o \
 		tenorm_vec.o \
-		tebc_vec.o \
-		temshdsp.o \
+		bc_vec.o \
+		mshdsp.o \
 		temesh.o \
-		temshkey.o \
-		temenu.o \
+		mshkey.o \
+		menu2.o \
 		tegetnew.o \
-		tecrtldsp.o \
-		tecrtlmse.o \
+		crtldsp.o \
+		crtlmse.o \
 		terender.o \
 		$(OBJECTS_TE) $(OBJECTS_GR) $(OBJECTS2) $(LIB2) 
 
 terender.o: terender.c 
 	$(CC) -c terender.c -DTETRA1
 
-tecrtlmse.o: tecrtlmse.c 
-	$(CC) -c tecrtlmse.c 
+crtlmse.o: $(COMMON_GR)/crtlmse.c 
+	$(CC) -c $(COMMON_GR)/crtlmse.c -DTETRA1
 
-tecrtldsp.o: tecrtldsp.c 
-	$(CC) -c tecrtldsp.c -DTETRA1
+crtldsp.o: $(COMMON_GR)/crtldsp.c 
+	$(CC) -c $(COMMON_GR)/crtldsp.c -DTETRA1
 
 tegetnew.o: tegetnew.c 
 	$(CC) -c tegetnew.c 
 
-temenu.o: temenu.c 
-	$(CC) -c temenu.c 
+menu2.o: $(COMMON_GR)/menu2.c 
+	$(CC) -c $(COMMON_GR)/menu2.c -DTETRA1
 
-temshkey.o: temshkey.c 
-	$(CC) -c temshkey.c 
+mshkey.o: $(COMMON_GR)/mshkey.c 
+	$(CC) -c $(COMMON_GR)/mshkey.c -DTETRA1
 
 temesh.o: temesh.c 
 	$(CC) -c temesh.c -DTETRA1
 
-temshdsp.o: temshdsp.c 
-	$(CC) -c temshdsp.c -DTETRA1
+mshdsp.o: $(COMMON_GR)/mshdsp.c 
+	$(CC) -c $(COMMON_GR)/mshdsp.c -DTETRA1
 
-tebc_vec.o: tebc_vec.c 
-	$(CC) -c tebc_vec.c -DTETRA1
+bc_vec.o: $(COMMON_GR)/bc_vec.c 
+	$(CC) -c $(COMMON_GR)/bc_vec.c -DTETRA1
 
 tenorm_vec.o: tenorm_vec.c 
 	$(CC) -c tenorm_vec.c 
@@ -123,20 +123,20 @@ tenorm_vec.o: tenorm_vec.c
 teset.o: teset.c 
 	$(CC) -c teset.c 
 
-teparam2.o: teparam2.c 
-	$(CC) -c teparam2.c 
+regetparam.o: $(COMMON_GR)/regetparam.c 
+	$(CC) -c $(COMMON_GR)/regetparam.c -DTETRA1
 
-teparam.o: teparam.c 
-	$(CC) -c teparam.c 
+param.o: $(COMMON_GR)/param.c 
+	$(CC) -c $(COMMON_GR)/param.c -DTETRA1
 
-tereadgr2.o: tereadgr2.c 
-	$(CC) -c tereadgr2.c -DTETRA1
+con_surf_read.o: $(COMMON_GR)/con_surf_read.c
+	$(CC) -c $(COMMON_GR)/con_surf_read.c -DTETRA1
 
-tereadgr.o: tereadgr.c 
-	$(CC) -c tereadgr.c -DTETRA1
+readgr.o: $(COMMON_GR)/readgr.c 
+	$(CC) -c $(COMMON_GR)/readgr.c -DTETRA1
 
-tememgr.o: tememgr.c 
-	$(CC) -c tememgr.c -DTETRA1
+memgr2.o: $(COMMON_GR)/memgr2.c 
+	$(CC) -c $(COMMON_GR)/memgr2.c -DTETRA1
 
 tepost.o: tepost.c 
 	$(CC) -c tepost.c

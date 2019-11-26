@@ -1,5 +1,5 @@
 # SLFFEA Makefile
-# Version:  1.3
+# Version:  1.4
 # Copyright (C) 1999, 2000  San Le (slffea@yahoo.com)
 # http://slffea.com/
 #
@@ -34,6 +34,10 @@ COMMON = ../../common
 
 COMMON_GR = ../../common_gr
 
+QUAD_GR = ../../quad/quad_gr
+
+TRI_GR = ../../tri/tri_gr
+
 OBJECTS_GR = $(COMMON_GR)/pwinston.o $(COMMON_GR)/axes.o \
 	$(COMMON_GR)/mshcommon.o $(COMMON_GR)/crtlcommon.o \
 	$(COMMON_GR)/printext.o $(COMMON_GR)/screenshot.o \
@@ -56,13 +60,15 @@ plpost: plpost.o \
 		plmemgr.o \
 		plreadgr.o \
 		plparam.o \
-		plparam2.o \
+		plregetparam.o \
 		plset.o \
-		plnorm_vec.o \
+		qdnorm_vec.o \
+		trnorm_vec.o \
 		plbc_vec.o \
 		plmshdsp.o \
 		plmesh.o \
 		plmshkey.o \
+		plmshkey2.o \
 		plmenu.o \
 		plgetnew.o \
 		plcrtldsp.o \
@@ -76,13 +82,15 @@ plpost: plpost.o \
 		plmemgr.o \
 		plreadgr.o \
 		plparam.o \
-		plparam2.o \
+		plregetparam.o \
 		plset.o \
-		plnorm_vec.o \
+		qdnorm_vec.o \
+		trnorm_vec.o \
 		plbc_vec.o \
 		plmshdsp.o \
 		plmesh.o \
 		plmshkey.o \
+		plmshkey2.o \
 		plmenu.o \
 		plgetnew.o \
 		plcrtldsp.o \
@@ -105,6 +113,9 @@ plgetnew.o: plgetnew.c
 plmenu.o: plmenu.c 
 	$(CC) -c plmenu.c 
 
+plmshkey2.o: plmshkey2.c 
+	$(CC) -c plmshkey2.c 
+
 plmshkey.o: plmshkey.c 
 	$(CC) -c plmshkey.c 
 
@@ -117,14 +128,17 @@ plmshdsp.o: plmshdsp.c
 plbc_vec.o: plbc_vec.c 
 	$(CC) -c plbc_vec.c 
 
-plnorm_vec.o: plnorm_vec.c 
-	$(CC) -c plnorm_vec.c 
+qdnorm_vec.o: $(QUAD_GR)/qdnorm_vec.c 
+	$(CC) -c $(QUAD_GR)/qdnorm_vec.c -DPLATE1
+
+trnorm_vec.o: $(TRI_GR)/trnorm_vec.c 
+	$(CC) -c $(TRI_GR)/trnorm_vec.c -DPLATE1
 
 plset.o: plset.c 
 	$(CC) -c plset.c 
 
-plparam2.o: plparam2.c 
-	$(CC) -c plparam2.c 
+plregetparam.o: plregetparam.c 
+	$(CC) -c plregetparam.c 
 
 plparam.o: plparam.c 
 	$(CC) -c plparam.c 

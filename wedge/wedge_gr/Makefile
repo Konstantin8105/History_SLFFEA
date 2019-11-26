@@ -1,5 +1,5 @@
 # SLFFEA Makefile
-# Version:  1.3
+# Version:  1.4
 # Copyright (C) 1999, 2000  San Le (slffea@yahoo.com)
 # http://slffea.com/
 #
@@ -26,7 +26,7 @@ LIB1 = -I/usr/local/include -O2 -funroll-loops -ansi -pedantic \
 LIB2 = -L/usr/local/lib -lglut -lGLU -lGL -lm -L/usr/X11/lib \
 	-L/usr/X11R6/lib -lX11 -lXext -lXmu -lXt -lXi -lSM -lICE
 
-OBJECTS_WE = ../wedge/wememory.o ../wedge/wereader.o 
+OBJECTS_WE = ../wedge/memory.o ../wedge/wereader.o 
 
 OBJECTS_WEH = ../wedge/weconst.h ../wedge/westruct.h 
 
@@ -51,92 +51,92 @@ CC = /usr/bin/gcc -g
 LIBS = -lm
 
 wepost: wepost.o \
-		wememgr.o \
-		wereadgr.o \
-		wereadgr2.o \
-		weparam.o \
-		weparam2.o \
-		weset.o \
+		memgr.o \
+		readgr.o \
+		con_surf_read.o \
+		param.o \
+		regetparam.o \
+		set.o \
 		wenorm_vec.o \
-		webc_vec.o \
-		wemshdsp.o \
+		bc_vec.o \
+		mshdsp.o \
 		wemesh.o \
-		wemshkey.o \
-		wemenu.o \
+		mshkey.o \
+		menu.o \
 		wegetnew.o \
-		wecrtldsp.o \
-		wecrtlmse.o \
+		crtldsp.o \
+		crtlmse.o \
 		werender.o \
 		$(OBJECTS_WEH) \
 		$(OBJECTS_GRH) \
 		wegui.h \
 		westrcgr.h 
 	$(CC) -o wepost $(LIB1) wepost.o \
-		wememgr.o \
-		wereadgr.o \
-		wereadgr2.o \
-		weparam.o \
-		weparam2.o \
-		weset.o \
+		memgr.o \
+		readgr.o \
+		con_surf_read.o \
+		param.o \
+		regetparam.o \
+		set.o \
 		wenorm_vec.o \
-		webc_vec.o \
-		wemshdsp.o \
+		bc_vec.o \
+		mshdsp.o \
 		wemesh.o \
-		wemshkey.o \
-		wemenu.o \
+		mshkey.o \
+		menu.o \
 		wegetnew.o \
-		wecrtldsp.o \
-		wecrtlmse.o \
+		crtldsp.o \
+		crtlmse.o \
 		werender.o \
 		$(OBJECTS_WE) $(OBJECTS_GR) $(OBJECTS2) $(LIB2) 
 
 werender.o: werender.c 
 	$(CC) -c werender.c -DWEDGE1
 
-wecrtlmse.o: wecrtlmse.c 
-	$(CC) -c wecrtlmse.c 
+crtlmse.o: $(COMMON_GR)/crtlmse.c 
+	$(CC) -c $(COMMON_GR)/crtlmse.c -DWEDGE1
 
-wecrtldsp.o: wecrtldsp.c 
-	$(CC) -c wecrtldsp.c -DWEDGE1
+crtldsp.o: $(COMMON_GR)/crtldsp.c 
+	$(CC) -c $(COMMON_GR)/crtldsp.c -DWEDGE1
 
 wegetnew.o: wegetnew.c 
 	$(CC) -c wegetnew.c 
 
-wemenu.o: wemenu.c 
-	$(CC) -c wemenu.c 
+menu.o: $(COMMON_GR)/menu.c 
+	$(CC) -c $(COMMON_GR)/menu.c -DWEDGE1
 
-wemshkey.o: wemshkey.c 
-	$(CC) -c wemshkey.c 
+mshkey.o: $(COMMON_GR)/mshkey.c 
+	$(CC) -c $(COMMON_GR)/mshkey.c -DWEDGE1
 
 wemesh.o: wemesh.c 
 	$(CC) -c wemesh.c -DWEDGE1
 
-wemshdsp.o: wemshdsp.c 
-	$(CC) -c wemshdsp.c -DWEDGE1
+mshdsp.o: $(COMMON_GR)/mshdsp.c 
+	$(CC) -c $(COMMON_GR)/mshdsp.c -DWEDGE1
 
-webc_vec.o: webc_vec.c 
-	$(CC) -c webc_vec.c -DWEDGE1
+bc_vec.o: $(COMMON_GR)/bc_vec.c 
+	$(CC) -c $(COMMON_GR)/bc_vec.c -DWEDGE1
 
 wenorm_vec.o: wenorm_vec.c 
 	$(CC) -c wenorm_vec.c 
 
-weset.o: weset.c 
-	$(CC) -c weset.c 
+set.o: $(COMMON_GR)/set.c 
+	$(CC) -c $(COMMON_GR)/set.c -DWEDGE1
 
-weparam2.o: weparam2.c 
-	$(CC) -c weparam2.c 
+regetparam.o: $(COMMON_GR)/regetparam.c 
+	$(CC) -c $(COMMON_GR)/regetparam.c -DWEDGE1
 
-weparam.o: weparam.c 
-	$(CC) -c weparam.c 
+param.o: $(COMMON_GR)/param.c 
+	$(CC) -c $(COMMON_GR)/param.c -DWEDGE1
 
-wereadgr2.o: wereadgr2.c 
-	$(CC) -c wereadgr2.c -DWEDGE1
+con_surf_read.o: $(COMMON_GR)/con_surf_read.c
+	$(CC) -c $(COMMON_GR)/con_surf_read.c -DWEDGE1
 
-wereadgr.o: wereadgr.c 
-	$(CC) -c wereadgr.c -DWEDGE1
+readgr.o: $(COMMON_GR)/readgr.c
+	$(CC) -c $(COMMON_GR)/readgr.c -DWEDGE1
 
-wememgr.o: wememgr.c 
-	$(CC) -c wememgr.c -DWEDGE1
+memgr.o: $(COMMON_GR)/memgr.c 
+	$(CC) -c $(COMMON_GR)/memgr.c -DWEDGE1
 
 wepost.o: wepost.c 
 	$(CC) -c wepost.c

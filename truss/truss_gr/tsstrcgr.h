@@ -2,11 +2,11 @@
     This file contains the structures of the graphics program
     for truss elements.
 
-	Updated 9/22/00
+	Updated 1/22/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -20,16 +20,8 @@
 #include "../truss/tsconst.h"
 
 typedef struct {
-        int xx;
+	int xx;
 } ISDIM;
-
-typedef struct {
-        int xx;
-} ISTRESS;
-
-typedef struct {
-        int xx;
-} ISTRAIN;
 
 /* The structure below is a repeat of XYZPhiF found in ../truss/tsstruct.h.
    I cannot simply include tsstruct.h in here because tsstruct.h is
@@ -37,6 +29,6 @@ typedef struct {
    and this causes a redundancy which is not allowed. */
 
 typedef struct {
-        double x, y, z;
+	double x, y, z;
 } XYZF_GR;
 

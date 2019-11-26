@@ -1,5 +1,5 @@
 
-                             SLFFEA 1.3 DATA 
+                             SLFFEA 1.4 DATA 
 
                     Copyright (C) 1999, 2000, 2001 San Le
 
@@ -70,7 +70,7 @@ Here are the few things which are not obvious:
     input file is needed only if you require pre-stressed elements, and the output is
     needed only if you require stress data on an element basis before nodal averaging. 
     To tell SLFFEA to read from the input file, turn on the "element stress read flag"
-    in the "brinput" file located in the data directory ~/slffea-1.3/data/br.  To create
+    in the "brinput" file located in the data directory ~/slffea-1.4/data/br.  To create
     the output file, turn on the "element stress print flag".  This is true for every
     element, all of which have their own "*input" file(more on this below).  The format
     of an input file looks like:
@@ -259,7 +259,7 @@ The next data sets, "Orthographic viewport parameters" and "Perspective viewport
 parameters", give the values used to define the window of the mesh.  It
 is unlikely you will want to change these.  The next set, "Step sizes in x, y, z"
 are for how much you want the mesh to move when you press the arrow keys or for
-when you move the mesh through the GUI.  For SLFFEA-1.2 and 1.3, this also
+when you move the mesh through the GUI.  For SLFFEA-1.2 and higher, this also
 changes the movement size for the cutting planes.  The last number, "Amplification
 size", pertains to the amplification factor for when you amplify the deformation.
 Remember that after changing these numbers, you need to save the *view.dat file

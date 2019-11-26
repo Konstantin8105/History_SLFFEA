@@ -1,11 +1,11 @@
 /*
     This file contains the structures of the tetrahedral FEM code.
 
-	Updated 8/17/01
+	Updated 1/22/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -19,11 +19,15 @@
 #include "teconst.h"
 
 typedef struct {
-        double x, y, z;
+	double xx,yy,zz,xy,zx,yz,I,II,III;
+} SDIM;
+
+typedef struct {
+	double x, y, z;
 } XYZF;
 
 typedef struct {
-        int x, y, z;
+	int x, y, z;
 } XYZI;
 
 typedef struct {
@@ -34,15 +38,8 @@ typedef struct {
 } BOUND;
 
 typedef struct {
-        double E;
-        double nu;
-        double rho;
+	double E;
+	double nu;
+	double rho;
 } MATL;
 
-typedef struct {
-        double xx,yy,zz,xy,zx,yz,I,II,III;
-} STRESS;
-
-typedef struct {
-        double xx,yy,zz,xy,zx,yz,I,II,III;
-} STRAIN;

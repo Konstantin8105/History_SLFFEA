@@ -32,19 +32,27 @@
 30  YY   YY                  |___|  31   475
 31  XY   XY        6.448e6   |   |  32   490
 32  stress/strain            |___|  33   505
-33  ZX   ZX        7.447e5   |   |  34   520
-34  YZ   YZ                  |___|  35   535
-35  principal      8.112e2   |   |  36   550
-36  moment/curve             |___|  37   565
-37  I    I         4.282e-4  |   |  38   580
-38  II   II                  |___|  39   595
-39                -2.458e-6  |   |  40   610
-40  disp/angle               |___|  41   625
-41  Z    X        -8.420e9   |   |  42   640
-42       Y                   |___|  43   655
-43                -1.420e10  |   |  44   670
-44                           |___|  45   685
-45                                  46   700
+33  XX   XX        7.447e5   |   |  34   520
+34  YY   YY                  |___|  35   535
+35  XY   XY        8.112e2   |   |  36   550
+36  ZX   ZX                  |___|  37   565
+37  YZ   YZ        4.282e-4  |   |  38   580
+38  principal                |___|  39   595
+39  moment/curve  -2.458e-6  |   |  40   610
+40  I    I                   |___|  41   625
+41  II   II       -8.420e9   |   |  42   640
+42  principal                |___|  43   655
+43  stress/strain -1.420e10  |   |  44   670
+44  I    I                   |___|  45   685
+45  II   II                         46   700
+46  III  III                        47   715
+47                                  48   730
+48  disp/angle                      49   745
+49  X    X                          50   760
+50  Y    Y                          51   775
+51  Z    Z                          52   790
+52                                  53   805
+53                                  54   820
 
 Column 1 is for ControlText in *crtldsp.c 
         and Color_flag in *crtlmse.c

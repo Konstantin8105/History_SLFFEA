@@ -6,7 +6,7 @@
                         Updated 8/16/00
 
     SLFFEA source file
-    Version:  1.3
+    Version:  1.4
     Copyright (C) 1999, 2000, 2001, 2002  San Le
 
     The source code contained in this file is released under the
@@ -22,9 +22,9 @@
 
 int compare_eigen ( const void *x,  const void *y)
 {
-        EIGEN *a = (EIGEN *) x;
-        EIGEN *b = (EIGEN *) y;
-        if ( a[0].val < b[0].val ) return -1;
-        if ( a[0].val == b[0].val ) return 0;
-        if ( a[0].val > b[0].val ) return 1;
+	EIGEN *a = (EIGEN *) x;
+	EIGEN *b = (EIGEN *) y;
+	if ( a[0].val < b[0].val ) return -1;
+	if ( a[0].val == b[0].val ) return 0;
+	if ( a[0].val > b[0].val ) return 1;
 }

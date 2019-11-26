@@ -6,11 +6,11 @@
     assumed to be hypo-elastic and the stress is updated using the
     Jaumann Stress Rate.
 
-	Updated 4/29/05
+	Updated 3/15/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -29,23 +29,23 @@
 #define SMALL      1.e-20
 
 int tswriter ( BOUND , int *, double *, int *, double *, int *, MATL *,
-	char *, STRAIN *, STRESS *, double *);
+	char *, SDIM *, SDIM *, double *);
 
 int tsLength( int *, double *, double *);
 
-int tsPassemble(int *, double *, double *, int *, MATL *, double *, STRESS *,
+int tsPassemble(int *, double *, double *, int *, MATL *, double *, SDIM *,
 	double * );
 
 int tsFMassemble( int *, double *, double *, int *, double *, double *, MATL *,
 	double *);
 
-int tsformid( BOUND, int *);
+int formid( BOUND, int *);
 
 int tsreader( BOUND , int *, double *, int *, double *, MATL *, 
-	FILE *, STRESS *, double *);
+	FILE *, SDIM *, double *);
 
 int tsMemory( double **, int, int **, int, MATL **, int , XYZI **, int,
-        STRAIN **, STRESS **, int );
+        SDIM **, SDIM **, int );
 
 int dof, sdof, analysis_flag, neqn, nmat, nmode, numel, numnp, sof;
 int stress_read_flag, gauss_stress_flag;
@@ -68,7 +68,7 @@ int main(int argc, char** argv)
 	int matl_num;
 	double Emod, area, EmodXarea;
         XYZI *mem_XYZI;
-        int *mem_int, sofmi, sofmf, sofmSTRESS, sofmXYZI, ptr_inc;
+        int *mem_int, sofmi, sofmf, sofmSDIM, sofmXYZI, ptr_inc;
         MATL *matl;
         double *mem_double;
         double fpointx, fpointy, fpointz;
@@ -79,8 +79,8 @@ int main(int argc, char** argv)
 	char name_mode[30], *ccheck;
         FILE *o1, *o2, *o3, *o4;
 	BOUND bc;
-	STRESS *stress;
-	STRAIN *strain;
+	SDIM *stress;
+	SDIM *strain;
         long timec;
         long timef;
 	double v,bet,alp,timer;
@@ -164,13 +164,13 @@ int main(int argc, char** argv)
 	MemoryCounter += sofmXYZI*sizeof(XYZI);
 	printf( "\n Memory requrement for XYZI integers is %15d bytes\n",MemoryCounter);
 
-/* For the STRESS */
-        sofmSTRESS=numel;
-	MemoryCounter += sofmSTRESS*sizeof(STRESS) + sofmSTRESS*sizeof(STRAIN);
-	printf( "\n Memory requrement for STRESS doubles is %15d bytes\n",MemoryCounter);
+/* For the SDIM */
+        sofmSDIM=numel;
+	MemoryCounter += sofmSDIM*sizeof(SDIM) + sofmSDIM*sizeof(SDIM);
+	printf( "\n Memory requrement for SDIM doubles is %15d bytes\n",MemoryCounter);
 
 	check = tsMemory( &mem_double, sofmf, &mem_int, sofmi, &matl, nmat,
-		&mem_XYZI, sofmXYZI, &strain, &stress, sofmSTRESS );
+		&mem_XYZI, sofmXYZI, &strain, &stress, sofmSDIM );
         if(!check) printf( " Problems with tsMemory \n");
 
 /* For the doubles */
@@ -213,8 +213,8 @@ int main(int argc, char** argv)
 	MEGS = ((double)(MemoryCounter))/MB;
 	printf( "\n Which is %16.4e MB\n", MEGS);
 
-        check = tsformid( bc, id );
-        if(!check) printf( " Problems with tsformid \n");
+        check = formid( bc, id );
+        if(!check) printf( " Problems with formid \n");
 
 #if DATA_ON
         printf( "\n This is the id matrix \n");
@@ -450,11 +450,11 @@ int main(int argc, char** argv)
 		    *(V+j) = 0.0;
 		}
 
-		check = tsBoundary (r, bc);
-		if(!check) printf( "Problems with tsBoundary \n");
+		check = Boundary (r, bc);
+		if(!check) printf( "Problems with Boundary \n");
 
-		check = tsBoundary (p, bc);
-		if(!check) printf( "Problems with tsBoundary \n");
+		check = Boundary (p, bc);
+		if(!check) printf( "Problems with Boundary \n");
 
 		alpha = 0.0;
 		alpha2 = 0.0;
@@ -492,8 +492,8 @@ int main(int argc, char** argv)
 
 		    /*printf( "\n %3d %16.8e %16.8e\n",counter, *(P_global + 44), *(P_global_CG + 44));*/
 
-		    check = tsBoundary (P_global_CG, bc);
-		    if(!check) printf( "Problems with tsBoundary \n");
+		    check = Boundary (P_global_CG, bc);
+		    if(!check) printf( "Problems with Boundary \n");
 		    check = dotX(&alpha2, p, P_global_CG, dof);
 		    alpha = fdum/(SMALL + alpha2);
 		    for( j = 0; j < dof; ++j )
@@ -522,8 +522,8 @@ int main(int argc, char** argv)
 			*(force+j)*alp/(*(mass+j)));*/
 			*(p+j) = *(z+j)+beta*(*(p+j));
 		    }
-		    check = tsBoundary (p, bc);
-		    if(!check) printf( "Problems with tsBoundary \n");
+		    check = Boundary (p, bc);
+		    if(!check) printf( "Problems with Boundary \n");
 
 		    for( j = 0; j < numnp; ++j )
 		    {

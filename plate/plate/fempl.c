@@ -3,10 +3,10 @@
    the data, doing assembling, and then solving the linear system
    for a 4 node plate element
 
-        Updated 11/2/09
+	        Updated 11/4/09
 
     SLFFEA source file
-    Version:  1.3
+    Version:  1.4
     Copyright (C) 1999-2009  San Le 
 
     The source code contained in this file is released under the
@@ -28,25 +28,29 @@ int plArea ( int *, double *, double *);
 
 int plwriter ( BOUND , int *, double *, CURVATURE *, MDIM *, int *,
 	double *, int *, MATL *, MOMENT *, MDIM *, char *, STRAIN *,
-	SDIM *, STRESS *, SDIM *, double *);
+	SDIM *, STRESS *, SDIM *, double *, double *);
 
 int eval_data_print( EIGEN *, char *, int );
 
 int plLanczos(double *, BOUND , int *, double *, EIGEN *, int *, int *, int *,
-        double *, double *, MATL *, double *, int );
+	double *, double *, double *, MATL *, double *, int );
 
-int plConjGrad(double *, BOUND , int *, double *, int *, double *, double *, MATL *,
-	double *);
+int plConjGrad(double *, BOUND , int *, double *, int *, double *, double *,
+	double *, MATL *, double *);
 
 int solve(double *,double *,int *, int );
 
 int decomp(double *,int *,int );
 
-int plMassemble(int *, double *, int *, int *, double *, MATL *);
+int plMassemble(int *, double *, int *, int *, double *, double *, MATL *);
 
-int plKassemble(double *, int *, double *, CURVATURE *, MDIM *, int *,
-	double *, int *, int *, double *, int *, MATL *, MOMENT *, MDIM *,
-	double *, STRAIN *, SDIM *, STRESS *, SDIM *, double *);
+int plKassemble(double *, int *, double *, CURVATURE *, MDIM *, int *, double *,
+	int *, int *, double *, int *, double *, MATL *, MOMENT *, MDIM *,
+	double *, STRAIN *, SDIM *, STRESS *, SDIM *, double *, double *);
+
+int plKassemble_triangle(double *, int *, double *, CURVATURE *, MDIM *, int *,
+	double *, int *, int *, double *, int *, double *, MATL *, MOMENT *, MDIM *,
+	double *, STRAIN *, SDIM *, STRESS *, SDIM *, double *, double *, double *);
 
 int diag( int *, int *, int, int, int, int);
 
@@ -54,112 +58,138 @@ int formlm( int *, int *, int *, int, int, int );
 
 int plformid( BOUND, int *);
 
+int local_vectors( int *, double *, double * );
+
+int local_vectors_triangle( int *, double *, double * );
+
 int plreader( BOUND , int *, double *, int *, double *, MATL *, MOMENT *,
 	MDIM *, char *, FILE *, STRESS *, SDIM *, double *);
 
-int plMemory( double **, int , int **, int , MATL **, int , ZPhiI **, int ,
+int plMemory( double **, int , int **, int , MATL **, int , XYZPhiI **, int ,
 	MDIM **, SDIM **, int , CURVATURE **, MOMENT **, STRAIN **,
-        STRESS **, int  );
+	STRESS **, int  );
+
+int trshl( int, double *, double * );
 
 int plshl( double, SH, double * );
 
 int plshl_node2(double * );
 
-int analysis_flag, dof, sdof, modal_flag, neqn, nmat, nmode, numel, numnp, sof;
+int analysis_flag, dof, sdof, modal_flag, neqn, nmat, nmode, numel, numnp,
+	plane_stress_flag, plane_stress_read_flag, sof, flag_3D, flag_quad_element;
 int static_flag, consistent_mass_flag, consistent_mass_store, eigen_print_flag,
-        lumped_mass_flag, stress_read_flag, element_stress_read_flag,
-        element_stress_print_flag, gauss_stress_flag;
+	lumped_mass_flag, stress_read_flag, element_stress_read_flag,
+	element_stress_print_flag, gauss_stress_flag;
 
 int LU_decomp_flag, numel_K, numel_P, numnp_LUD_max;
 int iteration_max, iteration_const, iteration;
 double tolerance;
 
 SH shg, shg_node, shl, shl_node;
-double shl_node2[sosh_node2], *Area0, w[num_int+1];
+double shl_node2[sosh_node2], *Area0, w[num_int4+1];
+double shgtr[soshtr], shltr[soshtr], shltr_node[soshtr], shltr_node2[soshtr_node2],
+	wtr[num_int3];
 
 int main(int argc, char** argv)
 {
-        int i, j;
-        int *id, *lm, *idiag, check, name_length, counter, MemoryCounter;
-        ZPhiI *mem_ZPhiI;
-        int *mem_int, sofmA, sofmA_K, sofmA_mass, sofmi, sofmf, sofmSTRESS,
-		sofmshf, sofmZPhiI, sofmSDIM, ptr_inc;
-        MATL *matl;
-        double *mem_double, *mem_sh_double;
-        double fpointx, fpointy, fpointz;
-        int *connect, *el_matl, dum;
-        double *coord, *force, *mass, *U, *Arean, *A,
-		*node_counter, *vector_dum;
+	int i, j;
+	int *id, *lm, *idiag, check, name_length, counter, MemoryCounter;
+	XYZPhiI *mem_XYZPhiI;
+	int *mem_int, sofmA, sofmA_K, sofmA_mass, sofmi, sofmf, sofmSTRESS,
+		sofmshf, sofmXYZPhiI, sofmSDIM, ptr_inc;
+	MATL *matl;
+	double *mem_double, *mem_sh_double;
+	double fpointx, fpointy, fpointz;
+	int *connect, *el_matl, dum;
+	double *coord, *force, *mass, *U, *Uz_fib, *Arean, *A,
+		*node_counter, *vector_dum, *local_xyz;
 	double *K_diag, *ritz;
 	EIGEN *eigen;
 	int num_eigen;
-        char name[30], buf[ BUFSIZ ];
-	char name_mode[30], *ccheck;
-        FILE *o1, *o2;
-        BOUND bc;
-        MOMENT *moment;
-        STRESS *stress;
-        CURVATURE *curve;
-        STRAIN *strain;
+	char name[30], buf[ BUFSIZ ];
+	char name_mode[30], *ccheck, one_char;
+	FILE *o1, *o2;
+	BOUND bc;
+	MOMENT *moment;
+	STRESS *stress;
+	CURVATURE *curve;
+	STRAIN *strain;
 	SDIM *stress_node, *strain_node, *mem_SDIM;
 	MDIM *moment_node, *curve_node, *mem_MDIM;
-        double g, fdum;
-        long timec;
-        long timef;
+	double g, fdum;
+	long timec;
+	long timef;
 	int  mem_case, mem_case_mass;
 	double RAM_max, RAM_usable, RAM_needed, MEGS;
 
-        sof = sizeof(double);
+	sof = sizeof(double);
 
 /* For the doubles */
-        sofmshf= 4*soshb + 4*soshs;
-        mem_sh_double=(double *)calloc(sofmshf,sizeof(double));
+	sofmshf= 4*soshb + 4*soshs;
+	mem_sh_double=(double *)calloc(sofmshf,sizeof(double));
 
-        if(!mem_sh_double )
-        {
-                printf( "failed to allocate memory for SH double\n ");
-                exit(1);
-        }
-                                                     ptr_inc=0;
-        shl.bend=(mem_sh_double+ptr_inc);            ptr_inc += soshb;
-        shl.shear=(mem_sh_double+ptr_inc);           ptr_inc += soshs;
+	if(!mem_sh_double )
+	{
+		printf( "failed to allocate memory for SH double\n ");
+		exit(1);
+	}
+	                                             ptr_inc=0;
+	shl.bend=(mem_sh_double+ptr_inc);            ptr_inc += soshb;
+	shl.shear=(mem_sh_double+ptr_inc);           ptr_inc += soshs;
 
-        shl_node.bend=(mem_sh_double+ptr_inc);       ptr_inc += soshb;
-        shl_node.shear=(mem_sh_double+ptr_inc);      ptr_inc += soshs;
+	shl_node.bend=(mem_sh_double+ptr_inc);       ptr_inc += soshb;
+	shl_node.shear=(mem_sh_double+ptr_inc);      ptr_inc += soshs;
 
-        shg.bend=(mem_sh_double+ptr_inc);            ptr_inc += soshb;
-        shg.shear=(mem_sh_double+ptr_inc);           ptr_inc += soshs;
+	shg.bend=(mem_sh_double+ptr_inc);            ptr_inc += soshb;
+	shg.shear=(mem_sh_double+ptr_inc);           ptr_inc += soshs;
 
-        shg_node.bend=(mem_sh_double+ptr_inc);       ptr_inc += soshb;
-        shg_node.shear=(mem_sh_double+ptr_inc);      ptr_inc += soshs;
+	shg_node.bend=(mem_sh_double+ptr_inc);       ptr_inc += soshb;
+	shg_node.shear=(mem_sh_double+ptr_inc);      ptr_inc += soshs;
 
 /* Create local shape funcions at gauss points */
 
 	g = 2.0/sq3;
-        check = plshl( g, shl, w );
-        if(!check) printf( " Problems with plshl \n");
+	check = plshl( g, shl, w );
+	if(!check) printf( " Problems with plshl \n");
 
 /* Create local shape funcions at nodal points */
 
 	g = 2.0;
-        check = plshl( g, shl_node, w );
-        if(!check) printf( " Problems with plshl \n");
+	check = plshl( g, shl_node, w );
+	if(!check) printf( " Problems with plshl \n");
 
 /* Create local streamlined shape funcion matrix at nodal points */
 
-        check = plshl_node2(shl_node2);
-        if(!check) printf( " Problems with plshl_node2 \n");
+	check = plshl_node2(shl_node2);
+	if(!check) printf( " Problems with plshl_node2 \n");
+
+/* After adding triangle plates, I have added the shape function routine for
+   triangles using the code from the triangles.  This code really isn't
+   necessary except for debugging purposes.
+*/
+
+/* Create local triangle shape funcions at the gauss points corresponding to 1 point gauss*/
+
+	check = trshl( 1, shltr, wtr );
+	if(!check) printf( " Problems with trshl \n");
+
+/* Create local triangle shape funcions at nodal points */
+
+	check = trshl( 0, shltr_node, wtr );
+	if(!check) printf( " Problems with trshl \n");
+
+	printf("%d %d %d\n", npel, neqlsq576, nsd);
 
 	memset(name,0,30*sizeof(char));
 	
-    	printf("What is the name of the file containing the \n");
-    	printf("plate structural data? \n");
-    	scanf( "%30s",name);
+	printf("What is the name of the file containing the \n");
+	printf("plate structural data? (example: roof4)\n");
+	scanf( "%30s",name);
 
 /*   o1 contains all the structural plate data  */
 /*   o2 contains input parameters */
 
-        o1 = fopen( name,"r" );
+	o1 = fopen( name,"r" );
 	o2 = fopen( "plinput","r" );
 
 	if(o1 == NULL ) {
@@ -195,10 +225,30 @@ int main(int argc, char** argv)
 		fscanf( o2, "%d\n ",&eigen_print_flag);
 	}
 
-        fgets( buf, BUFSIZ, o1 );
-        fscanf( o1, "%d %d %d %d\n ",&numel,&numnp,&nmat,&nmode);
-        dof=numnp*ndof;
-        sdof=numnp*nsd;
+	fgets( buf, BUFSIZ, o1 );
+	fscanf( o1, "%d %d %d %d",&numel,&numnp,&nmat,&nmode);
+
+/* Check if there is additional data relating to whether it is a plane stress or
+   strain mesh and read the data if it exists.
+*/
+	plane_stress_flag = 1;
+	plane_stress_read_flag = 0;
+	while(( one_char = (unsigned char) fgetc(o1)) != '\n')
+	{
+		if(one_char != ' ' )
+		{
+		    ungetc( one_char, o1);
+		    fscanf( o1,"%d", &plane_stress_flag);
+		    plane_stress_read_flag = 1;
+		    break;
+		}
+	}
+	fscanf( o1,"\n");
+	printf( "\n");
+
+
+	dof=numnp*ndof6;
+	sdof=numnp*nsd;
 
 	numnp_LUD_max = 750;
 
@@ -212,7 +262,7 @@ int main(int argc, char** argv)
 */
 	RAM_max *= MB;
 	RAM_usable = 0.5*RAM_max;
-	RAM_needed = numel*neqlsq*sof;
+	RAM_needed = numel*neqlsq576*sof;
 
 	fdum = RAM_usable - RAM_needed;
 	if(fdum > 0.0)
@@ -226,7 +276,7 @@ int main(int argc, char** argv)
 /* Store numel_K element stiffness matrices while remaining numel_P element stiffness
    matrices are calculated through product [K_el][U_el] = [P_el] */
 
-		numel_P = numel - (((int)RAM_usable)/((double)neqlsq*sof));
+		numel_P = numel - (((int)RAM_usable)/((double)neqlsq576*sof));
 		numel_K = numel - numel_P;
 	}
 
@@ -272,26 +322,27 @@ int main(int argc, char** argv)
 	MemoryCounter = 0;
 
 /* For the doubles */
-        sofmf=sdof + 3*dof + 2*numel + numnp + dof;
+	sofmf=sdof + 3*dof + 2*numel + 2*numnp + dof + numel*nsdsq;
 	if(modal_flag)
 	{
-		sofmf = sdof + 3*dof + 2*numel + numnp + dof + num_eigen*dof;
+		sofmf = sdof + 3*dof + 2*numel + 2*numnp + dof + numel*nsdsq +
+			num_eigen*dof;
 	}
 	MemoryCounter += sofmf*sizeof(double);
 	printf( "\n Memory requrement for doubles is %15d bytes\n",MemoryCounter);
 
 /* For the integers */
-	sofmi= numel*npel+2*dof+numel*npel*ndof+numel+numnp+1+1;
+	sofmi= numel*npel+2*dof+numel*npel*ndof6+numel+numnp+1+1;
 	MemoryCounter += sofmi*sizeof(int);
 	printf( "\n Memory requrement for integers is %15d bytes\n",MemoryCounter);
 
-/* For the ZPhiI integers */
-	sofmZPhiI=numnp+1+1;
-	MemoryCounter += sofmZPhiI*sizeof(ZPhiI);
-        printf( "\n Memory requrement for ZPhiI integers is %15d bytes\n",MemoryCounter);
+/* For the XYZPhiI integers */
+	sofmXYZPhiI=numnp+1+1;
+	MemoryCounter += sofmXYZPhiI*sizeof(XYZPhiI);
+	printf( "\n Memory requrement for XYZPhiI integers is %15d bytes\n",MemoryCounter);
 
 /* For the SDIM doubles */
-        sofmSDIM = 2*numnp;
+	sofmSDIM = 2*numnp;
 	MemoryCounter += sofmSDIM*sizeof(SDIM);
 	printf( "\n Memory requrement for SDIM doubles is %15d bytes\n",MemoryCounter);
 
@@ -305,21 +356,23 @@ int main(int argc, char** argv)
 		sofmSTRESS*sizeof(MOMENT) + sofmSTRESS*sizeof(CURVATURE);
 	printf( "\n Memory requrement for STRESS doubles is %15d bytes\n",MemoryCounter);
 
-	check = plMemory( &mem_double, sofmf, &mem_int, sofmi, &matl, nmat, &mem_ZPhiI,
-                sofmZPhiI, &mem_MDIM, &mem_SDIM, sofmSDIM, &curve, &moment,
+	check = plMemory( &mem_double, sofmf, &mem_int, sofmi, &matl, nmat, &mem_XYZPhiI,
+		sofmXYZPhiI, &mem_MDIM, &mem_SDIM, sofmSDIM, &curve, &moment,
 		&strain, &stress, sofmSTRESS );
-        if(!check) printf( " Problems with plMemory \n");
+	if(!check) printf( " Problems with plMemory \n");
 
 /* For the doubles */
-                                                ptr_inc=0;
-        coord=(mem_double+ptr_inc);            	ptr_inc += sdof;
+	                                        ptr_inc=0;
+	coord=(mem_double+ptr_inc);             ptr_inc += sdof;
 	vector_dum=(mem_double+ptr_inc);        ptr_inc += dof;
-        force=(mem_double+ptr_inc);             ptr_inc += dof;
-        U=(mem_double+ptr_inc);                 ptr_inc += dof;
-        Arean=(mem_double+ptr_inc);             ptr_inc += numel;
-        Area0=(mem_double+ptr_inc);             ptr_inc += numel;
+	force=(mem_double+ptr_inc);             ptr_inc += dof;
+	U=(mem_double+ptr_inc);                 ptr_inc += dof;
+	Uz_fib=(mem_double+ptr_inc);            ptr_inc += numnp;
+	Arean=(mem_double+ptr_inc);             ptr_inc += numel;
+	Area0=(mem_double+ptr_inc);             ptr_inc += numel;
 	node_counter=(mem_double+ptr_inc);      ptr_inc += numnp;
 	K_diag=(mem_double+ptr_inc);            ptr_inc += dof;
+	local_xyz=(mem_double+ptr_inc);         ptr_inc += numel*nsdsq;
 
 /* If modal analysis is desired, allocate for ritz vectors */
 
@@ -329,27 +382,27 @@ int main(int argc, char** argv)
 	}
 
 /* For the integers */
-						ptr_inc = 0; 
-	connect=(mem_int+ptr_inc);	 	ptr_inc += numel*npel; 
-        id=(mem_int+ptr_inc);                   ptr_inc += dof;
-        idiag=(mem_int+ptr_inc);                ptr_inc += dof;
-        lm=(mem_int+ptr_inc);                   ptr_inc += numel*npel*ndof;
-        el_matl=(mem_int+ptr_inc);              ptr_inc += numel;
+	                                        ptr_inc = 0; 
+	connect=(mem_int+ptr_inc);              ptr_inc += numel*npel; 
+	id=(mem_int+ptr_inc);                   ptr_inc += dof;
+	idiag=(mem_int+ptr_inc);                ptr_inc += dof;
+	lm=(mem_int+ptr_inc);                   ptr_inc += numel*npel*ndof6;
+	el_matl=(mem_int+ptr_inc);              ptr_inc += numel;
 	bc.force =(mem_int+ptr_inc);            ptr_inc += numnp+1;
 	bc.num_force=(mem_int+ptr_inc);         ptr_inc += 1;
 
-/* For the ZPhiI integers */
-					        ptr_inc = 0; 
-	bc.fix =(mem_ZPhiI+ptr_inc);            ptr_inc += numnp+1;
-	bc.num_fix=(mem_ZPhiI+ptr_inc);         ptr_inc += 1;
+/* For the XYZPhiI integers */
+	                                        ptr_inc = 0; 
+	bc.fix =(mem_XYZPhiI+ptr_inc);          ptr_inc += numnp+1;
+	bc.num_fix=(mem_XYZPhiI+ptr_inc);       ptr_inc += 1;
 
 /* For the SDIM doubles */
-                                                ptr_inc = 0;
+	                                        ptr_inc = 0;
 	stress_node=(mem_SDIM+ptr_inc);         ptr_inc += numnp;
 	strain_node=(mem_SDIM+ptr_inc);         ptr_inc += numnp;
 
 /* For the MDIM doubles */
-                                                ptr_inc = 0;
+	                                        ptr_inc = 0;
 	moment_node=(mem_MDIM+ptr_inc);         ptr_inc += numnp;
 	curve_node=(mem_MDIM+ptr_inc);          ptr_inc += numnp;
 
@@ -371,41 +424,117 @@ int main(int argc, char** argv)
 	stress_read_flag = 1;
 	check = plreader( bc, connect, coord, el_matl, force, matl, moment,
 		moment_node, name, o1, stress, stress_node, U);
-        if(!check) printf( " Problems with plreader \n");
+	if(!check) printf( " Problems with plreader \n");
 
-        printf(" \n\n");
+	if( !flag_quad_element )
+	{
+/* Triangle elements */
+		check = local_vectors_triangle( connect, coord, local_xyz );
+		if(!check) printf( " Problems with local_vectors \n");
+	}
+	else
+	{
+/* Quad elements */
+		check = local_vectors( connect, coord, local_xyz );
+		if(!check) printf( " Problems with local_vectors \n");
+	}
 
-        check = plformid( bc, id );
-        if(!check) printf( " Problems with plformid \n");
-
-/*
-        printf( "\n This is the id matrix \n");
-        for( i = 0; i < numnp; ++i )
-        {
-                printf("\n");
-                for( j = 0; j < ndof; ++j )
-                {
-                        printf(" %4d  ",*(id+ndof*i+j));
-                }
-        }
+/* I need the code below to make comparisons with the triangle and quadrilateral
+   elements which have no rotations.  There also have to be minor changes to "plkasmbl.c",
+   "plkasmbl2.c", "plmasmbl.c", and "plmasmbl2.c" which you can read in those
+   codes.
 */
 
-	check = formlm( connect, id, lm, ndof, npel, numel );
-        if(!check) printf( " Problems with formlm \n");
+	/*for( i = 0; i < numnp; ++i )
+	{
+		bc.fix[i].x = i;
+		bc.fix[i].y = i;
+		bc.fix[i].phiz = i;
+	}
+	bc.num_fix[0].x=numnp;
+	bc.num_fix[0].y=numnp;
+	bc.num_fix[0].phiz=numnp;*/
+
+#if 0
+	for( i = 0; i < numnp; ++i )
+	{
+		bc.fix[i].phix = i;
+		bc.fix[i].phiy = i;
+		bc.fix[i].phiz = i;
+	}
+	bc.num_fix[0].phix=numnp;
+	bc.num_fix[0].phiy=numnp;
+	bc.num_fix[0].phiz=numnp;
+#endif
+
+	printf(" \n\n");
+
+	check = plformid( bc, id );
+	if(!check) printf( " Problems with plformid \n");
+
 /*
-        printf( "\n\n This is the lm matrix \n");
-        for( i = 0; i < numel; ++i )
-        {
-            printf( "\n");
-            for( j = 0; j < neqel; ++j )
-            {
-                printf( "%5d   ",*(lm+neqel*i+j));
-            }
-        }
-        printf( "\n");
+	printf( "\n This is the id matrix \n");
+	for( i = 0; i < numnp; ++i )
+	{
+		printf("\n");
+		for( j = 0; j < ndof6; ++j )
+		{
+			printf(" %4d  ",*(id+ndof6*i+j));
+		}
+	}
 */
-	check = diag( idiag, lm, ndof, neqn, npel, numel);
-        if(!check) printf( " Problems with diag \n");
+
+	if( !flag_quad_element )
+	{
+/* Triangle elements */
+		check = formlm( connect, id, lm, ndof6, npel3, numel );
+		if(!check) printf( " Problems with formlm \n");
+	}
+	else
+	{
+/* Quad elements */
+		check = formlm( connect, id, lm, ndof6, npel, numel );
+		if(!check) printf( " Problems with formlm \n");
+	}
+
+/*
+	printf( "\n\n This is the lm matrix \n");
+	if( !flag_quad_element )
+	{
+	    for( i = 0; i < numel; ++i )
+	    {
+		printf( "\n");
+		for( j = 0; j < neqel18; ++j )
+		{
+			printf( "%5d   ",*(lm+neqel18*i+j));
+		}
+	    }
+	}
+	else
+	{
+	    for( i = 0; i < numel; ++i )
+	    {
+		printf( "\n");
+		for( j = 0; j < neqel24; ++j )
+		{
+			printf( "%5d   ",*(lm+neqel24*i+j));
+		}
+	    }
+	}
+	printf( "\n");
+*/
+	if( !flag_quad_element )
+	{
+/* Triangle elements */
+		check = diag( idiag, lm, ndof6, neqn, npel3, numel);
+		if(!check) printf( " Problems with diag \n");
+	}
+	else
+	{
+/* Quad elements */
+		check = diag( idiag, lm, ndof6, neqn, npel, numel);
+		if(!check) printf( " Problems with diag \n");
+	}
 /*
 	printf( "\n\n This is the idiag matrix \n");
 	for( i = 0; i < neqn; ++i )
@@ -418,12 +547,12 @@ int main(int argc, char** argv)
 /*   allocate meomory for A, the global stiffness.  There are 2 possibilities:
 
      1) Use standard Linear Algebra with LU decomposition and skyline storage
-        of global stiffness matrix.
+	of global stiffness matrix.
 
      2) Use the Conjugate Gradient method with storage of numel_K element
-        stiffness matrices.
+	stiffness matrices.
 */
-	sofmA = numel_K*neqlsq;                 /* case 2 */
+	sofmA = numel_K*neqlsq576;                  /* case 2 */
 	mem_case = 2;
 
 	if(LU_decomp_flag)
@@ -440,7 +569,7 @@ int main(int argc, char** argv)
    If this is the case, then we have to use the conjugate gradient method.
  */
 
-		sofmA = numel_K*neqlsq;
+		sofmA = numel_K*neqlsq576;
 		LU_decomp_flag = 0;
 		mem_case = 2;
 	}
@@ -458,7 +587,7 @@ int main(int argc, char** argv)
 /* If modal analysis is desired, determine how much memory is needed and available
    for mass matrix */
 
-	sofmA_K = sofmA;              /* mass case 3 */
+	sofmA_K = sofmA;                                /* mass case 3 */
 	sofmA_mass = 0;
 	consistent_mass_store = 0;
 	mem_case_mass = 3;
@@ -467,12 +596,12 @@ int main(int argc, char** argv)
 	{
 	    if(consistent_mass_flag)
 	    {
-		fdum = RAM_usable - (double)(sof*(sofmA + numel*neqlsq));
+		fdum = RAM_usable - (double)(sof*(sofmA + numel*neqlsq576));
 		if(fdum > 0.0)
 		{
 /* Enough RAM to store all element mass matrices for modal analysis */
 
-			sofmA_mass = numel*neqlsq;      /* mass case 2 */
+			sofmA_mass = numel*neqlsq576;      /* mass case 2 */
 			sofmA += sofmA_mass;
 			consistent_mass_store = 1;
 			mem_case_mass = 2;
@@ -487,21 +616,21 @@ int main(int argc, char** argv)
 		mem_case_mass = 1;
 	    }
 
-            printf( "\n We are in mass case %3d\n\n", mem_case_mass);
-            switch (mem_case_mass) {
-                case 1:
-                        printf( " Diagonal lumped mass matrix \n\n");
-                break;
-                case 2:
-                        printf( " Consistent mass matrix with all\n");
-                        printf( " element masses stored \n\n");
-                break;
-                case 3:
-                        printf( " Consistent mass matrix with no\n");
-                        printf( " storage of element masses \n\n");
-                break;
-            }
-        }
+	    printf( "\n We are in mass case %3d\n\n", mem_case_mass);
+	    switch (mem_case_mass) {
+		case 1:
+			printf( " Diagonal lumped mass matrix \n\n");
+		break;
+		case 2:
+			printf( " Consistent mass matrix with all\n");
+			printf( " element masses stored \n\n");
+		break;
+		case 3:
+			printf( " Consistent mass matrix with no\n");
+			printf( " storage of element masses \n\n");
+		break;
+	    }
+	}
 
 	MemoryCounter += sofmA*sizeof(double);
 	printf( "\n Memory requrement for disp calc. with %15d doubles is %15d bytes\n",
@@ -531,16 +660,35 @@ int main(int argc, char** argv)
 
 	if(modal_flag)
 	{
-	                                       ptr_inc = sofmA_K;
-		mass = (A + ptr_inc);          ptr_inc += sofmA_mass;
+	                                  ptr_inc = sofmA_K;
+		mass = (A + ptr_inc);     ptr_inc += sofmA_mass;
 	}
 
 	analysis_flag = 1;
 	memset(A,0,sofmA*sof);
-	check = plKassemble(A, connect, coord, curve, curve_node, el_matl, force,
-		id, idiag, K_diag, lm, matl, moment, moment_node, node_counter,
-		strain, strain_node, stress, stress_node, U);
-	if(!check) printf( " Problems with plKassembler \n");
+	if( !flag_quad_element )
+	{
+/* Triangle elements */
+	   check = plKassemble_triangle(A, connect, coord, curve, curve_node, el_matl, force,
+		id, idiag, K_diag, lm, local_xyz, matl, moment, moment_node, node_counter,
+		strain, strain_node, stress, stress_node, U, Uz_fib, Arean);
+	   if(!check) printf( " Problems with plKassemble_triangle \n");
+	}
+	else
+	{
+/* Quad elements */
+	   check = plKassemble(A, connect, coord, curve, curve_node, el_matl, force,
+		id, idiag, K_diag, lm, local_xyz, matl, moment, moment_node, node_counter,
+		strain, strain_node, stress, stress_node, U, Uz_fib);
+	   if(!check) printf( " Problems with plKassemble \n");
+	}
+
+        /*printf( "\n");
+        for( i = 0; i < *(idiag+neqn-1)+1; ++i )
+        {
+                printf( "\n        a[%3i] = %12.5e;",i,*(A+i));
+        }*/
+
 /*
 	printf( "\n\n This is the force matrix \n");
 	for( i = 0; i < neqn; ++i )
@@ -549,6 +697,7 @@ int main(int argc, char** argv)
 	}
 	printf(" \n");
 */
+
 	if(modal_flag)
 	{
 	    if( lumped_mass_flag || consistent_mass_store )
@@ -558,8 +707,21 @@ int main(int argc, char** argv)
    the case of consistent mass, create and store all element mass matrices (if
    there is enough memory).
 */
-		check = plMassemble(connect, coord, el_matl, id, mass, matl);
-		if(!check) printf( " Problems with plMassemble \n");
+		if( !flag_quad_element )
+		{
+/* Triangle elements */
+			check = plMassemble_triangle(connect, coord, el_matl, id,
+				local_xyz, mass, matl);
+			if(!check) printf( " Problems with plMassemble \n");
+		}
+		else
+		{
+/* Quad elements */
+			check = plMassemble(connect, coord, el_matl, id, local_xyz,
+				mass, matl);
+			if(!check) printf( " Problems with plMassemble \n");
+		}
+
 
 		/*if( lumped_mass_flag )
 		{
@@ -607,24 +769,36 @@ int main(int argc, char** argv)
 	    if(!LU_decomp_flag)
 	    {
 		check = plConjGrad( A, bc, connect, coord, el_matl, force, K_diag,
-			matl, U);
+			local_xyz, matl, U);
 		if(!check) printf( " Problems with plConjGrad \n");
 	    }
 
 /*
 	    for( i = 0; i < numnp; ++i )
 	    {
-		if( *(id+ndof*i) > -1 )
+		if( *(id+ndof6*i) > -1 )
 		{
-			printf("\nnode %2d z     %14.5e ",i,*(U+ndof*i));
+			printf("\nnode %2d x     %14.5e ",i,*(U+ndof6*i));
 		}
-		if( *(id+ndof*i+1) > -1 )
+		if( *(id+ndof6*i+1) > -1 )
 		{
-			printf("\nnode %2d phi x %14.5e ",i,*(U+ndof*i+1));
+			printf("\nnode %2d y     %14.5e ",i,*(U+ndof6*i+1));
 		}
-		if( *(id+ndof*i+2) > -1 )
+		if( *(id+ndof6*i+2) > -1 )
 		{
-			printf("\nnode %2d phi y %14.5e ",i,*(U+ndof*i+2));
+			printf("\nnode %2d z     %14.5e ",i,*(U+ndof6*i+2));
+		}
+		if( *(id+ndof6*i+3) > -1 )
+		{
+			printf("\nnode %2d phi x %14.5e ",i,*(U+ndof6*i+3));
+		}
+		if( *(id+ndof6*i+4) > -1 )
+		{
+			printf("\nnode %2d phi y %14.5e ",i,*(U+ndof6*i+4));
+		}
+		if( *(id+ndof6*i+5) > -1 )
+		{
+			printf("\nnode %2d phi z %14.5e ",i,*(U+ndof6*i+5));
 		}
 	    }
 	    printf(" \n");
@@ -634,36 +808,63 @@ int main(int argc, char** argv)
 /* Calculate the reaction forces */
 	    analysis_flag = 2;
 	    memset(force,0,dof*sof);
-	    check = plKassemble(A, connect, coord, curve, curve_node, el_matl, force,
-		id, idiag, K_diag, lm, matl, moment, moment_node, node_counter,
-		strain, strain_node, stress, stress_node, U);
-	    if(!check) printf( " Problems with plKassembler \n");
+
+	    if( !flag_quad_element )
+	    {
+/* Triangle elements */
+		check = plKassemble_triangle(A, connect, coord, curve, curve_node, el_matl, force,
+		    id, idiag, K_diag, lm, local_xyz, matl, moment, moment_node, node_counter,
+		    strain, strain_node, stress, stress_node, U, Uz_fib, Arean);
+		if(!check) printf( " Problems with plKassemble_triangle \n");
+	    }
+	    else
+	    {
+/* Quad elements */
+		check = plKassemble(A, connect, coord, curve, curve_node, el_matl, force,
+		    id, idiag, K_diag, lm, local_xyz, matl, moment, moment_node, node_counter,
+		    strain, strain_node, stress, stress_node, U, Uz_fib);
+		if(!check) printf( " Problems with plKassembler \n");
+	    }
 /*
 	    printf( "\n\n These are the reaction forces and moments\n");
 	    for( i = 0; i < numnp; ++i )
 	    {
-		if( *(id+ndof*i) < 0 )
+		if( *(id+ndof6*i) < 0 )
 		{
-			printf("\n node %3d z       %14.6f ",i,*(force+ndof*i));
+			printf("\n node %3d x       %14.6f ",i,*(force+ndof6*i));
 		}
-		if( *(id+ndof*i+1) < 0 )
+		if( *(id+ndof6*i+1) < 0 )
 		{
-			printf("\n node %3d phi x   %14.6f ",i,*(force+ndof*i+1));
+			printf("\n node %3d y       %14.6f ",i,*(force+ndof6*i+1));
 		}
-		if( *(id+ndof*i+1) < 0 )
+		if( *(id+ndof6*i+2) < 0 )
 		{
-			printf("\n node %3d phi y   %14.6f ",i,*(force+ndof*i+2));
+			printf("\n node %3d z       %14.6f ",i,*(force+ndof6*i+2));
+		}
+		if( *(id+ndof6*i+3) < 0 )
+		{
+			printf("\n node %3d phi x   %14.6f ",i,*(force+ndof6*i+3));
+		}
+		if( *(id+ndof6*i+4) < 0 )
+		{
+			printf("\n node %3d phi y   %14.6f ",i,*(force+ndof6*i+4));
+		}
+		if( *(id+ndof6*i+5) < 0 )
+		{
+			printf("\n node %3d phi z   %14.6f ",i,*(force+ndof6*i+5));
 		}
 	    }
 
-	    printf( "\n\n               These are the updated coordinates \n");
-	    printf( "\n                  x               y               z\n");
+	    printf( "\n\n              These are the updated coordinates \n");
+	    printf( "\n           x            y               z\n");
     
 	    for( i = 0; i < numnp; ++i )
 	    {
-		fpointx = *(coord+nsd*i) + *(U+ndof*i)*(*(U+ndof*i+2));
-		fpointy = *(coord+nsd*i+1) - *(U+ndof*i)*(*(U+ndof*i+1));
-		fpointz = *(U+ndof*i);
+		fpointx = *(coord+nsd*i) + *(U+ndof6*i) + *(Uz_fib+i)*(*(U+ndof6*i+4));
+		fpointy = *(coord+nsd*i+1) + *(U+ndof6*i+1) - *(Uz_fib+i)*(*(U+ndof6*i+3));
+		fpointz = *(coord+nsd*i+2) + *(U+ndof6*i+2);
+		fprintf( o3, "%4d %14.6f %14.6f %14.6f\n", i, fpointx, fpointy, fpointz );
+
 		printf("\n node %3d %14.9f %14.9f %14.9f",i,fpointx,fpointy,fpointz);
 	    }
 */
@@ -671,7 +872,7 @@ int main(int argc, char** argv)
 
 	    check = plwriter ( bc, connect, coord, curve, curve_node, el_matl, force, id,
 		matl, moment, moment_node, name, strain, strain_node, stress,
-		stress_node, U);
+		stress_node, U, Uz_fib);
 	    if(!check) printf( " Problems with plwriter \n");
 	}
 
@@ -708,7 +909,7 @@ int main(int argc, char** argv)
 /* Use Lanczos method for determining eigenvalues */
 
 	    check = plLanczos(A, bc, connect, coord, eigen, el_matl, id, idiag, K_diag,
-		mass, matl, ritz, num_eigen);
+		local_xyz, mass, matl, ritz, num_eigen);
 	    if(!check) printf( " Problems with plLanczos \n");
 
 /* Write out the eigenvalues to a file */
@@ -755,34 +956,51 @@ int main(int argc, char** argv)
 /* Calculate the stresses */
 		analysis_flag = 2;
 
-		check = plKassemble(A, connect, coord, curve, curve_node, el_matl,
-		    vector_dum, id, idiag, K_diag, lm, matl, moment, moment_node,
-		    node_counter, strain, strain_node, stress, stress_node, U);
-		if(!check) printf( " Problems with plKassembler \n");
+		if( !flag_quad_element )
+		{
+/* Triangle elements */
+		    check = plKassemble_triangle(A, connect, coord, curve, curve_node, el_matl,
+			vector_dum, id, idiag, K_diag, lm, local_xyz, matl, moment, moment_node,
+			node_counter, strain, strain_node, stress, stress_node, U, Uz_fib, Arean);
+		    if(!check) printf( " Problems with plKassemble_triangle \n");
+		}
+		else
+		{
+/* Quad elements */
+		    check = plKassemble(A, connect, coord, curve, curve_node, el_matl,
+			vector_dum, id, idiag, K_diag, lm, local_xyz, matl, moment, moment_node,
+			node_counter, strain, strain_node, stress, stress_node, U, Uz_fib);
+		    if(!check) printf( " Problems with plKassembler \n");
+		}
 
 		check = plwriter ( bc, connect, coord, curve, curve_node, el_matl,
 		    force, id, matl, moment, moment_node, name_mode, strain,
-		    strain_node, stress, stress_node, U);
+		    strain_node, stress, stress_node, U, Uz_fib);
 		if(!check) printf( " Problems with plwriter \n");
 
 		++counter;
 	    }
 	}
 
+#if 0
+	if( flag_quad_element )
+	{
 	/* Calculating the value of the Areas */
 
-	check = plArea( connect, coord, Arean);
-	if(!check) printf( " Problems with plArea \n");
+		check = plArea( connect, coord, Arean);
+		if(!check) printf( " Problems with plArea \n");
+	}
+#endif
 
 /*
-        printf("\nThis is the Area\n");
-        for( i = 0; i < numel; ++i )
-        {
-                printf("%4i %12.4e\n",i, *(Arean + i));
-        }
+	printf("\nThis is the Area\n");
+	for( i = 0; i < numel; ++i )
+	{
+		printf("%4i %12.4e\n",i, *(Arean + i));
+	}
 */
 
-    	timec = clock();
+	timec = clock();
 	printf("\n\n elapsed CPU = %lf\n\n",( (double)timec)/800.);
 
 	free(curve);
@@ -794,7 +1012,7 @@ int main(int argc, char** argv)
 	free(matl);
 	free(mem_double);
 	free(mem_int);
-	free(mem_ZPhiI);
+	free(mem_XYZPhiI);
 	if(modal_flag) free(eigen);
 	free(A);
 }

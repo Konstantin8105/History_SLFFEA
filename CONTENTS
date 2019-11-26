@@ -1,5 +1,5 @@
 
-                             SLFFEA 1.3
+                             SLFFEA 1.4
 
                     Copyright (C) 1999, 2000, 2001 San Le
 
@@ -7,17 +7,23 @@
                     homepage:  http://slffea.sourceforge.net/
 
 
-First let me iterate that SLFFEA contains 9 of the basic element types:
+First let me iterate that SLFFEA contains 14 of the basic element types:
 
-1. beam          3-D 2 node beam (Euler-Bernoulli(Non-shear deformable) and Reissner-Mindlin-(shear deformable))
-2. brick         3-D 8 node brick
-3. plate         2-D 4 node plate
-4. quad          2-D 4 node quad - plane stress or plane strain
-5. shell         3-D 4 node doubly curved shell (individual element defined by 4 or 8 nodes)
-6. tetrahedron   3-D 4 node tetrahedron
-7. triangle      2-D 3 node triangle
-8. truss         3-D 2 node truss
-9. wedge         3-D 6 node wedge
+1.  beam             3-D 2 node beam (Euler-Bernoulli(Non-shear deformable) and Reissner-Mindlin-(shear deformable))
+2.  brick            3-D 8 node brick
+3.  plate            2-D 3 node plate (added on 11/11/06):
+4.  plate            2-D 4 node plate
+5.  plate            3-D 3 node plate with membrane properties (added on 11/11/06):
+6.  plate            3-D 4 node plate with membrane properties (added on 11/11/06):
+7.  quad             2-D 4 node quad - plane stress and plane strain
+8.  quad             3-D 4 node quad - plane stress and plane strain membrane (added on 11/11/06):
+9.  shell            3-D 4 node doubly curved shell (individual element defined by 4 or 8 nodes)
+10. tetrahedron      3-D 4 node tetrahedron
+11. triangle         2-D 3 node triangle - plane stress and plane strain
+12. triangle         3-D 3 node triangle - plane stress and plane strain membrane (added on 11/11/06):
+13. truss            3-D 2 node truss
+14. wedge            3-D 6 node wedge
+
 
 1 non-linear large deformation element:
 
@@ -36,7 +42,7 @@ Naming Conventions:
 There are 9 directories corresponding to the 9 basic element types.  Within
 each are at least 2 directories: one which contains the source for the
 basic element type and one for the GUI associated with that element.  All
-GUI directories have a "_gr" extension.  For instance, in the slffea-1.3/plate/
+GUI directories have a "_gr" extension.  For instance, in the slffea-1.4/plate/
 directory, there is the plate and plate_gr directories. 
 
 There are 2 common directories, one for the common scientific functions and
@@ -47,6 +53,10 @@ The names of the source files adhere to the following naming conventions:
 
 Science C Files:
 ---------------
+
+Note that some of the files below have been consolidated for elements that
+have the same properties.  These files have been put in the common
+directory.
 
 *b.c            Assembles the B matrix
 *conj.c         Uses the Conjugate Gradient method to solve the system
@@ -74,6 +84,10 @@ Science Include Files:
 Graphics C Files for GUI:
 ------------------------
 
+Note that many of the files below have been consolidated for elements that
+have the same properties.  These files have been put in the common_gr
+directory.
+
 *bc_vec.c       Draws boundary conditions
 *crtldsp.c      Draws Control Panel Display window
 *crtlmse.c      Control Panel mouse function
@@ -91,10 +105,7 @@ Graphics C Files for GUI:
 
 
 *memgr.c        Allocates memory for graphics variables 
-*readgr2.c      reads in a specific set of connectivity data
-                This is for when you only want to plot elements
-                which lie on the surface of the mesh.
-*param2.c       Reads in a new set of parameters based on the
+*regetparam.c   Reads in a new set of parameters based on the
                 file *view.dat
 *set.c          Uses the parameters and then assigns colors
                 for displaying displacement and stress data.
@@ -136,8 +147,9 @@ idiag.c         Assembles the idiag matrix
 kasmbl.c        Puts element stiffness matrices into the global stiffness or stores them
                 for the Conjugate Gradient method
 lm.c            Assembles the lm matrix
-matx.c          matrix multiplication
-matxt.c         matrix multiplication transpose
+local_vec*.c    Creates a local basis for 3-D plane elements
+matx.c          Matrix multiplication
+matxt.c         Matrix multiplication transpose
 qr.c            Uses the QR algorithm to solve for the eigenvalues of a tridiagonal matrix
 rotate*.c       Optimizes various matrix rotations
 sky.c           Assembles the skyline matrix
@@ -163,5 +175,8 @@ quat.c          Does calculations to for pointlocate.c using
                 quaternions.
 crossplane.c    Draws the cutting planes
 boundbox.c      Draws a bounding box around the mesh
+con_surf_read.c reads in a specific set of connectivity data
+                This is for when you only want to plot elements
+                which lie on the surface of the mesh.
 
 

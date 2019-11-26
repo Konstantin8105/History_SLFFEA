@@ -4,11 +4,11 @@
     then solving the linear system for a thermal
     brick element.
 
-        Updated 4/27/05
+	        Updated 12/4/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -35,7 +35,7 @@ int brVolume( int *, double *, double *);
 
 int br2writer ( BOUND, int *, int *, double *, int *, int *, double *, double *,
 	double *, int *, MATL *, char *, double *, STRAIN *, SDIM *,
-        STRESS *, SDIM *, double *, double *, double *);
+	STRESS *, SDIM *, double *, double *, double *);
 
 int br2ConjGrad(double *, BOUND, int *, double *, int *, double *, double *, MATL *,
 	double *);
@@ -64,7 +64,7 @@ int br2reader( BOUND , int *, int *, double *, int *, int *, double *, double *,
 	double *, MATL *, char *name, FILE *, double *, STRESS *, SDIM *, double *,
 	double *, double *);
 
-int brMemory( double **, int, int **, int, MATL **, int , XYZI **, int,
+int Memory( double **, int, int **, int, MATL **, int , XYZI **, int,
 	SDIM **, int, STRAIN **, STRESS **, int );
 
 int brshl_film( double , double *);
@@ -89,12 +89,12 @@ double shg[sosh], shg_node[sosh], shl[sosh], shl_film[sosh_film], shl_node[sosh]
 int main(int argc, char** argv)
 {
 	int i, j;
-        int *id, *lm, *idiag, *Tid, *Tlm, *TBlm, *Tidiag, check, counter, MemoryCounter;
+	int *id, *lm, *idiag, *Tid, *Tlm, *TBlm, *Tidiag, check, counter, MemoryCounter;
 	XYZI *mem_XYZI;
 	int *mem_int, sofmA, sofmi, sofmSTRESS, sofmf, sofmXYZI, sofmSDIM, ptr_inc;
 	MATL *matl;
 	double *mem_double;
-        double fpointx, fpointy, fpointz;
+	double fpointx, fpointy, fpointz;
 	int *connect, *connect_surf, *connect_film, *el_matl, *el_matl_film,
 		*el_matl_surf, dum;
 	double *coord, *force, *heat_el, *heat_node, *T, *TB, *U, *Voln, *Area, *A,
@@ -102,7 +102,7 @@ int main(int argc, char** argv)
 	double *K_diag, *TK_diag;
 	char name[30], buf[ BUFSIZ ];
 	char name_mode[30], *ccheck;
-        FILE *o1, *o2;
+	FILE *o1, *o2;
 	BOUND bc;
 	STRESS *stress;
 	STRAIN *strain;
@@ -113,42 +113,42 @@ int main(int argc, char** argv)
 	int  mem_case;
 	double RAM_max, RAM_usable, RAM_needed, MEGS;
 
-        sof = sizeof(double);
+	sof = sizeof(double);
 
 /* Create local shape funcions at gauss points */
 
-        memset(shl,0,sosh*sof);
-        memset(shl_film,0,sosh_film*sof);
-        memset(shl_node,0,sosh*sof);
+	memset(shl,0,sosh*sof);
+	memset(shl_film,0,sosh_film*sof);
+	memset(shl_node,0,sosh*sof);
 
 	g = 2.0/sq3;
-        check = brshl( g, shl, w );
-        if(!check) printf( " Problems with brshl \n");
+	check = brshl( g, shl, w );
+	if(!check) printf( " Problems with brshl \n");
 
-        check = brshl_film( g, shl_film );
-        if(!check) printf( " Problems with brshl_film \n");
+	check = brshl_film( g, shl_film );
+	if(!check) printf( " Problems with brshl_film \n");
 
 /* Create local shape funcions at nodal points */
 
 	g = 2.0;
-        check = brshl( g, shl_node, w );
-        if(!check) printf( " Problems with brshl \n");
+	check = brshl( g, shl_node, w );
+	if(!check) printf( " Problems with brshl \n");
 
 /* Create local streamlined shape funcion matrix at nodal points */
 
-        check = brshl_node2(shl_node2);
-        if(!check) printf( " Problems with brshl_node2 \n");
+	check = brshl_node2(shl_node2);
+	if(!check) printf( " Problems with brshl_node2 \n");
 
 	memset(name,0,30*sizeof(char));
 	
-    	printf("What is the name of the file containing the \n");
-    	printf("brick structural data? \n");
-    	scanf( "%30s",name);
+	printf("What is the name of the file containing the \n");
+	printf("brick structural data? (example: fins4)\n");
+	scanf( "%30s",name);
 
 /*   o1 contains all the structural data */
 /*   o2 contains input parameters */
 
-        o1 = fopen( name,"r" );
+	o1 = fopen( name,"r" );
 	o2 = fopen( "br2input","r" );
 
 	if(o1 == NULL ) {
@@ -158,35 +158,35 @@ int main(int argc, char** argv)
 
 	if( o2 == NULL ) {
 		printf("Can't find file br2input\n");
-        	tolerance = 1.e-13;
-        	iteration_max = 2000;
-        	RAM_max = 160.0;
-        	element_stress_read_flag = 0;
-        	element_stress_print_flag = 0;
-        	gauss_stress_flag = 0;
+		tolerance = 1.e-13;
+		iteration_max = 2000;
+		RAM_max = 160.0;
+		element_stress_read_flag = 0;
+		element_stress_print_flag = 0;
+		gauss_stress_flag = 0;
 	}
 	else
 	{
-        	fgets( buf, BUFSIZ, o2 );
-        	fscanf( o2, "%lf\n ",&tolerance);
-        	fgets( buf, BUFSIZ, o2 );
-        	fscanf( o2, "%d\n ",&iteration_max);
-        	fgets( buf, BUFSIZ, o2 );
-        	fscanf( o2, "%lf\n ",&RAM_max);
-        	fgets( buf, BUFSIZ, o2 );
-        	fscanf( o2, "%d\n ",&element_stress_read_flag);
-        	fgets( buf, BUFSIZ, o2 );
-        	fscanf( o2, "%d\n ",&element_stress_print_flag);
-        	fgets( buf, BUFSIZ, o2 );
-        	fscanf( o2, "%d\n ",&gauss_stress_flag);
+		fgets( buf, BUFSIZ, o2 );
+		fscanf( o2, "%lf\n ",&tolerance);
+		fgets( buf, BUFSIZ, o2 );
+		fscanf( o2, "%d\n ",&iteration_max);
+		fgets( buf, BUFSIZ, o2 );
+		fscanf( o2, "%lf\n ",&RAM_max);
+		fgets( buf, BUFSIZ, o2 );
+		fscanf( o2, "%d\n ",&element_stress_read_flag);
+		fgets( buf, BUFSIZ, o2 );
+		fscanf( o2, "%d\n ",&element_stress_print_flag);
+		fgets( buf, BUFSIZ, o2 );
+		fscanf( o2, "%d\n ",&gauss_stress_flag);
 	}
 
-        fgets( buf, BUFSIZ, o1 );
-        fscanf( o1, "%d %d %d %d %d %d\n ", &numel, &numnp, &nmat, &numel_film,
+	fgets( buf, BUFSIZ, o1 );
+	fscanf( o1, "%d %d %d %d %d %d\n ", &numel, &numnp, &nmat, &numel_film,
 		&disp_analysis, &thermal_analysis);
-        Tdof=numnp*Tndof;
-        dof=numnp*ndof;
-        sdof=numnp*nsd;
+	Tdof=numnp*Tndof;
+	dof=numnp*ndof;
+	sdof=numnp*nsd;
 
 	numnp_LUD_max = 750;
 	Tnumnp_LUD_max = 3*numnp_LUD_max;
@@ -275,73 +275,73 @@ int main(int argc, char** argv)
 	sofmf=sdof + dof + numel + 4*Tdof + dof + numel_film + 2*numel +
 		numnp + dof + Tdof;
 	MemoryCounter += sofmf*sizeof(double);
-        printf( "\n Memory requrement for doubles is %15d bytes\n",MemoryCounter);
+	printf( "\n Memory requrement for doubles is %15d bytes\n",MemoryCounter);
 
 /* For the integers */
 	sofmi= 2*numel*npel + numel_film*npel_film + 2*dof + numel*npel*ndof +
 		2*Tdof + numel*npel*Tndof + numel_film*npel_film*Tndof + numel +
 		numel_film + numel + numnp+1 + numel+1 + 4*numnp + 4 + 6;
 	MemoryCounter += sofmi*sizeof(int);
-        printf( "\n Memory requrement for integers is %15d bytes\n",MemoryCounter);
+	printf( "\n Memory requrement for integers is %15d bytes\n",MemoryCounter);
 
 /* For the XYZI integers */
 	sofmXYZI=numnp+1+1;
 	MemoryCounter += sofmXYZI*sizeof(XYZI);
-        printf( "\n Memory requrement for XYZI integers is %15d bytes\n",MemoryCounter);
+	printf( "\n Memory requrement for XYZI integers is %15d bytes\n",MemoryCounter);
 
 /* For the SDIM doubles */
 	sofmSDIM = 2*numnp;
 	MemoryCounter += sofmSDIM*sizeof(SDIM);
-        printf( "\n Memory requrement for SDIM doubles is %15d bytes\n",MemoryCounter);
+	printf( "\n Memory requrement for SDIM doubles is %15d bytes\n",MemoryCounter);
 
 /* For the STRESS doubles */
 	sofmSTRESS = numel;
 	MemoryCounter += sofmSTRESS*sizeof(STRESS) + sofmSTRESS*sizeof(STRAIN); 
-        printf( "\n Memory requrement for STRESS doubles is %15d bytes\n",MemoryCounter);
+	printf( "\n Memory requrement for STRESS doubles is %15d bytes\n",MemoryCounter);
 
-	check = brMemory( &mem_double, sofmf, &mem_int, sofmi, &matl, nmat,
+	check = Memory( &mem_double, sofmf, &mem_int, sofmi, &matl, nmat,
 		&mem_XYZI, sofmXYZI, &mem_SDIM, sofmSDIM, &strain, &stress, sofmSTRESS );
-	if(!check) printf( " Problems with brMemory \n");
+	if(!check) printf( " Problems with Memory \n");
 
 /* For the doubles */
-					        ptr_inc=0; 
-	coord=(mem_double+ptr_inc); 	        ptr_inc += sdof;
-	force=(mem_double+ptr_inc); 	        ptr_inc += dof;
-	heat_el=(mem_double+ptr_inc); 	        ptr_inc += numel;
+	                                        ptr_inc=0; 
+	coord=(mem_double+ptr_inc);             ptr_inc += sdof;
+	force=(mem_double+ptr_inc);             ptr_inc += dof;
+	heat_el=(mem_double+ptr_inc);           ptr_inc += numel;
 	heat_node=(mem_double+ptr_inc);         ptr_inc += Tdof;
 	Q=(mem_double+ptr_inc);	                ptr_inc += Tdof; 
-	T=(mem_double+ptr_inc);    	        ptr_inc += Tdof;
+	T=(mem_double+ptr_inc);                 ptr_inc += Tdof;
 	TB=(mem_double+ptr_inc);                ptr_inc += Tdof;
-	U=(mem_double+ptr_inc);    	        ptr_inc += dof;
-	Area=(mem_double+ptr_inc); 	        ptr_inc += numel_film; 
-	Voln=(mem_double+ptr_inc); 	        ptr_inc += numel; 
+	U=(mem_double+ptr_inc);                 ptr_inc += dof;
+	Area=(mem_double+ptr_inc);              ptr_inc += numel_film; 
+	Voln=(mem_double+ptr_inc);              ptr_inc += numel; 
 	Vol0=(mem_double+ptr_inc);	        ptr_inc += numel; 
 	node_counter=(mem_double+ptr_inc);      ptr_inc += numnp;
 	K_diag=(mem_double+ptr_inc);            ptr_inc += dof;
 	TK_diag=(mem_double+ptr_inc);           ptr_inc += Tdof;
 
 /* For the integers */
-						ptr_inc = 0; 
-	connect=(mem_int+ptr_inc);	 	ptr_inc += numel*npel; 
-	connect_surf=(mem_int+ptr_inc);	        ptr_inc += numel*npel; 
-	connect_film=(mem_int+ptr_inc);	        ptr_inc += numel_film*npel_film; 
-        id=(mem_int+ptr_inc);                   ptr_inc += dof;
-        idiag=(mem_int+ptr_inc);                ptr_inc += dof;
-        lm=(mem_int+ptr_inc);                   ptr_inc += numel*npel*ndof;
-        Tid=(mem_int+ptr_inc);                  ptr_inc += Tdof;
-        Tidiag=(mem_int+ptr_inc);               ptr_inc += Tdof;
-        Tlm=(mem_int+ptr_inc);                  ptr_inc += numel*npel*Tndof;
-        TBlm=(mem_int+ptr_inc);                 ptr_inc += numel_film*npel_film*Tndof;
-        el_matl=(mem_int+ptr_inc);              ptr_inc += numel;
-        el_matl_film=(mem_int+ptr_inc);         ptr_inc += numel_film;
-        el_matl_surf=(mem_int+ptr_inc);         ptr_inc += numel;
-        bc.force =(mem_int+ptr_inc);            ptr_inc += numnp+1;
+	                                        ptr_inc = 0; 
+	connect=(mem_int+ptr_inc);              ptr_inc += numel*npel; 
+	connect_surf=(mem_int+ptr_inc);         ptr_inc += numel*npel; 
+	connect_film=(mem_int+ptr_inc);         ptr_inc += numel_film*npel_film; 
+	id=(mem_int+ptr_inc);                   ptr_inc += dof;
+	idiag=(mem_int+ptr_inc);                ptr_inc += dof;
+	lm=(mem_int+ptr_inc);                   ptr_inc += numel*npel*ndof;
+	Tid=(mem_int+ptr_inc);                  ptr_inc += Tdof;
+	Tidiag=(mem_int+ptr_inc);               ptr_inc += Tdof;
+	Tlm=(mem_int+ptr_inc);                  ptr_inc += numel*npel*Tndof;
+	TBlm=(mem_int+ptr_inc);                 ptr_inc += numel_film*npel_film*Tndof;
+	el_matl=(mem_int+ptr_inc);              ptr_inc += numel;
+	el_matl_film=(mem_int+ptr_inc);         ptr_inc += numel_film;
+	el_matl_surf=(mem_int+ptr_inc);         ptr_inc += numel;
+	bc.force =(mem_int+ptr_inc);            ptr_inc += numnp+1;
 	bc.heat_el =(mem_int+ptr_inc);          ptr_inc += numel+1;
 	bc.heat_node =(mem_int+ptr_inc);        ptr_inc += numnp+1;
 	bc.Q =(mem_int+ptr_inc);                ptr_inc += numnp+1;
 	bc.T =(mem_int+ptr_inc);                ptr_inc += numnp+1;
 	bc.TB =(mem_int+ptr_inc);               ptr_inc += numnp+1;
-        bc.num_force=(mem_int+ptr_inc);         ptr_inc += 1;
+	bc.num_force=(mem_int+ptr_inc);         ptr_inc += 1;
 	bc.num_heat_el=(mem_int+ptr_inc);       ptr_inc += 1;
 	bc.num_heat_node=(mem_int+ptr_inc);     ptr_inc += 1;
 	bc.num_Q=(mem_int+ptr_inc);             ptr_inc += 1;
@@ -354,8 +354,8 @@ int main(int argc, char** argv)
 	bc.num_fix=(mem_XYZI+ptr_inc);     ptr_inc += 1;
 
 /* For the SDIM doubles */
-						ptr_inc = 0; 
-	stress_node=(mem_SDIM+ptr_inc);	 	ptr_inc += numnp; 
+	                                        ptr_inc = 0; 
+	stress_node=(mem_SDIM+ptr_inc);         ptr_inc += numnp; 
 	strain_node=(mem_SDIM+ptr_inc);         ptr_inc += numnp;
 
 	timec = clock();
@@ -366,108 +366,108 @@ int main(int argc, char** argv)
 	check = br2reader( bc, connect, connect_film, coord, el_matl, el_matl_film,
 		force, heat_el, heat_node, matl, name, o1, Q, stress, stress_node, T,
 		TB, U);
-        if(!check) printf( " Problems with br2reader \n");
+	if(!check) printf( " Problems with br2reader \n");
 
-        printf(" \n\n");
+	printf(" \n\n");
 
 /* form Tid, Tlm, Tidiag matrix for Temperature calculation */
 
-        check = brformTid( bc, Tid );
-        if(!check) printf( " Problems with brformTid \n");
+	check = brformTid( bc, Tid );
+	if(!check) printf( " Problems with brformTid \n");
 /*
-        printf( "\n This is the Tid matrix \n");
-        for( i = 0; i < numnp; ++i )
-        {
-                printf("\n node(%4d)",i); 
-                for( j = 0; j < Tndof; ++j )
-                {
-                        printf(" %4d  ",*(Tid+Tndof*i+j));
-                }
-        }
+	printf( "\n This is the Tid matrix \n");
+	for( i = 0; i < numnp; ++i )
+	{
+		printf("\n node(%4d)",i); 
+		for( j = 0; j < Tndof; ++j )
+		{
+			printf(" %4d  ",*(Tid+Tndof*i+j));
+		}
+	}
 */
 	check = formlm( connect, Tid, Tlm, Tndof, npel, numel );
-        if(!check) printf( " Problems with formlm \n");
+	if(!check) printf( " Problems with formlm \n");
 /*
-        printf( "\n\n This is the Tlm matrix \n");
-        for( i = 0; i < numel; ++i )
-        {
-            printf("\n element(%4d)",i);
-            for( j = 0; j < Tneqel; ++j )
-            {
-                printf( "%5d   ",*(Tlm+Tneqel*i+j));
-            }
-        }
-        printf( "\n");
+	printf( "\n\n This is the Tlm matrix \n");
+	for( i = 0; i < numel; ++i )
+	{
+	    printf("\n element(%4d)",i);
+	    for( j = 0; j < Tneqel; ++j )
+	    {
+		printf( "%5d   ",*(Tlm+Tneqel*i+j));
+	    }
+	}
+	printf( "\n");
 */
 
 	check = formlm( connect_film, Tid, TBlm, Tndof, npel_film, numel_film );
-        if(!check) printf( " Problems with formlm \n");
+	if(!check) printf( " Problems with formlm \n");
 /*
-        printf( "\n\n This is the TBlm matrix \n");
-        for( i = 0; i < numel_film; ++i )
-        {
-            printf("\n surface element(%4d)",i);
-            for( j = 0; j < TBneqel; ++j )
-            {
-                printf( "%5d   ",*(TBlm+TBneqel*i+j));
-            }
-        }
-        printf( "\n");
+	printf( "\n\n This is the TBlm matrix \n");
+	for( i = 0; i < numel_film; ++i )
+	{
+	    printf("\n surface element(%4d)",i);
+	    for( j = 0; j < TBneqel; ++j )
+	    {
+		printf( "%5d   ",*(TBlm+TBneqel*i+j));
+	    }
+	}
+	printf( "\n");
 */
 
 	check = diag( Tidiag, Tlm, Tndof, Tneqn, npel, numel);
-        if(!check) printf( " Problems with diag \n");
+	if(!check) printf( " Problems with diag \n");
 
 /*
-        printf( "\n\n This is the Tidiag matrix \n");
-        for( i = 0; i < Tneqn; ++i )
-        {
-            printf( "\nTdof %5d   %5d",i,*(Tidiag+i));
-        }
-        printf( "\n");
+	printf( "\n\n This is the Tidiag matrix \n");
+	for( i = 0; i < Tneqn; ++i )
+	{
+	    printf( "\nTdof %5d   %5d",i,*(Tidiag+i));
+	}
+	printf( "\n");
 */
 
 
 /* form id, lm, idiag matrix for Displacement calculation. */
 
-        check = brformid( bc, id );
-        if(!check) printf( " Problems with brformid \n");
+	check = formid( bc, id );
+	if(!check) printf( " Problems with formid \n");
 
 /*
-        printf( "\n This is the id matrix \n");
-        for( i = 0; i < numnp; ++i )
-        {
-                printf("\n node(%4d)",i); 
-                for( j = 0; j < ndof; ++j )
-                {
-                        printf(" %4d  ",*(id+ndof*i+j));
-                }
-        }
+	printf( "\n This is the id matrix \n");
+	for( i = 0; i < numnp; ++i )
+	{
+		printf("\n node(%4d)",i); 
+		for( j = 0; j < ndof; ++j )
+		{
+			printf(" %4d  ",*(id+ndof*i+j));
+		}
+	}
 */
 
 	check = formlm( connect, id, lm, ndof, npel, numel );
-        if(!check) printf( " Problems with formlm \n");
+	if(!check) printf( " Problems with formlm \n");
 /*
-        printf( "\n\n This is the lm matrix \n");
-        for( i = 0; i < numel; ++i )
-        {
-            printf("\n element(%4d)",i);
-            for( j = 0; j < neqel; ++j )
-            {
-                printf( "%5d   ",*(lm+neqel*i+j));
-            }
-        }
-        printf( "\n");
+	printf( "\n\n This is the lm matrix \n");
+	for( i = 0; i < numel; ++i )
+	{
+	    printf("\n element(%4d)",i);
+	    for( j = 0; j < neqel; ++j )
+	    {
+		printf( "%5d   ",*(lm+neqel*i+j));
+	    }
+	}
+	printf( "\n");
 */
 	check = diag( idiag, lm, ndof, neqn, npel, numel);
-        if(!check) printf( " Problems with diag \n");
+	if(!check) printf( " Problems with diag \n");
 /*
-        printf( "\n\n This is the idiag matrix \n");
-        for( i = 0; i < neqn; ++i )
-        {
-            printf( "\ndof %5d   %5d",i,*(idiag+i));
-        }
-        printf( "\n");
+	printf( "\n\n This is the idiag matrix \n");
+	for( i = 0; i < neqn; ++i )
+	{
+	    printf( "\ndof %5d   %5d",i,*(idiag+i));
+	}
+	printf( "\n");
 */
 
 
@@ -477,28 +477,28 @@ int main(int argc, char** argv)
      are 3 possibilities:
 
      1) LU decoomposition for both, in which case allocate for the displacement calculation
-        which is bigger.
-          1a)Skyline storage of global conductivity matrix
-          1b)Skyline storage of global stiffness mmatrix
+	which is bigger.
+	  1a)Skyline storage of global conductivity matrix
+	  1b)Skyline storage of global stiffness mmatrix
 
      2) LU decoomposition for temperature and conjugate gradient for displacement.  For this
-        case, we need to carefully examine which needs more memory.
-          2a)Skyline storage of global conductivity matrix
-          2b)storage of numel_K element stiffness matrices
+	case, we need to carefully examine which needs more memory.
+	  2a)Skyline storage of global conductivity matrix
+	  2b)storage of numel_K element stiffness matrices
 
      3) Conjugate gradient for both.
-          3a)storage of Tnumel_K element conductivity matrices 
-          3b)storage of numel_K element stiffness matrices
+	  3a)storage of Tnumel_K element conductivity matrices 
+	  3b)storage of numel_K element stiffness matrices
 
 */
-	sofmA = numel_K*neqlsq;                 /* case 3 */
+	sofmA = numel_K*neqlsq;                  /* case 3 */
 	dum = Tnumel_K*Tneqlsq + TBnumel_K*TBneqlsq; 
 	if( sofmA < dum ) sofmA = dum; 
 	mem_case = 3;
 
 	if(TLU_decomp_flag)
 	{
-		dum = *(Tidiag+Tneqn-1)+1;     /* case 2 */
+		dum = *(Tidiag+Tneqn-1)+1;       /* case 2 */
 		if( sofmA < dum ) sofmA = dum; 
 		mem_case = 2;
 	}
@@ -526,38 +526,38 @@ int main(int argc, char** argv)
 		mem_case = 3;
 	}
 
-        printf( "\n We are in case %3d\n\n", mem_case);
+	printf( "\n We are in case %3d\n\n", mem_case);
 	switch (mem_case) {
 		case 1:
-        		printf( " LU decoomposition for both\n\n");
+			printf( " LU decoomposition for both\n\n");
 		break;
 		case 2:
-        		printf( " LU decoomposition for temperature\n");
-        		printf( " Conjugate gradient for displacement\n\n");
+			printf( " LU decoomposition for temperature\n");
+			printf( " Conjugate gradient for displacement\n\n");
 		break;
 		case 3:
-        		printf( " Conjugate gradient for both\n\n");
+			printf( " Conjugate gradient for both\n\n");
 		break;
 	}
 
 
 	MemoryCounter += sofmA*sizeof(double);
-        printf( "\n Memory requrement for disp calc. with %15d doubles is %15d bytes\n",
+	printf( "\n Memory requrement for disp calc. with %15d doubles is %15d bytes\n",
 		sofmA, MemoryCounter);
 	MEGS = ((double)(MemoryCounter))/MB;
-        printf( "\n Which is %16.4e MB\n", MEGS);
-        printf( "\n This is numel, numel_K, numel_P %5d %5d %5d\n", numel, numel_K, numel_P);
-        printf( "\n This is numel, Tnumel_K, Tnumel_P %5d %5d %5d\n", numel, Tnumel_K, Tnumel_P);
+	printf( "\n Which is %16.4e MB\n", MEGS);
+	printf( "\n This is numel, numel_K, numel_P %5d %5d %5d\n", numel, numel_K, numel_P);
+	printf( "\n This is numel, Tnumel_K, Tnumel_P %5d %5d %5d\n", numel, Tnumel_K, Tnumel_P);
 
 /* Note that A for the stiffness matrix will not be needed until later */
 
 	if(sofmA < 1) sofmA = 1;
-        A=(double *)calloc(sofmA,sizeof(double));
-        if(!A )
-        {
-                printf( "failed to allocate memory for A double for displacement calc.\n ");
-                exit(1);
-        }
+	A=(double *)calloc(sofmA,sizeof(double));
+	if(!A )
+	{
+		printf( "failed to allocate memory for A double for displacement calc.\n ");
+		exit(1);
+	}
 
 
 
@@ -566,37 +566,37 @@ int main(int argc, char** argv)
 	   temp_analysis_flag = 1;
 	   memset(A,0,sofmA*sof);
 	   memset(TK_diag,0,Tdof*sof);
-       	   check = brCassemble(A, connect, connect_film, coord, el_matl, el_matl_film,
+	   check = brCassemble(A, connect, connect_film, coord, el_matl, el_matl_film,
 		heat_el, heat_node, Tid, Tidiag, Tlm, TBlm, matl, Q, T, TB, TK_diag);
-       	   if(!check) printf( " Problems with brCassemble \n");
+	   if(!check) printf( " Problems with brCassemble \n");
 
 	   if(TLU_decomp_flag)
 	   {
 /*
-        	printf( "\n\n This is the heat Q matrix \n");
-        	for( i = 0; i < Tneqn; ++i )
-        	{
-            		printf( "\Tndof %5d   %14.5f",i,*(Q+i));
-        	}
-        	printf(" \n");
+		printf( "\n\n This is the heat Q matrix \n");
+		for( i = 0; i < Tneqn; ++i )
+		{
+			printf( "\Tndof %5d   %14.5f",i,*(Q+i));
+		}
+		printf(" \n");
 */
 /* Perform LU Crout decompostion on the system */
 
-        	check = decomp(A,Tidiag,Tneqn);
-        	if(!check) printf( " Problems with decomp \n");
+		check = decomp(A,Tidiag,Tneqn);
+		if(!check) printf( " Problems with decomp \n");
 
-        	check = solve(A,Q,Tidiag,Tneqn);
-        	if(!check) printf( " Problems with solve \n");
+		check = solve(A,Q,Tidiag,Tneqn);
+		if(!check) printf( " Problems with solve \n");
 
 /* printf( "\n This is the solution to the problem \n");*/
 
-        	for( i = 0; i < Tdof; ++i )
-        	{
-            		if( *(Tid + i) > -1 )
-            		{
-                    		*(T + i) = *(Q + *(Tid + i));
-            		}
-        	}
+		for( i = 0; i < Tdof; ++i )
+		{
+			if( *(Tid + i) > -1 )
+			{
+				*(T + i) = *(Q + *(Tid + i));
+			}
+		}
 	   }
 
 /* Using Conjugate gradient method to find temperature distribution */
@@ -605,35 +605,35 @@ int main(int argc, char** argv)
 	   {
 		check = brTConjGrad( A, bc, connect, connect_film, coord, el_matl,
 			el_matl_film, Q, matl, T, TK_diag);
-        	if(!check) printf( " Problems with brTConjGrad \n");
+		if(!check) printf( " Problems with brTConjGrad \n");
 	   }
 
 /*
-           for( i = 0; i < Tdof; ++i )
-           {
-        	if( *(Tid+Tndof*i) > -1 )
-        	{
-            		printf("\n node %3d T   %14.6e ",i,*(T+Tndof*i));
-        	}
-           }
-           printf(" \n");
+	   for( i = 0; i < Tdof; ++i )
+	   {
+		if( *(Tid+Tndof*i) > -1 )
+		{
+			printf("\n node %3d T   %14.6e ",i,*(T+Tndof*i));
+		}
+	   }
+	   printf(" \n");
 */
 
 /* Calculate the reaction heat */
 	   temp_analysis_flag = 2;
 	   memset(Q,0,Tdof*sof);
-           check = brCassemble(A, connect, connect_film, coord, el_matl, el_matl_film,
+	   check = brCassemble(A, connect, connect_film, coord, el_matl, el_matl_film,
 		heat_el, heat_node, Tid, Tidiag, Tlm, TBlm, matl, Q, T, TB, TK_diag);
-           if(!check) printf( " Problems with brCassembler \n");
+	   if(!check) printf( " Problems with brCassembler \n");
 /*
-           printf( "\n\n These are the reaction heat Q\n");
-           for( i = 0; i < numnp; ++i )
-           {
-          	if( *(Tid+Tndof*i) < 0 )
-          	{
-            		printf("\n node %3d x   %14.6f ",i,*(Q+Tndof*i));
-          	}
-           }
+	   printf( "\n\n These are the reaction heat Q\n");
+	   for( i = 0; i < numnp; ++i )
+	   {
+		if( *(Tid+Tndof*i) < 0 )
+		{
+			printf("\n node %3d x   %14.6f ",i,*(Q+Tndof*i));
+		}
+	   }
 */
 	}
 
@@ -652,23 +652,23 @@ int main(int argc, char** argv)
 	   {
 /* Perform LU Crout decompostion on the system */
 
-        	check = decomp(A,idiag,neqn);
-        	if(!check) printf( " Problems with decomp \n");
+		check = decomp(A,idiag,neqn);
+		if(!check) printf( " Problems with decomp \n");
 
 /* Solve the system */
 
-        	check = solve(A,force,idiag,neqn);
-        	if(!check) printf( " Problems with solve \n");
+		check = solve(A,force,idiag,neqn);
+		if(!check) printf( " Problems with solve \n");
 
 /* printf( "\n This is the solution to the problem \n");*/
 
-        	for( i = 0; i < dof; ++i )
-        	{
-                	if( *(id + i) > -1 )
-                	{
-                        	*(U + i) = *(force + *(id + i));
-                	}
-        	}
+		for( i = 0; i < dof; ++i )
+		{
+			if( *(id + i) > -1 )
+			{
+				*(U + i) = *(force + *(id + i));
+			}
+		}
 	   }
 
 /* Using Conjugate gradient method to find displacements */
@@ -677,28 +677,28 @@ int main(int argc, char** argv)
 	   {
 		check = br2ConjGrad( A, bc, connect, coord, el_matl, force, K_diag,
 			matl, U);
-        	if(!check) printf( " Problems with br2ConjGrad \n");
+		if(!check) printf( " Problems with br2ConjGrad \n");
 	   }
 
 /*
-           for( i = 0; i < numnp; ++i )
-           {
-                if( *(id+ndof*i) > -1 )
-                {
-                	printf("\n node %3d x   %14.6e ",i,*(U+ndof*i));
-                }
-                if( *(id+ndof*i+1) > -1 )
-                {
-                	printf("\n node %3d y   %14.6e ",i,*(U+ndof*i+1));
-                }
-                if( *(id+ndof*i+2) > -1 )
-                {
-                	printf("\n node %3d z   %14.6e ",i,*(U+ndof*i+2));
-                }
-           }
-           printf(" \n");
+	   for( i = 0; i < numnp; ++i )
+	   {
+		if( *(id+ndof*i) > -1 )
+		{
+			printf("\n node %3d x   %14.6e ",i,*(U+ndof*i));
+		}
+		if( *(id+ndof*i+1) > -1 )
+		{
+			printf("\n node %3d y   %14.6e ",i,*(U+ndof*i+1));
+		}
+		if( *(id+ndof*i+2) > -1 )
+		{
+			printf("\n node %3d z   %14.6e ",i,*(U+ndof*i+2));
+		}
+	   }
+	   printf(" \n");
 */
-           printf(" \n");
+	   printf(" \n");
 
 /* Calculate the reaction forces */
 
@@ -742,7 +742,7 @@ int main(int argc, char** argv)
 	check = br2writer ( bc, connect, connect_film, coord, el_matl, el_matl_film,
 		force, heat_el, heat_node, id, matl, name, Q, strain, strain_node,
 		stress, stress_node, T, TB, U);
-        if(!check) printf( " Problems with br2writer \n");
+	if(!check) printf( " Problems with br2writer \n");
 
 	if(disp_analysis)
 	{
@@ -750,8 +750,8 @@ int main(int argc, char** argv)
 		if(!check) printf( " Problems with brConnectSurfwriter \n");
 	}
 
-    	timec = clock();
-        printf("\n elapsed CPU = %lf\n\n",( (double)timec)/800.);
+	timec = clock();
+	printf("\n elapsed CPU = %lf\n\n",( (double)timec)/800.);
 
 	free(strain);
 	free(stress);

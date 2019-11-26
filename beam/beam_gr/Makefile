@@ -1,5 +1,5 @@
 # SLFFEA Makefile
-# Version:  1.3
+# Version:  1.4
 # Copyright (C) 1999, 2000  San Le (slffea@yahoo.com)
 # http://slffea.com/
 #
@@ -55,13 +55,14 @@ bmpost: bmpost.o \
 		bmmemgr.o \
 		bmreadgr.o \
 		bmparam.o \
-		bmparam2.o \
+		bmregetparam.o \
 		bmset.o \
 		bmbc_vec.o \
 		bmrotate.o \
 		bmmshdsp.o \
 		bmmesh.o \
 		bmmshkey.o \
+		bmmshkey2.o \
 		bmmenu.o \
 		bmgetnew.o \
 		bmcrtldsp.o \
@@ -74,13 +75,14 @@ bmpost: bmpost.o \
 		bmmemgr.o \
 		bmreadgr.o \
 		bmparam.o \
-		bmparam2.o \
+		bmregetparam.o \
 		bmset.o \
 		bmbc_vec.o \
 		bmrotate.o \
 		bmmshdsp.o \
 		bmmesh.o \
 		bmmshkey.o \
+		bmmshkey2.o \
 		bmmenu.o \
 		bmgetnew.o \
 		bmcrtldsp.o \
@@ -98,6 +100,9 @@ bmgetnew.o: bmgetnew.c
 
 bmmenu.o: bmmenu.c 
 	$(CC) -c bmmenu.c 
+
+bmmshkey2.o: bmmshkey2.c 
+	$(CC) -c bmmshkey2.c 
 
 bmmshkey.o: bmmshkey.c 
 	$(CC) -c bmmshkey.c 
@@ -117,8 +122,8 @@ bmbc_vec.o: bmbc_vec.c
 bmset.o: bmset.c 
 	$(CC) -c bmset.c 
 
-bmparam2.o: bmparam2.c 
-	$(CC) -c bmparam2.c 
+bmregetparam.o: bmregetparam.c 
+	$(CC) -c bmregetparam.c 
 
 bmparam.o: bmparam.c 
 	$(CC) -c bmparam.c 

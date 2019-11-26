@@ -2,11 +2,11 @@
     This program contains the control display routine for the FEM GUI
     for shell elements.
   
-                        Last Update 9/26/06
+		  Last Update 9/22/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -44,8 +44,8 @@ extern int control_height, control_width, mesh_height, mesh_width;
 extern int stress_flag, strain_flag, stress_strain, disp_flag, angle_flag;
 
 extern GLfloat yellow[4], orange[4], orangeRed[4], red[4], green[4],
-        violetRed[4], magenta[4], purple[4], blue[4],
-        white[4], grey[4], black[4];
+	violetRed[4], magenta[4], purple[4], blue[4],
+	white[4], grey[4], black[4];
 
 extern char RotateData[3][25];
 extern char MoveData[3][25];
@@ -60,13 +60,13 @@ void printText(const char *);
 void shControlDisplay(void)
 {
 	int i, j, dum = 0, dum2 = 0;
-    	va_list args;
-    	GLfloat font_scale = 119.05 + 33.33;
+	va_list args;
+	GLfloat font_scale = 119.05 + 33.33;
 
-    	glClear(GL_COLOR_BUFFER_BIT);
-    	glMatrixMode(GL_MODELVIEW);
-    	glPushMatrix();
-    	glColor4fv(white);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glColor4fv(white);
 
 	memset(ControlText[6],0,13*sizeof(char));
 	memset(ControlText[8],0,13*sizeof(char));
@@ -78,23 +78,23 @@ void shControlDisplay(void)
 
 /* Calculate the translation in Y for the text */
 
-    	for( i = 0 ; i < rowdim + 2; ++i)
+	for( i = 0 ; i < rowdim + 2; ++i)
 	{
 		textMove_y[i] = current_height -
 			2*textHeight - (int)(ratio2*textHeightDiv*dum);
 		++dum;
 	}
 
-    	for( i = 0 ; i < 2 ; ++i)
+	for( i = 0 ; i < 2 ; ++i)
 	{
-    	   	glLoadIdentity();
-    	   	glTranslatef (0,textMove_y[i],0);
-    	   	glScalef( ratio, ratio, 1.0);
-    	   	printText( ControlText[2*i] );
-    	   	printText( ControlText[2*i+1] );
+		glLoadIdentity();
+		glTranslatef (0,textMove_y[i],0);
+		glScalef( ratio, ratio, 1.0);
+		printText( ControlText[2*i] );
+		printText( ControlText[2*i+1] );
 	}
 
-/* Change displayed text for Node ID, Element ID, and Material */
+/* Change displayed text for Node ID, Element ID, and Material ID */
 
 	if( Color_flag[3])
 	{
@@ -121,200 +121,200 @@ void shControlDisplay(void)
 		strncpy(ControlText[10]," On          ", 13);
 	}
 
-    	for( i = 2 ; i < 9 ; ++i)
+	for( i = 2 ; i < 9 ; ++i)
 	{
-    	   	glLoadIdentity();
-    	   	glTranslatef (0,textMove_y[i],0);
-    	   	glScalef( ratio, ratio, 1.0);
-    		glColor4fv(white);
+		glLoadIdentity();
+		glTranslatef (0,textMove_y[i],0);
+		glScalef( ratio, ratio, 1.0);
+		glColor4fv(white);
 		if( Color_flag[i])
 		{
-    			glColor4fv(yellow);
+			glColor4fv(yellow);
 		}
-    	   	printText( ControlText[2*i] );
-    		glColor4fv(white);
-    	   	printText( ControlText[2*i+1] );
+		printText( ControlText[2*i] );
+		glColor4fv(white);
+		printText( ControlText[2*i+1] );
 	}
 
 /* This draws the Rotation and Move Text */
 
-    	glColor4fv(white);
-    	for( i = 9 ; i < 11 ; ++i)
+	glColor4fv(white);
+	for( i = 9 ; i < 11 ; ++i)
 	{
-    	   	glLoadIdentity();
-    	   	glTranslatef (0,textMove_y[i],0);
-    	   	glScalef( ratio, ratio, 1.0);
-    	   	printText( ControlText[2*i] );
-    	   	printText( ControlText[2*i+1] );
+		glLoadIdentity();
+		glTranslatef (0,textMove_y[i],0);
+		glScalef( ratio, ratio, 1.0);
+		printText( ControlText[2*i] );
+		printText( ControlText[2*i+1] );
 	}
 /* This draws the Rotation  */
-    	for( i = 11 ; i < 14 ; ++i)
+	for( i = 11 ; i < 14 ; ++i)
 	{
-    	   	glLoadIdentity();
-    	   	glTranslatef (0,textMove_y[i],0);
-    	   	glScalef( ratio, ratio, 1.0);
-    	   	printText( ControlText[2*i] );
-    	   	printText( ControlText[2*i+1] );
-    	   	printText( RotateData[dum2]);
+		glLoadIdentity();
+		glTranslatef (0,textMove_y[i],0);
+		glScalef( ratio, ratio, 1.0);
+		printText( ControlText[2*i] );
+		printText( ControlText[2*i+1] );
+		printText( RotateData[dum2]);
 		++dum2;
 	}
 	dum2 = 0;
-        for( i = 14 ; i < 16 ; ++i)
-        {
-                glLoadIdentity();
-                glTranslatef (0,textMove_y[i],0);
-                glScalef( ratio, ratio, 1.0);
-                printText( ControlText[2*i] );
-                printText( ControlText[2*i+1] );
-        }
-/* This draws the Move Text */
-    	for( i = 16 ; i < 19 ; ++i)
+	for( i = 14 ; i < 16 ; ++i)
 	{
-    	   	glLoadIdentity();
-    	   	glTranslatef (0,textMove_y[i],0);
-    	   	glScalef( ratio, ratio, 1.0);
-    	   	printText( ControlText[2*i] );
-    	   	printText( ControlText[2*i+1] );
-    	   	printText( MoveData[dum2]);
+		glLoadIdentity();
+		glTranslatef (0,textMove_y[i],0);
+		glScalef( ratio, ratio, 1.0);
+		printText( ControlText[2*i] );
+		printText( ControlText[2*i+1] );
+	}
+/* This draws the Move Text */
+	for( i = 16 ; i < 19 ; ++i)
+	{
+		glLoadIdentity();
+		glTranslatef (0,textMove_y[i],0);
+		glScalef( ratio, ratio, 1.0);
+		printText( ControlText[2*i] );
+		printText( ControlText[2*i+1] );
+		printText( MoveData[dum2]);
 		++dum2;
 	}
-    	for( i = 19 ; i < 23 ; ++i)
+	for( i = 19 ; i < 23 ; ++i)
 	{
-    	   	glLoadIdentity();
-    	   	glTranslatef (0,textMove_y[i],0);
-    	   	glScalef( ratio, ratio, 1.0);
-    	   	printText( ControlText[2*i] );
-    	   	printText( ControlText[2*i+1] );
+		glLoadIdentity();
+		glTranslatef (0,textMove_y[i],0);
+		glScalef( ratio, ratio, 1.0);
+		printText( ControlText[2*i] );
+		printText( ControlText[2*i+1] );
 	}
 
 /* This draws the Deformation Text */
-    	glColor4fv(white);
-    	for( i = 23 ; i < 26 ; ++i)
+	glColor4fv(white);
+	for( i = 23 ; i < 26 ; ++i)
 	{
-    	   	glLoadIdentity();
-    	   	glTranslatef (0,textMove_y[i],0);
-    	   	glScalef( ratio, ratio, 1.0);
-    		glColor4fv(white);
+		glLoadIdentity();
+		glTranslatef (0,textMove_y[i],0);
+		glScalef( ratio, ratio, 1.0);
+		glColor4fv(white);
 		if( Color_flag[i])
 		{
-    			glColor4fv(yellow);
+			glColor4fv(yellow);
 		}
-    	   	printText( ControlText[2*i] );
-    		glColor4fv(white);
-    	   	printText( ControlText[2*i+1] );
+		printText( ControlText[2*i] );
+		glColor4fv(white);
+		printText( ControlText[2*i+1] );
 	}
 /* This draws the Amplification Data  */
 
-       	glLoadIdentity();
-       	glTranslatef (0,textMove_y[26],0);
-       	glScalef( ratio, ratio, 1.0);
-       	printText( ControlText[52] );
-       	printText( ControlText[53] );
-       	printText( AmplifyData );
+	glLoadIdentity();
+	glTranslatef (0,textMove_y[26],0);
+	glScalef( ratio, ratio, 1.0);
+	printText( ControlText[52] );
+	printText( ControlText[53] );
+	printText( AmplifyData );
 	++dum2;
 	
 /* This draws the Engineering Analysis Option Text */
 /* Stress and Strain */
-    	glColor4fv(white);
-        for( i = 27 ; i < 29 ; ++i)
-        {
-                glLoadIdentity();
-                glTranslatef (0,textMove_y[i],0);
-                glScalef( ratio, ratio, 1.0);
-                printText( ControlText[2*i] );
-                printText( ControlText[2*i+1] );
-        }
-    	for( i = 29 ; i < 39 ; ++i)
+	glColor4fv(white);
+	for( i = 27 ; i < 29 ; ++i)
 	{
-    	   	glLoadIdentity();
-    	   	glTranslatef (0,textMove_y[i],0);
-    	   	glScalef( ratio, ratio, 1.0);
-    		glColor4fv(white);
+		glLoadIdentity();
+		glTranslatef (0,textMove_y[i],0);
+		glScalef( ratio, ratio, 1.0);
+		printText( ControlText[2*i] );
+		printText( ControlText[2*i+1] );
+	}
+	for( i = 29 ; i < 39 ; ++i)
+	{
+		glLoadIdentity();
+		glTranslatef (0,textMove_y[i],0);
+		glScalef( ratio, ratio, 1.0);
+		glColor4fv(white);
 		if( Color_flag[i])
 		{
 			if( stress_flag)
-		  	{
-    		  		glColor4fv(yellow);
-		  	}
+			{
+				glColor4fv(yellow);
+			}
 		}
-    	   	printText( ControlText[2*i] );
-    		glColor4fv(white);
+		printText( ControlText[2*i] );
+		glColor4fv(white);
 		if( Color_flag[i])
 		{
-		  	if( strain_flag)
-		  	{
-    		  		glColor4fv(yellow);
-		  	}
+			if( strain_flag)
+			{
+				glColor4fv(yellow);
+			}
 		}
-    	   	printText( ControlText[2*i+1] );
+		printText( ControlText[2*i+1] );
 	}
 
 /* Displacement */
-    	glColor4fv(white);
-        for( i = 39 ; i < 41 ; ++i)
-        {
-                glLoadIdentity();
-                glTranslatef (0,textMove_y[i],0);
-                glScalef( ratio, ratio, 1.0);
-                printText( ControlText[2*i] );
-                printText( ControlText[2*i+1] );
-        }
-    	for( i = 41 ; i < 44 ; ++i)
+	glColor4fv(white);
+	for( i = 39 ; i < 41 ; ++i)
 	{
-    	   	glLoadIdentity();
-    	   	glTranslatef (0,textMove_y[i],0);
-    	   	glScalef( ratio, ratio, 1.0);
-    		glColor4fv(white);
+		glLoadIdentity();
+		glTranslatef (0,textMove_y[i],0);
+		glScalef( ratio, ratio, 1.0);
+		printText( ControlText[2*i] );
+		printText( ControlText[2*i+1] );
+	}
+	for( i = 41 ; i < 44 ; ++i)
+	{
+		glLoadIdentity();
+		glTranslatef (0,textMove_y[i],0);
+		glScalef( ratio, ratio, 1.0);
+		glColor4fv(white);
 		if( Color_flag[i])
 		{
 			if( disp_flag)
-		  	{
-    		  		glColor4fv(yellow);
-		  	}
+			{
+				glColor4fv(yellow);
+			}
 		}
-    	   	printText( ControlText[2*i] );
-    		glColor4fv(white);
+		printText( ControlText[2*i] );
+		glColor4fv(white);
 		if( Color_flag[i])
 		{
-		  	if( angle_flag)
-		  	{
-    		  		glColor4fv(yellow);
-		  	}
+			if( angle_flag)
+			{
+				glColor4fv(yellow);
+			}
 		}
-    	   	printText( ControlText[2*i+1] );
+		printText( ControlText[2*i+1] );
 	}
 
 /* Text label for Color Scale Boxes */
 
-    	glColor4fv(white);
+	glColor4fv(white);
 	boxTextMove_x = (int)(ratio2*boxTextMove_x0);
-        for( i = 27 ; i < 28 ; ++i)
-        {
-                glLoadIdentity();
-                glTranslatef (boxTextMove_x,textMove_y[i],0);
-                glScalef( ratio, ratio, 1.0);
-                printText( BoxText );
-        }
+	for( i = 27 ; i < 28 ; ++i)
+	{
+		glLoadIdentity();
+		glTranslatef (boxTextMove_x,textMove_y[i],0);
+		glScalef( ratio, ratio, 1.0);
+		printText( BoxText );
+	}
 
 /* Text for Color Scale Boxes */
 
-        dum = 0;
-    	glColor4fv(white);
-        for( i = 29 ; i < rowdim + 2; i += 1)
-        {
-                glLoadIdentity();
-                glTranslatef (boxTextMove_x,textMove_y[i] + textHeight,0);
-                glScalef( ratio, ratio, 1.0);
-                printText( BoxData[dum] );
-                ++dum;
-        }
+	dum = 0;
+	glColor4fv(white);
+	for( i = 29 ; i < rowdim + 2; i += 1)
+	{
+		glLoadIdentity();
+		glTranslatef (boxTextMove_x,textMove_y[i] + textHeight,0);
+		glScalef( ratio, ratio, 1.0);
+		printText( BoxData[dum] );
+		++dum;
+	}
 
 /* Begin Drawing the Color Scale Boxes */
 	
 	del_width = current_width - ratio2*control_width0;
 	del_height = current_height - ratio2*control_height0;
-    	boxMove_x = (int)(ratio2*(control_width0 - left_indent));
-    	boxMove_y = del_height + (int)(ratio2*bottom_indent);
+	boxMove_x = (int)(ratio2*(control_width0 - left_indent));
+	boxMove_y = del_height + (int)(ratio2*bottom_indent);
 
 	glLoadIdentity();
 	glTranslatef (boxMove_x,boxMove_y,0);

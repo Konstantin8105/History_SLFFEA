@@ -5,7 +5,7 @@
 	Updated 3/19/01
 
     SLFFEA source file
-    Version:  1.3
+    Version:  1.4
     Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
@@ -20,15 +20,15 @@
 #include "../wedge/weconst.h"
 
 typedef struct {
-        int xx,yy,zz,xy,zx,yz,I,II,III;
+	int xx,yy,zz,xy,zx,yz,I,II,III;
 } ISDIM;
 
 typedef struct {
-        ISDIM pt[num_int];
+	ISDIM pt[num_int];
 } ISTRESS;
 
 typedef struct {
-        ISDIM pt[num_int];
+	ISDIM pt[num_int];
 } ISTRAIN;
 
 /* The structure below is a repeat of XYZF found in ../wedge/westruct.h.
@@ -37,9 +37,9 @@ typedef struct {
    and this causes a redundancy which is not allowed. */
 
 typedef struct {
-        double x, y, z;
+	double x, y, z;
 } XYZF_GR;
 
 typedef struct {
-         XYZF_GR face[8];
+	XYZF_GR face[8];
 } NORM;

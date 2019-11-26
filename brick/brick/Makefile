@@ -1,5 +1,5 @@
 # SLFFEA Makefile
-# Version:  1.3
+# Version:  1.4
 # Copyright (C) 1999, 2000  San Le (slffea@yahoo.com)
 # http://slffea.com/
 #
@@ -38,14 +38,14 @@ PROGS = br brp
 all: br brp
 
 br: fembr.o \
-		brmemory.o \
+		memory.o \
 		brreader.o \
-		brid.o \
+		id.o \
 		brshape.o \
 		brickb.o \
 		brkasmbl.o \
 		brconj.o \
-		brbound.o \
+		bound.o \
 		brstress.o \
 		brmasmbl.o \
 		brlanczos.o \
@@ -56,14 +56,14 @@ br: fembr.o \
 		brconst.h \
 		brstruct.h 
 	$(CC) -o br fembr.o \
-		brmemory.o \
+		memory.o \
 		brreader.o \
-		brid.o \
+		id.o \
 		brshape.o \
 		brickb.o \
 		brkasmbl.o \
 		brconj.o \
-		brbound.o \
+		bound.o \
 		brstress.o \
 		brmasmbl.o \
 		brlanczos.o \
@@ -100,8 +100,8 @@ brmasmbl.o: brmasmbl.c
 brstress.o: brstress.c
 	$(CC) -c brstress.c 
 
-brbound.o: brbound.c
-	$(CC) -c brbound.c -DBRICK1
+bound.o: $(COMMON)/bound.c
+	$(CC) -c $(COMMON)/bound.c -DBRICK1
 
 brconj.o: brconj.c
 	$(CC) -c brconj.c 
@@ -115,14 +115,14 @@ brickb.o: brickb.c
 brshape.o: brshape.c
 	$(CC) -c brshape.c 
 
-brid.o: brid.c
-	$(CC) -c brid.c -DBRICK1
+id.o: $(COMMON)/id.c
+	$(CC) -c $(COMMON)/id.c -DBRICK1
 
 brreader.o: brreader.c
 	$(CC) -c brreader.c
 
-brmemory.o: brmemory.c
-	$(CC) -c brmemory.c -DBRICK1
+memory.o: $(COMMON)/memory.c
+	$(CC) -c $(COMMON)/memory.c -DBRICK1
 
 fembr.o: fembr.c
 	$(CC) -c fembr.c

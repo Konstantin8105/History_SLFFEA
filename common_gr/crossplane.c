@@ -4,11 +4,11 @@
 
 			San Le
 
- 		Last Update 5/27/01
+                  Last Update 1/25/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999,2000, 2001 San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -43,41 +43,41 @@ void CrossSetionPlaneDraw(void)
 	double fpointx, fpointy, fpointz;
 	double fdum, fdum2, fdum4, textmove;
 
-    	fpointx = 0.95*AxisMax_x;
-    	fpointy = 0.95*AxisMax_y;
-    	fpointz = 0.95*AxisMax_z;
+	fpointx = 0.95*AxisMax_x;
+	fpointy = 0.95*AxisMax_y;
+	fpointz = 0.95*AxisMax_z;
 
 	glLineWidth (1.0);
 
 /* Draw the X Axis Cross Section Plane */
 
-        glBegin(GL_LINE_LOOP);
-          glColor4fv(white);
-          glVertex3f( cross_sec_left_right, AxisMin_y, AxisMin_z);
+	glBegin(GL_LINE_LOOP);
+	  glColor4fv(white);
+	  glVertex3f( cross_sec_left_right, AxisMin_y, AxisMin_z);
 	  glVertex3f( cross_sec_left_right, fpointy, AxisMin_z);
-          glVertex3f( cross_sec_left_right, fpointy, fpointz);
+	  glVertex3f( cross_sec_left_right, fpointy, fpointz);
 	  glVertex3f( cross_sec_left_right, AxisMin_y, fpointz);
-        glEnd();
+	glEnd();
 
 /* Draw the Y Axis Cross Section Plane */
 
-        glBegin(GL_LINE_LOOP);
-          glColor4fv(white);
-          glVertex3f( AxisMin_x, cross_sec_up_down, AxisMin_z);
+	glBegin(GL_LINE_LOOP);
+	  glColor4fv(white);
+	  glVertex3f( AxisMin_x, cross_sec_up_down, AxisMin_z);
 	  glVertex3f( AxisMin_x, cross_sec_up_down, fpointz);
-          glVertex3f( fpointx, cross_sec_up_down, fpointz);
+	  glVertex3f( fpointx, cross_sec_up_down, fpointz);
 	  glVertex3f( fpointx, cross_sec_up_down, AxisMin_z);
-        glEnd();
+	glEnd();
 
 /* Draw the Z Axis Cross Section Plane */
 
-        glBegin(GL_LINE_LOOP);
-          glColor4fv(white);
-          glVertex3f( AxisMin_x, AxisMin_y, cross_sec_in_out );
+	glBegin(GL_LINE_LOOP);
+	  glColor4fv(white);
+	  glVertex3f( AxisMin_x, AxisMin_y, cross_sec_in_out );
 	  glVertex3f( fpointx, AxisMin_y, cross_sec_in_out );
-          glVertex3f( fpointx, fpointy, cross_sec_in_out );
+	  glVertex3f( fpointx, fpointy, cross_sec_in_out );
 	  glVertex3f( AxisMin_x, fpointy, cross_sec_in_out );
-        glEnd();
+	glEnd();
 
 }
 

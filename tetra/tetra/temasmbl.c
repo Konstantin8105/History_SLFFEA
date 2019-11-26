@@ -5,11 +5,11 @@
     which does analysis on a tetrahedral element.  It is for
     modal analysis.
 
-		Updated 11/27/01
+		Updated 8/22/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -38,40 +38,32 @@ int teMassemble(int *connect, double *coord, int *el_matl, int *id,
 	double *mass, MATL *matl) 
 	
 {
-        int i, i1, i2, i3, j, k, dof_el[neqel], sdof_el[npel*nsd];
+	int i, i1, i2, i3, j, k, dof_el[neqel], sdof_el[npel*nsd];
 	int check, node, counter;
 	int matl_num;
 	double rho, fdum;
-        double B_mass[MsoB], B2_mass[MsoB];
-        double M_temp[neqlsq], M_el[neqlsq];
-        double coord_el_trans[neqel];
+	double B_mass[MsoB], B2_mass[MsoB];
+	double M_temp[neqlsq], M_el[neqlsq];
+	double coord_el_trans[neqel];
 	double X1, X2, X3, X4, Y1, Y2, Y3, Y4, Z1, Z2, Z3, Z4;
 	double a1, a2, a3, a4, b1, b2, b3, b4, c1, c2, c3, c4;
-        double det[1], volume_el, wXdet;
-        double mass_el[neqel];
+	double det[1], volume_el, wXdet;
+	double mass_el[neqel];
 
 /*      initialize all variables  */
 
-        memset(B_mass,0,MsoB*sof);
-        memset(B2_mass,0,MsoB*sof);
-
 	memcpy(shg,shl,sosh*sizeof(double));
 
-        for( k = 0; k < numel; ++k )
-        {
-                matl_num = *(el_matl+k);
-                rho = matl[matl_num].rho;
-                volume_el = 0.0;
-
-/* Zero out the Element mass matrices */
-
-        	memset(M_el,0,neqlsq*sof);
-        	memset(mass_el,0,neqel*sof);
+	for( k = 0; k < numel; ++k )
+	{
+		matl_num = *(el_matl+k);
+		rho = matl[matl_num].rho;
+		volume_el = 0.0;
 
 /* Create the coord_el transpose vector for one element */
 
-                for( j = 0; j < npel; ++j )
-                {
+		for( j = 0; j < npel; ++j )
+		{
 			node = *(connect+npel*k+j);
 
 			*(sdof_el+nsd*j) = nsd*node;
@@ -85,7 +77,7 @@ int teMassemble(int *connect, double *coord, int *el_matl, int *id,
 			*(dof_el+ndof*j) = ndof*node;
 			*(dof_el+ndof*j+1) = ndof*node+1;
 			*(dof_el+ndof*j+2) = ndof*node+2;
-                }
+		}
 
 /* Assembly of the Mass matrix.
 
@@ -149,6 +141,11 @@ int teMassemble(int *connect, double *coord, int *el_matl, int *id,
 		volume_el = pt1667*fdum;
 		/*printf("This is the Volume %10.6f for element %4d\n",volume_el,k);*/
 
+/* Zero out the Element mass matrices */
+
+		memset(M_el,0,neqlsq*sof);
+		memset(mass_el,0,neqel*sof);
+
 #if !DEBUG
 /*
    This is taken from "Theory of Matrix Structural Analysis" by 
@@ -172,15 +169,15 @@ int teMassemble(int *connect, double *coord, int *el_matl, int *id,
 #endif
 
 #if 0
-                for( i1 = 0; i1 < num_int; ++i1 )
-                {
-                    for( i2 = 0; i2 < npel; ++i2 )
-                    {
-                    	printf("%10.6f ",*(shl+npel*(nsd+1)*i1 + npel*(nsd) + i2));
-                    }
-                    printf(" \n");
-                }
-                printf(" \n");
+		for( i1 = 0; i1 < num_int; ++i1 )
+		{
+		    for( i2 = 0; i2 < npel; ++i2 )
+		    {
+			printf("%10.6f ",*(shl+npel*(nsd+1)*i1 + npel*(nsd) + i2));
+		    }
+		    printf(" \n");
+		}
+		printf(" \n");
 #endif
 
 #if DEBUG
@@ -192,24 +189,28 @@ int teMassemble(int *connect, double *coord, int *el_matl, int *id,
    for several quantities
 */
 
-                for( j = 0; j < num_int; ++j )
-                {
+		for( j = 0; j < num_int; ++j )
+		{
+
+		    memset(B_mass,0,MsoB*sof);
+		    memset(B2_mass,0,MsoB*sof);
+		    memset(M_temp,0,neqlsq*sof);
 
 /* Assembly of the B matrix for mass */
 
-       		    check = tetraB_mass((shg+npel*(nsd+1)*j + npel*(nsd)),B_mass);
-       		    if(!check) printf( "Problems with tetraB_mass \n");
+		    check = tetraB_mass((shg+npel*(nsd+1)*j + npel*(nsd)),B_mass);
+		    if(!check) printf( "Problems with tetraB_mass \n");
 
 /*
-                    for( i1 = 0; i1 < nsd; ++i1 )
-                    {
-                        for( i2 = 0; i2 < neqel; ++i2 )
-                        {
-                        	printf("%9.6f ",*(B_mass+neqel*i1+i2));
-                        }
-                        printf(" \n");
-                    }
-                    printf(" \n");
+		    for( i1 = 0; i1 < nsd; ++i1 )
+		    {
+			for( i2 = 0; i2 < neqel; ++i2 )
+			{
+				printf("%9.6f ",*(B_mass+neqel*i1+i2));
+			}
+			printf(" \n");
+		    }
+		    printf(" \n");
 */
 
 		    memcpy(B2_mass,B_mass,MsoB*sizeof(double));
@@ -219,8 +220,8 @@ int teMassemble(int *connect, double *coord, int *el_matl, int *id,
 */
 		    wXdet = pt1667*(*(w+j))*(*(det));
 
-                    check=matXT(M_temp, B_mass, B2_mass, neqel, neqel, nsd);
-                    if(!check) printf( "Problems with matXT \n");
+		    check=matXT(M_temp, B_mass, B2_mass, neqel, neqel, nsd);
+		    if(!check) printf( "Problems with matXT \n");
 
 		    fdum =  rho*wXdet;
 		    for( i2 = 0; i2 < neqlsq; ++i2 )
@@ -283,5 +284,5 @@ int teMassemble(int *connect, double *coord, int *el_matl, int *id,
 	    }
 	}
 
-        return 1;
+	return 1;
 }

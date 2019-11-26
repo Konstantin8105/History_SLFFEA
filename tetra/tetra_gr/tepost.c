@@ -1,12 +1,12 @@
 /*
     This program shows the 3 dimensional model of the finite
     element mesh for tetrahedral elements.
-  
-   			Last Update 4/27/05
-
+ 
+                  Last Update 12/4/06
+ 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -72,40 +72,40 @@
 
 /******** Data management and calculations ********/
 
-void teforce_vectors0(int , BOUND , double *, XYZF *);
+void force_vectors0(int , BOUND , double *, XYZF *);
 
-void tedisp_vectors0(int , BOUND , double *);
+void disp_vectors0(int , BOUND , double *);
 
 void agvMakeAxesList(GLuint);
 
-int teset(BOUND , int *, double *, XYZF *, STRAIN *, ISTRAIN *,
-	STRESS *, ISTRESS *, double *, int *);
+int teset(BOUND , int *, double *, XYZF *, SDIM *, ISDIM *,
+	SDIM *, ISDIM *, double *, int *);
 
-int teparameter( double *, STRAIN *, STRESS *, double *);
+int parameter( double *, SDIM *, SDIM *, double *);
+
+int Memory2_gr2( XYZF **, int );
 
 int tenormal_vectors (int *, double *, NORM * );
 
-int teMemory2_gr( XYZF **, int );
+int ConnectSurfreader( int *, int *, char *);
 
-int teConnectSurfreader( int *, int *, char *);
-
-int tereader_gr( FILE *, STRAIN *, STRESS *);
+int reader_gr( FILE *, SDIM *, SDIM *);
 
 int tereader( BOUND , int *, double *, int *, double *, MATL *, char *,
-	FILE *, STRESS *, STRESS *, double *);
+	FILE *, SDIM *, SDIM *, double *);
 
-int teMemory_gr( ISTRAIN **, ISTRESS **, NORM **, int, int );
+int Memory_gr2( ISDIM **, ISDIM **, int, NORM **, int );
 
-int teMemory( double **, int, int **, int, MATL **, int , XYZI **, int,
-        STRAIN **, STRAIN **, STRESS **, STRESS **, int, int );
+int Memory2( double **, int, int **, int, MATL **, int , XYZI **, int,
+	SDIM **, SDIM **, SDIM **, SDIM **, int, int );
 
-int filecheck( char *, char *, FILE **, FILE **, FILE **, char * );
+int filecheck( char *, char *, FILE **, FILE **, FILE **, char *, int );
 
 /******** For the Mesh ********/
 
 void MeshKey_Special(int , int , int );
 
-void teMeshKeys( unsigned char , int , int  );
+void MeshKeys( unsigned char , int , int  );
 
 void temeshdraw(void);
 
@@ -113,19 +113,19 @@ void terender(void);
 
 void MeshReshape(int , int );
 
-void teMeshDisplay(void);
+void MeshDisplay(void);
 
 void MeshInit(void);
 
 /******** For the Control Panel ********/
 
-void teControlMouse(int , int , int , int );
+void ControlMouse(int , int , int , int );
 
 void ControlReshape(int , int );
 
-void teControlDisplay(void);
+void ControlDisplay(void);
 
-void teMenu();
+void Menu2();
 
 void ControlInit(void);
 
@@ -160,15 +160,15 @@ BOUND bc;
 MATL *matl;
 int *el_matl;
 double *force, *Voln;
-STRESS *stress;
-STRAIN *strain;
-STRESS *stress_node;
-STRAIN *strain_node;
+SDIM *stress;
+SDIM *strain;
+SDIM *stress_node;
+SDIM *strain_node;
 
 /* Global variables for the mesh color and nodal data */
 
-ISTRESS *stress_color;
-ISTRAIN *strain_color;
+ISDIM *stress_color;
+ISDIM *strain_color;
 int *U_color, *el_matl_color;
 NORM *norm, *norm0;
 MATL *matl_crtl;
@@ -237,7 +237,7 @@ char RotateData[3][25] = { "    0.00", "    0.00", "    0.00" };
 char MoveData[3][25] = { "    0.00", "    0.00", "    0.00" };
 char AmplifyData[25] = { " 1.000e+00"};
 char BoxData[2*boxnumber+2][25] = { "", "", "", "", "", "", "", "",
-        "", "", "", "", "", "", "", "", "", "" };
+	"", "", "", "", "", "", "", "", "", "" };
 char BoxText[25];
 
 int del_height = 0;
@@ -252,19 +252,19 @@ int boxTextMove_x = boxTextMove_x0;
 /* These Variables partition the stresses, strains, and displacements */
 
 double Ux_div[boxnumber+1], Uy_div[boxnumber+1], Uz_div[boxnumber+1];
-STRESS stress_div[boxnumber+1];
-STRAIN strain_div[boxnumber+1];
+SDIM stress_div[boxnumber+1];
+SDIM strain_div[boxnumber+1];
 double init_right, init_left, init_top,
 	init_bottom, init_near, init_far, true_far, dim_max;
-STRESS del_stress, del_strain, max_stress, min_stress,
+SDIM del_stress, del_strain, max_stress, min_stress,
 	max_strain, min_strain;
 double max_Ux, min_Ux, del_Ux, max_Uy, min_Uy, del_Uy,
 	max_Uz, min_Uz, del_Uz, absolute_max_U, absolute_max_coord;
 
 /* These are the flags */
 
-int input_flag = 1,          /* Tells whether an input file exist or not */
-    post_flag = 1,           /* Tells whether a post file exist or not   */
+int input_flag = 1,          /* Tells whether an input file exists or not */
+    post_flag = 1,           /* Tells whether a post file exists or not   */
     modal_flag = 1,          /* Tells whether a modal analysis file exist or not   */
     color_choice = 1,        /* Set to desired color analysis(range 1 - 24) */
     choice = 0,              /* currently unused */
@@ -299,44 +299,46 @@ double amplify_step0 = 0.1;  /* Value of initial calculated amplification icreme
 int stress_flag = 0,       /* Tells whether stress viewing is on or off */
     strain_flag = 0,       /* Tells whether strain viewing is on and off */
     stress_strain = 0,     /* Used with above 2 flags to determine how to draw Control Panel */
-    disp_flag = 0;         /* Tells whether displacement viewing is on and off */
+    disp_flag = 0,         /* Tells whether displacement viewing is on and off */
+    thermal_flag = 0;      /* Tells whether Temperature and heat viewing are on and off */
 
 
 int main(int argc, char** argv)
 {
-        int i, j, check;
-        char *ccheck;
-        int dum, dum1, dum2, dum3;
-        double fpointx, fpointy, fpointz;
-	int  sofmi, sofmf, sofmSTRESS, sofmSTRESS_node, sofmISTRESS,
-		sofmSTRAIN, sofmXYZI, sofmXYZF, sofmNORM, ptr_inc;
-        char name[30], name2[30], ote_exten[4], buf[ BUFSIZ ];
-        FILE *o1, *o2, *o3;
+	int i, j, check;
+	char *ccheck;
+	int dum, dum1, dum2, dum3;
+	double fpointx, fpointy, fpointz;
+	int  sofmi, sofmf, sofmSDIM, sofmSDIM_node, sofmISDIM,
+		sofmXYZI, sofmXYZF, sofmNORM, ptr_inc;
+	char name[30], name2[30], ote_exten[4], buf[ BUFSIZ ];
+	int ote_exten_length = 4;
+	FILE *o1, *o2, *o3;
 
-        right=0;
-        top=0;
-        left=1000;
-        bottom=1000;
-        fscale=0;
-        near=1.0;
-        far=10.0;
-        /*mesh_width=500;
-        mesh_height=20;
-        control_width=1000;
-        control_height=1500;*/
+	right=0;
+	top=0;
+	left=1000;
+	bottom=1000;
+	fscale=0;
+	near=1.0;
+	far=10.0;
+	/*mesh_width=500;
+	mesh_height=20;
+	control_width=1000;
+	control_height=1500;*/
 
 /* Initialize filenames */
 
 	memset(name,0,30*sizeof(char));
 	memset(name2,0,30*sizeof(char));
-	memset(ote_exten,0,4*sizeof(char));
+	memset(ote_exten,0,ote_exten_length*sizeof(char));
 
-	ccheck = strncpy(ote_exten,".ote",4);
+	ccheck = strncpy(ote_exten,".ote",ote_exten_length);
 	if(!ccheck) printf( " Problems with strncpy \n");
 
-        printf("What is the name of the input file containing the \n");
-        printf("tetrahedral structural data? \n");
-        scanf( "%30s",name2);
+	printf("What is the name of the input file containing the \n");
+	printf("tetrahedral structural data? (example: bullet)\n");
+	scanf( "%30s",name2);
 
 /*   o1 contains all the structural data for input
      o3 contains all the structural data for postprocessing
@@ -350,97 +352,97 @@ int main(int argc, char** argv)
 	}
 	/*printf( "%3d %30s\n ",name2_length,name2);*/
 
-        fgets( buf, BUFSIZ, o2 );
-        fscanf( o2, "%d %d %d %d\n ",&numel,&numnp,&nmat,&nmode);
-        dof=numnp*ndof;
+	fgets( buf, BUFSIZ, o2 );
+	fscanf( o2, "%d %d %d %d\n ",&numel,&numnp,&nmat,&nmode);
+	dof=numnp*ndof;
 	sdof=numnp*nsd;
 	nmode = abs(nmode);
 
 /* Begin exmaining and checking for the existence of data files */
 
-	check = filecheck( name, name2, &o1, &o2, &o3, ote_exten );
+	check = filecheck( name, name2, &o1, &o2, &o3, ote_exten, ote_exten_length );
 	if(!check) printf( " Problems with filecheck \n");
 
 	if( input_flag )
 	{
-        	fgets( buf, BUFSIZ, o1 );
-        	fscanf( o1, "%d %d %d %d\n ",&dum,&dum1,&dum2,&dum3);
-        	printf( "%d %d %d %d\n ",dum,dum1,dum2,dum3);
-                /*printf( "name %30s\n ",name);*/
+		fgets( buf, BUFSIZ, o1 );
+		fscanf( o1, "%d %d %d %d\n ",&dum,&dum1,&dum2,&dum3);
+		printf( "%d %d %d %d\n ",dum,dum1,dum2,dum3);
+		/*printf( "name %30s\n ",name);*/
 	}
 	if( post_flag )
 	{
-        	fgets( buf, BUFSIZ, o3 );
-        	fscanf( o3, "%d %d %d %d\n ",&dum,&dum1,&dum2,&dum3);
-        	printf( "%d %d %d %d\n ",dum,dum1,dum2,dum3);
-                /*printf( "out %30s\n ",out);*/
+		fgets( buf, BUFSIZ, o3 );
+		fscanf( o3, "%d %d %d %d\n ",&dum,&dum1,&dum2,&dum3);
+		printf( "%d %d %d %d\n ",dum,dum1,dum2,dum3);
+		/*printf( "out %30s\n ",out);*/
 	}
 
 /*   Begin allocation of meomory */
 
 /* For the doubles */
-        sofmf=2*sdof+2*dof;
+	sofmf=2*sdof+2*dof;
 
 /* For the integers */
-        sofmi= numel*npel+numel+numnp+1+1+dof;
+	sofmi= numel*npel+numel+numnp+1+1+dof;
 
 /* For the XYZI integers */
-        sofmXYZI=numnp+1+1;
+	sofmXYZI=numnp+1+1;
 
-/* For the STRESS */
-	sofmSTRESS=1;
+/* For the SDIM */
+	sofmSDIM=1;
 
-/* For the STRESS_node */
-	sofmSTRESS_node=numnp;
+/* For the SDIM_node */
+	sofmSDIM_node=numnp;
 
-/* For the ISTRESS */
-	sofmISTRESS=numnp;
+/* For the ISDIM */
+	sofmISDIM=numnp;
 
 /* For the NORMS */
-        sofmNORM=numel;
+	sofmNORM=numel;
 	if( input_flag && post_flag ) sofmNORM=2*numel;
 
-	check = teMemory( &mem_double, sofmf, &mem_int, sofmi, &matl, nmat,
+	check = Memory2( &mem_double, sofmf, &mem_int, sofmi, &matl, nmat,
 		&mem_XYZI, sofmXYZI, &strain, &strain_node, &stress, &stress_node,
-		sofmSTRESS, sofmSTRESS_node );
-	if(!check) printf( " Problems with teMemory \n");
+		sofmSDIM, sofmSDIM_node );
+	if(!check) printf( " Problems with Memory2 \n");
 
-	check = teMemory_gr( &strain_color, &stress_color, &mem_NORM, sofmISTRESS,
+	check = Memory_gr2( &strain_color, &stress_color, sofmISDIM, &mem_NORM,
 		sofmNORM );
-	if(!check) printf( " Problems with teMemory_gr \n");
+	if(!check) printf( " Problems with Memory_gr2 \n");
 
 
 /* For the doubles */
-                                        ptr_inc=0;
-        coord=(mem_double+ptr_inc);     ptr_inc += sdof;
-        coord0=(mem_double+ptr_inc);    ptr_inc += sdof;
-        force=(mem_double+ptr_inc);     ptr_inc += dof;
-        U=(mem_double+ptr_inc);         ptr_inc += dof;
+	                                ptr_inc=0;
+	coord=(mem_double+ptr_inc);     ptr_inc += sdof;
+	coord0=(mem_double+ptr_inc);    ptr_inc += sdof;
+	force=(mem_double+ptr_inc);     ptr_inc += dof;
+	U=(mem_double+ptr_inc);         ptr_inc += dof;
 
 /* For the materials */
 
 	matl_crtl = matl;
 
 /* For the integers */
-                                                ptr_inc = 0;
-        connecter=(mem_int+ptr_inc);            ptr_inc += numel*npel;
-        el_matl=(mem_int+ptr_inc);              ptr_inc += numel;
-        bc.force =(mem_int+ptr_inc);            ptr_inc += numnp+1;
-        bc.num_force=(mem_int+ptr_inc);         ptr_inc += 1;
-        U_color=(mem_int+ptr_inc);              ptr_inc += dof;
+	                                        ptr_inc = 0;
+	connecter=(mem_int+ptr_inc);            ptr_inc += numel*npel;
+	el_matl=(mem_int+ptr_inc);              ptr_inc += numel;
+	bc.force =(mem_int+ptr_inc);            ptr_inc += numnp+1;
+	bc.num_force=(mem_int+ptr_inc);         ptr_inc += 1;
+	U_color=(mem_int+ptr_inc);              ptr_inc += dof;
 
 	el_matl_color = el_matl;
 
 /* For the XYZI integers */
-                                          	ptr_inc = 0;
-        bc.fix =(mem_XYZI+ptr_inc);       	ptr_inc += numnp+1;
-        bc.num_fix=(mem_XYZI+ptr_inc);    	ptr_inc += 1;
+	                                        ptr_inc = 0;
+	bc.fix =(mem_XYZI+ptr_inc);             ptr_inc += numnp+1;
+	bc.num_fix=(mem_XYZI+ptr_inc);          ptr_inc += 1;
 
 /* For the NORM doubles */
                                                 ptr_inc = 0;
-        norm =(mem_NORM+ptr_inc);               
+	norm =(mem_NORM+ptr_inc);               
 	if( input_flag && post_flag )           ptr_inc += numel;
-        norm0 =(mem_NORM+ptr_inc);              ptr_inc += numel;
+	norm0 =(mem_NORM+ptr_inc);              ptr_inc += numel;
 
 /* If there is no post file, then set coord to coord0 */
 
@@ -464,58 +466,58 @@ int main(int argc, char** argv)
 	element_stress_read_flag = 0;
 	if( post_flag )
 	{
-        	check = tereader( bc, connecter, coord, el_matl, force, matl,
+		check = tereader( bc, connecter, coord, el_matl, force, matl,
 			name, o3, stress, stress_node, U);
-        	if(!check) printf( " Problems with tereader \n");
+		if(!check) printf( " Problems with tereader \n");
 		stress_read_flag = 0;
 
-        	check = tereader_gr( o3, strain_node, stress_node);
-        	if(!check) printf( " Problems with tereader_gr \n");
+		check = reader_gr( o3, strain_node, stress_node);
+		if(!check) printf( " Problems with reader_gr \n");
 	}
 	if( input_flag )
 	{
-        	check = tereader( bc, connecter, coord0, el_matl, force, matl,
+		check = tereader( bc, connecter, coord0, el_matl, force, matl,
 			name, o1, stress, stress_node, U);
-        	if(!check) printf( " Problems with tereader \n");
+		if(!check) printf( " Problems with tereader \n");
 	}
 
-	check = teConnectSurfreader( connecter, el_matl, name);
-	if(!check) printf( " Problems with teConnectSurfreader \n");
+	check = ConnectSurfreader( connecter, el_matl, name);
+	if(!check) printf( " Problems with ConnectSurfreader \n");
 
 	if( post_flag )
 	{
 		check = tenormal_vectors(connecter, coord, norm );
-        	if(!check) printf( " Problems with tenormal_vectors \n");
+		if(!check) printf( " Problems with tenormal_vectors \n");
 	}
 
 	if( input_flag )
 	{
 		check = tenormal_vectors(connecter, coord0, norm0 );
-        	if(!check) printf( " Problems with tenormal_vectors \n");
+		if(!check) printf( " Problems with tenormal_vectors \n");
 	}
 
 /* For the XYZF doubles */
-        sofmXYZF=2*bc.num_force[0];
+	sofmXYZF=2*bc.num_force[0];
 /*
-   This is allocated seperately from teMemory_gr because we need to know the
+   This is allocated seperately from Memory_gr2 because we need to know the
    number of force vectors read from tereader and stored in bc.num_force[0].
 */
 
-	check = teMemory2_gr( &mem_XYZF, sofmXYZF );
-	if(!check) printf( " Problems with teMemory2_gr \n");
+	check = Memory2_gr2( &mem_XYZF, sofmXYZF );
+	if(!check) printf( " Problems with Memory2_gr2 \n");
 
-                                                ptr_inc = 0;
-        force_vec =(mem_XYZF+ptr_inc);          ptr_inc += bc.num_force[0];
-        force_vec0 =(mem_XYZF+ptr_inc);         ptr_inc += bc.num_force[0];
+	                                        ptr_inc = 0;
+	force_vec =(mem_XYZF+ptr_inc);          ptr_inc += bc.num_force[0];
+	force_vec0 =(mem_XYZF+ptr_inc);         ptr_inc += bc.num_force[0];
 
 /* Search for extreme values */
  
 /* In mesh viewer, search for extreme values of nodal points, displacements
-   and stresss and strains to obtain viewing parameters and set color
+   and stress and strains to obtain viewing parameters and set color
    assignments.  Also initialize variables */
 
-	check = teparameter( coord, strain_node, stress_node, U);
-        if(!check) printf( " Problems with teparameter \n");
+	check = parameter( coord, strain_node, stress_node, U);
+	if(!check) printf( " Problems with parameter \n");
 
 /* Rescale undeformed coordinates */
 
@@ -536,27 +538,43 @@ int main(int argc, char** argv)
 	{
 	    for ( i = 0; i < numnp; ++i)
 	    {
-	    	*(coord0 + nsd*i) = *(coord + nsd*i) - *(U + ndof*i);
-	    	*(coord0 + nsd*i + 1) = *(coord + nsd*i + 1) - *(U + ndof*i + 1);
-	    	*(coord0 + nsd*i + 2) = *(coord + nsd*i + 2) - *(U + ndof*i + 2);
+		*(coord0 + nsd*i) = *(coord + nsd*i) - *(U + ndof*i);
+		*(coord0 + nsd*i + 1) = *(coord + nsd*i + 1) - *(U + ndof*i + 1);
+		*(coord0 + nsd*i + 2) = *(coord + nsd*i + 2) - *(U + ndof*i + 2);
 	    }
 	}
 
 	check = teset( bc, connecter, force, force_vec0, strain_node,
 		strain_color, stress_node, stress_color, U, U_color);
-        if(!check) printf( " Problems with teset \n");
+	if(!check) printf( " Problems with teset \n");
 
 /* Initialize the mesh viewer */
 
-        glutInit(&argc, argv);
-  	glutInitWindowSize(mesh_width0, mesh_height0);
-  	glutInitWindowPosition(400, 215);
+	glutInit(&argc, argv);
+	glutInitWindowSize(mesh_width0, mesh_height0);
+	glutInitWindowPosition(400, 215);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-        MeshWindow = glutCreateWindow("SLFFEA");
-        MeshInit ();
+	MeshWindow = glutCreateWindow("SLFFEA");
+	MeshInit ();
 
-  	AxesList = glGenLists(1);
-  	agvMakeAxesList(AxesList);
+	AxesList = glGenLists(1);
+	agvMakeAxesList(AxesList);
+
+/* Below, I calculate force_vec[i].* for the force vectors graphics.  The reason I
+   have coded things like this is because I think it gives me a slight improvement in
+   speed.  When glutDisplayFunc displays the mesh, it continuously calls all the
+   functions used in displaying the mesh like the subroutines which draw the force and
+   prescribed displacement vectors.  This doesn't matter for the undeformed mesh where
+   everything is drawn from display lists, but for the deformed mesh, it is an issue.
+   So I calculate force_vec[i].* outside those functions, rather than simply passing
+   force_vec0[i].* to the particular *force_vectors function and doing something like:
+
+                fx = fpointx - force_vec0[node_num].x;
+                fy = fpointy - force_vec0[node_num].y;
+                fz = fpointz - force_vec0[node_num].z;
+
+   There is probably only a small advantage, but that is the reason.
+*/
 
 	if( input_flag )
 	{
@@ -564,21 +582,21 @@ int main(int argc, char** argv)
 /* create display list for displacement and force grapics vectors
    on undeformed mesh*/
 
-  	    DispList = glGenLists(1);
-  	    tedisp_vectors0(DispList, bc, coord0);
+	    DispList = glGenLists(1);
+	    disp_vectors0(DispList, bc, coord0);
 
-            for( i = 0; i < bc.num_force[0]; ++i)
-            {
-                fpointx = *(coord0+nsd*bc.force[i]);
-                fpointy = *(coord0+nsd*bc.force[i] + 1);
-                fpointz = *(coord0+nsd*bc.force[i] + 2);
-                force_vec[i].x = fpointx - force_vec0[i].x;
+	    for( i = 0; i < bc.num_force[0]; ++i)
+	    {
+		fpointx = *(coord0+nsd*bc.force[i]);
+		fpointy = *(coord0+nsd*bc.force[i] + 1);
+		fpointz = *(coord0+nsd*bc.force[i] + 2);
+		force_vec[i].x = fpointx - force_vec0[i].x;
 		force_vec[i].y = fpointy - force_vec0[i].y;
 		force_vec[i].z = fpointz - force_vec0[i].z;
-            }
+	    }
     
-  	    ForceList = glGenLists(1);
-  	    teforce_vectors0(ForceList, bc, coord0, force_vec);
+	    ForceList = glGenLists(1);
+	    force_vectors0(ForceList, bc, coord0, force_vec);
     
 	}
 
@@ -586,29 +604,29 @@ int main(int argc, char** argv)
 	{
 /* create force grapics vectors for deformed mesh*/
 
-            for( i = 0; i < bc.num_force[0]; ++i)
-            {
-                fpointx = *(coord+nsd*bc.force[i]);
-                fpointy = *(coord+nsd*bc.force[i] + 1);
-                fpointz = *(coord+nsd*bc.force[i] + 2);
-                force_vec[i].x = fpointx - force_vec0[i].x;
+	    for( i = 0; i < bc.num_force[0]; ++i)
+	    {
+		fpointx = *(coord+nsd*bc.force[i]);
+		fpointy = *(coord+nsd*bc.force[i] + 1);
+		fpointz = *(coord+nsd*bc.force[i] + 2);
+		force_vec[i].x = fpointx - force_vec0[i].x;
 		force_vec[i].y = fpointy - force_vec0[i].y;
 		force_vec[i].z = fpointz - force_vec0[i].z;
-            }
+	    }
 	}
 
 /* Initialie variables in Control Panel */
 
 	memset(Color_flag,0,rowdim*sofi);
 
-        check = ControlDimInit();
-        if(!check) printf( " Problems with ControlDimInit \n");
+	check = ControlDimInit();
+	if(!check) printf( " Problems with ControlDimInit \n");
 
 /* call display function  */
 
-        glutDisplayFunc(teMeshDisplay);
+	glutDisplayFunc(MeshDisplay);
 
-        glutReshapeFunc(MeshReshape);
+	glutReshapeFunc(MeshReshape);
 
 /* Initialize Mouse Functions */
 
@@ -617,41 +635,41 @@ int main(int argc, char** argv)
 
 /* Initialize Keyboard Functions */
 
-        glutKeyboardFunc(teMeshKeys);
-        glutSpecialFunc(MeshKey_Special);
+	glutKeyboardFunc(MeshKeys);
+	glutSpecialFunc(MeshKey_Special);
 
 /* Initialize the Control Panel */
 
-        glutInitWindowSize(control_width0, control_height0);
-        glutInitWindowPosition(0, 0);
-        glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB );
-        ControlWindow = glutCreateWindow("SLFFEA Control Panel");
+	glutInitWindowSize(control_width0, control_height0);
+	glutInitWindowPosition(0, 0);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB );
+	ControlWindow = glutCreateWindow("SLFFEA Control Panel");
 
-        ControlInit();
-	teMenu();
-        glutDisplayFunc(teControlDisplay);
-        glutReshapeFunc(ControlReshape);
+	ControlInit();
+	Menu2();
+	glutDisplayFunc(ControlDisplay);
+	glutReshapeFunc(ControlReshape);
 
-        glutMouseFunc(teControlMouse);
+	glutMouseFunc(ControlMouse);
 
 /* call function for hotkeys
  */
 #if 0
 	glutKeyboardFunc(ControlHandleKeys);
 #endif
-        glutMainLoop();
+	glutMainLoop();
 
-        free(strain);
-        free(stress);
-        free(strain_node);
-        free(stress_node);
-        free(strain_color);
-        free(stress_color);
-        free(mem_NORM);
-        free(matl);
-        free(mem_double);
-        free(mem_int);
-        free(mem_XYZI);
-        free(mem_XYZF);
-  	return 1;    /* ANSI C requires main to return int. */
+	free(strain);
+	free(stress);
+	free(strain_node);
+	free(stress_node);
+	free(strain_color);
+	free(stress_color);
+	free(mem_NORM);
+	free(matl);
+	free(mem_double);
+	free(mem_int);
+	free(mem_XYZI);
+	free(mem_XYZF);
+	return 1;    /* ANSI C requires main to return int. */
 }

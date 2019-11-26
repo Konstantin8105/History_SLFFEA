@@ -5,7 +5,7 @@
 		Updated 11/22/01
 
     SLFFEA source file
-    Version:  1.3
+    Version:  1.4
     Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
@@ -45,10 +45,10 @@ int teshg( double *, int, double *, double *, double *);
 
 int teKassemble(double *A, int *connect, int *connect_surf, double *coord, int *el_matl,
 	int *el_matl_surf, double *force, int *id, int *idiag, double *K_diag, int *lm,
-	MATL *matl, double *node_counter, STRAIN *strain, STRAIN *strain_node,
-	STRESS *stress, STRESS *stress_node, double *U, double *Voln)
+	MATL *matl, double *node_counter, SDIM *strain, SDIM *strain_node,
+	SDIM *stress, SDIM *stress_node, double *U, double *Voln)
 {
-        int i, i1, i2, j, k, dof_el[neqel], sdof_el[npel*nsd];
+	int i, i1, i2, j, k, dof_el[neqel], sdof_el[npel*nsd];
 	int check, counter, node, surf_el_counter, surface_el_flag;
 	int matl_num;
 	double Emod, Pois, G;
@@ -57,7 +57,7 @@ int teKassemble(double *A, int *connect, int *connect_surf, double *coord, int *
 	double B[soB], DB[soB];
 	double K_temp[neqlsq], K_el[neqlsq];
 	double force_el[neqel], U_el[neqel];
-        double coord_el_trans[npel*nsd];
+	double coord_el_trans[npel*nsd];
 	double X1, X2, X3, X4, Y1, Y2, Y3, Y4, Z1, Z2, Z3, Z4;
 	double a1, a2, a3, a4, b1, b2, b3, b4, c1, c2, c3, c4;
 	double stress_el[sdim], strain_el[sdim], invariant[nsd],
@@ -66,8 +66,8 @@ int teKassemble(double *A, int *connect, int *connect_surf, double *coord, int *
 	double fdum;
 
 	surf_el_counter = 0;
-        for( k = 0; k < numel; ++k )
-        {
+	for( k = 0; k < numel; ++k )
+	{
 
 		matl_num = *(el_matl+k);
 		Emod = matl[matl_num].E;
@@ -88,7 +88,7 @@ int teKassemble(double *A, int *connect, int *connect_surf, double *coord, int *
 
 		G = mu;
 
-        	/*printf("lamda, mu, Emod, Pois  %f %f %f %f \n", lamda, mu, Emod, Pois);*/
+		/*printf("lamda, mu, Emod, Pois  %f %f %f %f \n", lamda, mu, Emod, Pois);*/
 
 /* Create the coord_el transpose vector for one element */
 
@@ -113,13 +113,6 @@ int teKassemble(double *A, int *connect, int *connect_surf, double *coord, int *
 			if(analysis_flag == 1)
 				*(node_counter + node) += 1.0;
 		}
-
-		memset(U_el,0,neqel*sof);
-                memset(K_el,0,neqlsq*sof);
-		memset(force_el,0,neqel*sof);
-
-                memset(B,0,soB*sof);
-                memset(DB,0,soB*sof);
 
 /* Assembly of the B matrix.
 
@@ -175,6 +168,13 @@ int teKassemble(double *A, int *connect, int *connect_surf, double *coord, int *
 		}
 
 		*(Voln + k) = pt1667*fdum;
+
+		memset(U_el,0,neqel*sof);
+		memset(K_el,0,neqlsq*sof);
+		memset(force_el,0,neqel*sof);
+
+		memset(B,0,soB*sof);
+		memset(DB,0,soB*sof);
 
 		*(B) = a1;
 		*(B+3) = a2;
@@ -254,8 +254,8 @@ int teKassemble(double *A, int *connect, int *connect_surf, double *coord, int *
 			*(DB+neqel*5+i1) = *(B+neqel*5+i1)*G;
 		}
 
-                check=matXT(K_el, B, DB, neqel, neqel, sdim);
-                if(!check) printf( "Problems with matXT \n");
+		check=matXT(K_el, B, DB, neqel, neqel, sdim);
+		if(!check) printf( "Problems with matXT \n");
 
 #if !DEBUG
 		for( i2 = 0; i2 < neqlsq; ++i2 )
@@ -282,12 +282,12 @@ int teKassemble(double *A, int *connect, int *connect_surf, double *coord, int *
 #endif
 
 		for( j = 0; j < neqel; ++j )
-                {
+		{
 			*(U_el + j) = *(U + *(dof_el+j));
 		}
 
-                check = matX(force_el, K_el, U_el, neqel, 1, neqel);
-                if(!check) printf( "Problems with matX \n");
+		check = matX(force_el, K_el, U_el, neqel, 1, neqel);
+		if(!check) printf( "Problems with matX \n");
 
 		if(analysis_flag == 1)
 		{
@@ -295,7 +295,7 @@ int teKassemble(double *A, int *connect, int *connect_surf, double *coord, int *
 /* Compute the equivalant nodal forces based on prescribed displacements */
 
 			for( j = 0; j < neqel; ++j )
-                	{
+			{
 				*(force + *(dof_el+j)) -= *(force_el + j);
 			}
 
@@ -304,15 +304,15 @@ int teKassemble(double *A, int *connect, int *connect_surf, double *coord, int *
 
 			if(LU_decomp_flag)
 			{
-                	    check = globalKassemble(A, idiag, K_el, (lm + k*neqel),
-                                neqel);
-                            if(!check) printf( "Problems with globalKassemble \n");
+			    check = globalKassemble(A, idiag, K_el, (lm + k*neqel),
+				neqel);
+			    if(!check) printf( "Problems with globalKassemble \n");
 			}
 			else
 			{
-                            check = globalConjKassemble(A, dof_el, k, K_diag, K_el,
-                                neqel, neqlsq, numel_K);
-                            if(!check) printf( "Problems with globalConjKassemble \n");
+			    check = globalConjKassemble(A, dof_el, k, K_diag, K_el,
+				neqel, neqlsq, numel_K);
+			    if(!check) printf( "Problems with globalConjKassemble \n");
 			}
 		}
 		else
@@ -487,7 +487,7 @@ int teKassemble(double *A, int *connect, int *connect_surf, double *coord, int *
 			printf("%14.6e ",stress[k].xy);
 			printf( "\n");
 */
-           		/*printf( "\n");*/
+			/*printf( "\n");*/
 
 /* Create surface connectivity elements */
 
@@ -511,8 +511,8 @@ int teKassemble(double *A, int *connect, int *connect_surf, double *coord, int *
 /* Contract the global force matrix using the id array only if LU decomposition
    is used. */
 
-          if(LU_decomp_flag)
-          {
+	  if(LU_decomp_flag)
+	  {
 	     counter = 0;
 	     for( i = 0; i < dof ; ++i )
 	     {
@@ -523,7 +523,7 @@ int teKassemble(double *A, int *connect, int *connect_surf, double *coord, int *
 		}
 	     }
 	  }
-        }
+	}
 	if(analysis_flag == 2)
 	{
 

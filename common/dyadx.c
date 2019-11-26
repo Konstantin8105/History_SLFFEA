@@ -2,12 +2,12 @@
     This subroutine creates the dyadic product of
     2 vectors A and B 
 
-                A(p) B(p)
+                    A(p) B(p)
 
-	Updated 11/7/00
+              Updated 11/7/00
 
     SLFFEA source file
-    Version:  1.3
+    Version:  1.4
     Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
@@ -23,7 +23,7 @@
 
 int dyadicX(double *C,double *A,double *B, int p)
 {
-        int i,j,k;
+	int i,j,k;
 	memset(C,0,p*p*sizeof(double));
 	for( i = 0; i < p; ++i )
 	{

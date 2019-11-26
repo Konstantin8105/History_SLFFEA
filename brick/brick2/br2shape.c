@@ -1,6 +1,6 @@
 /*
      SLFFEA source file
-     Version:  1.3
+     Version:  1.4
      Copyright (C) 1999, 2000, 2001, 2002  San Le
 
      The source code contained in this file is released under the
@@ -24,34 +24,34 @@ int brshl_film( double g, double *shl_film)
      It is a C translation of the subroutine QDCSHL from the book
      "The Finite Element Method" by Thomas Hughes, page 784.
 
-			Updated 4/12/00
+                        Updated 4/12/00
 */
 
-        double ra[]={-0.50, 0.50, 0.50,-0.50};
-        double sa[]={-0.50,-0.50, 0.50, 0.50};
+	double ra[]={-0.50, 0.50, 0.50,-0.50};
+	double sa[]={-0.50,-0.50, 0.50, 0.50};
 	double temps,tempr,r,s;
 	int i,j,k;
 
-        for( k = 0; k < num_int_film; ++k )
-        {
+	for( k = 0; k < num_int_film; ++k )
+	{
 /* calculating the local dN/ds,dr matrix */
 
-        	r=g*(*(ra+k));
-        	s=g*(*(sa+k));
-        	for( i = 0; i < npel_film; ++i )
-        	{
+		r=g*(*(ra+k));
+		s=g*(*(sa+k));
+		for( i = 0; i < npel_film; ++i )
+		{
 		   tempr = pt5 + *(ra+i)*r;
 		   temps = pt5 + *(sa+i)*s;
-        	   *(shl_film+npel_film*nsd*k+i) =
+		   *(shl_film+npel_film*nsd*k+i) =
 			*(ra+i)*temps;
-        	   *(shl_film+npel_film*nsd*k+npel_film*1+i) =
+		   *(shl_film+npel_film*nsd*k+npel_film*1+i) =
 			tempr*(*(sa+i));
-        	   *(shl_film+npel_film*nsd*k+npel_film*2+i) =
+		   *(shl_film+npel_film*nsd*k+npel_film*2+i) =
 			tempr*temps;
 		}
-               	/*printf("\n");*/
+		/*printf("\n");*/
 	}
-        return 1;
+	return 1;
 }
 
 int brshface( double *dArea, int el, double *shl_film, double *xl)
@@ -86,24 +86,24 @@ int brshface( double *dArea, int el, double *shl_film, double *xl)
           j    = GLOBAL COORDINATE NUMBER
           k    = INTEGRATION-POINT NUMBER
        num_int_film    = NUMBER OF INTEGRATION POINTS FOR FILM SURFACE, 4
-		
-			Updated 9/25/01
+
+                        Updated 9/25/01
 */
 
-        double xs[6];
+	double xs[6];
 	double fdum, fdum2, fdum3;
 	int check,i,j,k;
 
-        for( k = 0; k < num_int_film; ++k )
+	for( k = 0; k < num_int_film; ++k )
 	{
 
 /* The jacobian, dx/dc, is calculated below */
 
-           for( j = 0; j < nsd - 1; ++j )
+	   for( j = 0; j < nsd - 1; ++j )
 	   {
-        	for( i = 0; i < nsd; ++i )
-        	{
-	     	   check=dotX((xs+(nsd-1)*i+j),(shl_film+npel_film*nsd*k+npel_film*j),
+		for( i = 0; i < nsd; ++i )
+		{
+		   check=dotX((xs+(nsd-1)*i+j),(shl_film+npel_film*nsd*k+npel_film*j),
 			(xl+npel_film*i),npel_film);
 		}
 	   }
@@ -117,6 +117,6 @@ int brshface( double *dArea, int el, double *shl_film, double *xl)
 	   /*printf("k %3d %14.5f %14.5f %14.5f %14.5f\n",k,fdum, fdum2, fdum3);*/
 
 	}
-        return 1; 
+	return 1; 
 }
 

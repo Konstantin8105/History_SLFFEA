@@ -3,8 +3,8 @@
     numbers the hash marks.
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -29,8 +29,8 @@ extern GLfloat wire_color[4], black[4], green[4], yellow[4],
 extern double left_right, up_down, in_out, left_right0,
 	up_down0, in_out0, xAngle, yAngle, zAngle;
 extern double AxisMax_x, AxisMax_y, AxisMax_z,
-        AxisMin_x, AxisMin_y, AxisMin_z,
-        IAxisMin_x, IAxisMin_y, IAxisMin_z;
+	AxisMin_x, AxisMin_y, AxisMin_z,
+	IAxisMin_x, IAxisMin_y, IAxisMin_z;
 extern double AxisLength_x, AxisLength_y, AxisLength_z,
 	AxisLength_max, AxisPoint_step;
 
@@ -49,7 +49,7 @@ void AxesNumbers(void)
     orientation of the labels always aligned with the
     viewers perspective.
 
- 		Last Update 1/26/02
+		  Last Update 1/25/06
 */
 	double point_vec[3];
 	int check, i, j, k, dum;
@@ -60,13 +60,13 @@ void AxesNumbers(void)
 /* For the X axis hash numerical label */
 
 	glLineWidth (1.0);
-        fdum4 = .004*AxisLength_max;
+	fdum4 = .004*AxisLength_max;
 
-        dum = 1 + (int) (AxisLength_x/AxisPoint_step);
-        glColor4fv(white);
-        fdum = (double)IAxisMin_x;
-        for( i = 0; i < dum; ++i)
-        {
+	dum = 1 + (int) (AxisLength_x/AxisPoint_step);
+	glColor4fv(white);
+	fdum = (double)IAxisMin_x;
+	for( i = 0; i < dum; ++i)
+	{
 		point_vec[0] = fdum;
 		point_vec[1] = 0.0;
 		point_vec[2] = 0.0;
@@ -74,9 +74,9 @@ void AxesNumbers(void)
 		check = PointLocate(point_vec, xAngle, yAngle, zAngle);
 		if(!check) printf( " Problems with PointLocate\n");
 
-    		fpointx = point_vec[0] + left_right;
-    		fpointy = point_vec[1] + up_down;
-    		fpointz = point_vec[2] + in_out;
+		fpointx = point_vec[0] + left_right;
+		fpointy = point_vec[1] + up_down;
+		fpointz = point_vec[2] + in_out;
 
 		glLoadIdentity();
 		glTranslatef( fpointx, fpointy, fpointz);
@@ -90,11 +90,11 @@ void AxesNumbers(void)
 
 /* For the Y axis hash numerical label */
 
-        dum = 1 + (int) (AxisLength_y/AxisPoint_step);
-        glColor4fv(white);
-        fdum = (double)IAxisMin_y;
-        for( i = 0; i < dum; ++i)
-        {
+	dum = 1 + (int) (AxisLength_y/AxisPoint_step);
+	glColor4fv(white);
+	fdum = (double)IAxisMin_y;
+	for( i = 0; i < dum; ++i)
+	{
 		point_vec[0] = 0.0;
 		point_vec[1] = fdum;
 		point_vec[2] = 0.0;
@@ -102,9 +102,9 @@ void AxesNumbers(void)
 		check = PointLocate(point_vec, xAngle, yAngle, zAngle);
 		if(!check) printf( " Problems with PointLocate\n");
 
-    		fpointx = point_vec[0] + left_right;
-    		fpointy = point_vec[1] + up_down;
-    		fpointz = point_vec[2] + in_out;
+		fpointx = point_vec[0] + left_right;
+		fpointy = point_vec[1] + up_down;
+		fpointz = point_vec[2] + in_out;
 
 		glLoadIdentity();
 		glTranslatef( fpointx, fpointy, fpointz);
@@ -118,11 +118,11 @@ void AxesNumbers(void)
 
 /* For the Z axis hash numerical label */
 
-        dum = 1 + (int) (AxisLength_z/AxisPoint_step);
-        glColor4fv(white);
-        fdum = (double)IAxisMin_z;
-        for( i = 0; i < dum; ++i)
-        {
+	dum = 1 + (int) (AxisLength_z/AxisPoint_step);
+	glColor4fv(white);
+	fdum = (double)IAxisMin_z;
+	for( i = 0; i < dum; ++i)
+	{
 		point_vec[0] = 0.0;
 		point_vec[1] = 0.0;
 		point_vec[2] = fdum;
@@ -130,9 +130,9 @@ void AxesNumbers(void)
 		check = PointLocate(point_vec, xAngle, yAngle, zAngle);
 		if(!check) printf( " Problems with PointLocate\n");
 
-    		fpointx = point_vec[0] + left_right;
-    		fpointy = point_vec[1] + up_down;
-    		fpointz = point_vec[2] + in_out;
+		fpointx = point_vec[0] + left_right;
+		fpointy = point_vec[1] + up_down;
+		fpointz = point_vec[2] + in_out;
 
 		glLoadIdentity();
 		glTranslatef( fpointx, fpointy, fpointz);
@@ -153,7 +153,7 @@ void AxesNumbers2(void)
     orientation of the labels aligned with its associate
     axis.
 
- 		Last Update 1/26/02
+		  Last Update 1/25/06
 */
 	double point_vec[3];
 	int check, i, j, k, dum;
@@ -164,13 +164,13 @@ void AxesNumbers2(void)
 /* For the X axis hash numerical label */
 
 	glLineWidth (1.0);
-        fdum4 = .004*AxisLength_max;
+	fdum4 = .004*AxisLength_max;
 
-        dum = 1 + (int) (AxisLength_x/AxisPoint_step);
-        glColor4fv(white);
-        fdum = (double)IAxisMin_x;
-        for( i = 0; i < dum; ++i)
-        {
+	dum = 1 + (int) (AxisLength_x/AxisPoint_step);
+	glColor4fv(white);
+	fdum = (double)IAxisMin_x;
+	for( i = 0; i < dum; ++i)
+	{
 		point_vec[0] = fdum;
 		point_vec[1] = 0.0;
 		point_vec[2] = 0.0;
@@ -178,9 +178,9 @@ void AxesNumbers2(void)
 		check = PointLocate(point_vec, xAngle, yAngle, zAngle);
 		if(!check) printf( " Problems with PointLocate\n");
 
-    		fpointx = point_vec[0] + left_right;
-    		fpointy = point_vec[1] + up_down;
-    		fpointz = point_vec[2] + in_out;
+		fpointx = point_vec[0] + left_right;
+		fpointy = point_vec[1] + up_down;
+		fpointz = point_vec[2] + in_out;
 
 		glLoadIdentity();
 		glTranslatef( fpointx, fpointy, fpointz);
@@ -199,11 +199,11 @@ void AxesNumbers2(void)
 
 /* For the Y axis hash numerical label */
 
-        dum = 1 + (int) (AxisLength_y/AxisPoint_step);
-        glColor4fv(white);
-        fdum = (double)IAxisMin_y;
-        for( i = 0; i < dum; ++i)
-        {
+	dum = 1 + (int) (AxisLength_y/AxisPoint_step);
+	glColor4fv(white);
+	fdum = (double)IAxisMin_y;
+	for( i = 0; i < dum; ++i)
+	{
 		point_vec[0] = 0.0;
 		point_vec[1] = fdum;
 		point_vec[2] = 0.0;
@@ -211,9 +211,9 @@ void AxesNumbers2(void)
 		check = PointLocate(point_vec, xAngle, yAngle, zAngle);
 		if(!check) printf( " Problems with PointLocate\n");
 
-    		fpointx = point_vec[0] + left_right;
-    		fpointy = point_vec[1] + up_down;
-    		fpointz = point_vec[2] + in_out;
+		fpointx = point_vec[0] + left_right;
+		fpointy = point_vec[1] + up_down;
+		fpointz = point_vec[2] + in_out;
 
 		glLoadIdentity();
 		glTranslatef( fpointx, fpointy, fpointz);
@@ -230,11 +230,11 @@ void AxesNumbers2(void)
 
 /* For the Z axis hash numerical label */
 
-        dum = 1 + (int) (AxisLength_z/AxisPoint_step);
-        glColor4fv(white);
-        fdum = (double)IAxisMin_z;
-        for( i = 0; i < dum; ++i)
-        {
+	dum = 1 + (int) (AxisLength_z/AxisPoint_step);
+	glColor4fv(white);
+	fdum = (double)IAxisMin_z;
+	for( i = 0; i < dum; ++i)
+	{
 		point_vec[0] = 0.0;
 		point_vec[1] = 0.0;
 		point_vec[2] = fdum;
@@ -242,9 +242,9 @@ void AxesNumbers2(void)
 		check = PointLocate(point_vec, xAngle, yAngle, zAngle);
 		if(!check) printf( " Problems with PointLocate\n");
 
-    		fpointx = point_vec[0] + left_right;
-    		fpointy = point_vec[1] + up_down;
-    		fpointz = point_vec[2] + in_out;
+		fpointx = point_vec[0] + left_right;
+		fpointy = point_vec[1] + up_down;
+		fpointz = point_vec[2] + in_out;
 
 		glLoadIdentity();
 		glTranslatef( fpointx, fpointy, fpointz);

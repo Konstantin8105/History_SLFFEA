@@ -2,11 +2,11 @@
     This program contains the control mouse routine for the FEM GUI
     for beam elements.
   
-                        Last Update 3/1/05
+                  Last Update 9/23/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -65,7 +65,7 @@ extern double amplify_factor, amplify_step, amplify_step0;
 extern double left_right, up_down, in_out;
 extern double left_right0, up_down0, in_out0;
 extern double ortho_left, ortho_right, ortho_top, ortho_bottom,
-        ortho_left0, ortho_right0, ortho_top0, ortho_bottom0;
+	ortho_left0, ortho_right0, ortho_top0, ortho_bottom0;
 extern int ortho_redraw_flag;
 
 extern int input_flag, post_flag, color_choice, matl_choice, node_choice, ele_choice;
@@ -76,8 +76,8 @@ extern int Before_flag, After_flag, Both_flag, Amplify_flag;
 extern int stress_flag, strain_flag, stress_strain, disp_flag, angle_flag;
 
 extern GLfloat yellow[4], orange[4], orangeRed[4], red[4], green[4],
-        violetRed[4], magenta[4], purple[4], blue[4],
-        white[4], grey[4], black[4];
+	violetRed[4], magenta[4], purple[4], blue[4],
+	white[4], grey[4], black[4];
 
 extern char RotateData[3][25];
 extern char MoveData[3][25];
@@ -107,20 +107,20 @@ void bmControlMouse(int button, int state, int x, int y)
 		memset(BoxData[i],0,25*sizeof(char));
 	}
 
-  	if (button == GLUT_LEFT_BUTTON)
-  	{
+	if (button == GLUT_LEFT_BUTTON)
+	{
 		if ( x < textDiv_xa )
-     		{
+		{
 
 /* These are for the View Option Keys */
 
-     			if ( y >= ControlDiv_y[3] && y < ControlDiv_y[4] )
-     			{
+			if ( y >= ControlDiv_y[3] && y < ControlDiv_y[4] )
+			{
 /* Distributed Load Turned On */
 				Dist_Load_flag = 1;
-     			}
-     			if ( y >= ControlDiv_y[4] && y < ControlDiv_y[5] )
-     			{
+			}
+			if ( y >= ControlDiv_y[4] && y < ControlDiv_y[5] )
+			{
 /* Node ID Turned On increment up */
 				AppliedForce_flag = 0;
 				angle_flag = 0;
@@ -130,28 +130,28 @@ void bmControlMouse(int button, int state, int x, int y)
 				Element_flag = 0;
 				Material_flag = 0;
 				Node_flag = 1;
-                		node_choicef += .5;
-                		if ( node_choicef > 1.0 )
-                		{
-                			node_choicef = 0.0;
-                		}
-                		node_choice += (int)node_choicef;
-                		if ( node_choice > numnp - 1 )
-                		{
-                        		node_choice = 0;
-                		}
+				node_choicef += .5;
+				if ( node_choicef > 1.0 )
+				{
+					node_choicef = 0.0;
+				}
+				node_choice += (int)node_choicef;
+				if ( node_choice > numnp - 1 )
+				{
+					node_choice = 0;
+				}
 				color_choice = 31;
 				strain_flag = 0;
 				stress_flag = 0;
-     				if ( Both_flag )
-     				{
+				if ( Both_flag )
+				{
 					After_flag = 0;
 					Before_flag = 1;
 					Both_flag = 0;
-     				}
-     			}
-     			if ( y >= ControlDiv_y[5] && y < ControlDiv_y[6] )
-     			{
+				}
+			}
+			if ( y >= ControlDiv_y[5] && y < ControlDiv_y[6] )
+			{
 /* Element ID Turned On increment up */
 				/*ScreenShot( control_width, control_height );*/
 
@@ -163,29 +163,29 @@ void bmControlMouse(int button, int state, int x, int y)
 				Element_flag = 1;
 				Material_flag = 0;
 				Node_flag = 0;
-                		ele_choicef += .5;
-                		if ( ele_choicef > 1.0 )
-                		{
-                			ele_choicef = 0.0;
-                		}
-                		ele_choice += (int)ele_choicef;
-                		if ( ele_choice > numel - 1 )
-                		{
-                        		ele_choice = 0;
-                		}
+				ele_choicef += .5;
+				if ( ele_choicef > 1.0 )
+				{
+					ele_choicef = 0.0;
+				}
+				ele_choice += (int)ele_choicef;
+				if ( ele_choice > numel - 1 )
+				{
+					ele_choice = 0;
+				}
 				color_choice = 32;
 				strain_flag = 0;
 				stress_flag = 0;
-     				if ( Both_flag )
-     				{
+				if ( Both_flag )
+				{
 					After_flag = 0;
 					Before_flag = 1;
 					Both_flag = 0;
-     				}
-     			}
-     			if ( y >= ControlDiv_y[6] && y < ControlDiv_y[7] )
-     			{
-/* Material Turned On increment up */
+				}
+			}
+			if ( y >= ControlDiv_y[6] && y < ControlDiv_y[7] )
+			{
+/* Material ID Turned On increment up */
 				AppliedForce_flag = 0;
 				angle_flag = 0;
 				disp_flag = 0;
@@ -194,113 +194,113 @@ void bmControlMouse(int button, int state, int x, int y)
 				Element_flag = 0;
 				Node_flag = 0;
 				Material_flag = 1;
-                		matl_choicef += .5;
-                		if ( matl_choicef > 1.0 )
-                		{
-                			matl_choicef = 0.0;
-                		}
-                		matl_choice += (int)matl_choicef;
-                		if ( matl_choice > nmat - 1 )
-                		{
-                        		matl_choice = 0;
-                		}
+				matl_choicef += .5;
+				if ( matl_choicef > 1.0 )
+				{
+					matl_choicef = 0.0;
+				}
+				matl_choice += (int)matl_choicef;
+				if ( matl_choice > nmat - 1 )
+				{
+					matl_choice = 0;
+				}
 				color_choice = 30;
 				strain_flag = 0;
 				stress_flag = 0;
-     				if ( Both_flag )
-     				{
+				if ( Both_flag )
+				{
 					After_flag = 0;
 					Before_flag = 1;
 					Both_flag = 0;
-     				}
-     			}
-     			if ( y >= ControlDiv_y[7] && y < ControlDiv_y[8] )
-     			{
+				}
+			}
+			if ( y >= ControlDiv_y[7] && y < ControlDiv_y[8] )
+			{
 /* Fixed Disp Turned On */
 				/*AppliedForce_flag = 0;*/
 				AppliedDisp_flag = 1;
 				Element_flag = 0;
 				Material_flag = 0;
 				Node_flag = 0;
-     				/*if ( Both_flag )
-     				{
+				/*if ( Both_flag )
+				{
 					After_flag = 0;
 					Before_flag = 1;
 					Both_flag = 0;
-     				}*/
-     			}
-     			if ( y >= ControlDiv_y[8] && y < ControlDiv_y[9] )
-     			{
+				}*/
+			}
+			if ( y >= ControlDiv_y[8] && y < ControlDiv_y[9] )
+			{
 /* Applied Force Turned On */
 				AppliedForce_flag = 1;
 				/*AppliedDisp_flag = 0;*/
 				Element_flag = 0;
 				Material_flag = 0;
 				Node_flag = 0;
-     				/*if ( Both_flag )
-     				{
+				/*if ( Both_flag )
+				{
 					After_flag = 0;
 					Before_flag = 1;
 					Both_flag = 0;
-     				}*/
-     			}
-     			if ( y >= ControlDiv_y[9] && y < ControlDiv_y[10] )
-     			{
+				}*/
+			}
+			if ( y >= ControlDiv_y[9] && y < ControlDiv_y[10] )
+			{
 /* Axes Turned On */
 				Axes_flag = 1;
-     			}
+			}
 /* These are for the Rotation Keys */
-     			if ( y >= ControlDiv_y[12] && y < ControlDiv_y[13] )
-     			{
+			if ( y >= ControlDiv_y[12] && y < ControlDiv_y[13] )
+			{
 /* Rotate -x */
 				xAngle -= 5.0;
-     			}
-     			if ( y >= ControlDiv_y[13] && y < ControlDiv_y[14] )
-     			{
+			}
+			if ( y >= ControlDiv_y[13] && y < ControlDiv_y[14] )
+			{
 /* Rotate -y */
 				yAngle -= 5.0;
-     			}
-     			if ( y >= ControlDiv_y[14] && y < ControlDiv_y[15] )
-     			{
+			}
+			if ( y >= ControlDiv_y[14] && y < ControlDiv_y[15] )
+			{
 /* Rotate -z */
 				zAngle -= 5.0;
-     			}
-     			if ( y >= ControlDiv_y[15] && y < ControlDiv_y[16] )
-     			{
+			}
+			if ( y >= ControlDiv_y[15] && y < ControlDiv_y[16] )
+			{
 /* Reset Angles */
 				xAngle = 0.0; yAngle = 0.0; zAngle = 0.0;
-     			}
+			}
 /* These are for the Move Keys */
-     			if ( y >= ControlDiv_y[17] && y < ControlDiv_y[18] )
-     			{
+			if ( y >= ControlDiv_y[17] && y < ControlDiv_y[18] )
+			{
 /* Move -x */
 				left_right -= step_sizex;
-     			}
-     			if ( y >= ControlDiv_y[18] && y < ControlDiv_y[19] )
-     			{
+			}
+			if ( y >= ControlDiv_y[18] && y < ControlDiv_y[19] )
+			{
 /* Move -y */
 				up_down -= step_sizey;
-     			}
-     			if ( y >= ControlDiv_y[19] && y < ControlDiv_y[20] )
-     			{
+			}
+			if ( y >= ControlDiv_y[19] && y < ControlDiv_y[20] )
+			{
 /* Move -z */
 				in_out -= step_sizez;
-     			}
-     			if ( y >= ControlDiv_y[20] && y < ControlDiv_y[21] )
-     			{
+			}
+			if ( y >= ControlDiv_y[20] && y < ControlDiv_y[21] )
+			{
 /* Reset Position */
-                		left_right = left_right0;
-                		up_down = up_down0;
-                		in_out = in_out0;
+				left_right = left_right0;
+				up_down = up_down0;
+				in_out = in_out0;
 
 				ortho_right = ortho_right0;
 				ortho_left = ortho_left0;
 				ortho_top = ortho_top0;
 				ortho_bottom = ortho_bottom0;
-     			}
+			}
 /* These are for the Deformation Keys */
-     			if ( y >= ControlDiv_y[24] && y < ControlDiv_y[25] )
-     			{
+			if ( y >= ControlDiv_y[24] && y < ControlDiv_y[25] )
+			{
 /* Before Turned On */
 				After_flag = 0;
 				/*amplify_factor = 1.0;
@@ -311,16 +311,16 @@ void bmControlMouse(int button, int state, int x, int y)
 				strain_flag = 0;
 				if ( post_flag )
 					stress_flag = 0;
-     			}
-     			if ( y >= ControlDiv_y[25] && y < ControlDiv_y[26] )
-     			{
+			}
+			if ( y >= ControlDiv_y[25] && y < ControlDiv_y[26] )
+			{
 /* After Turned On */
 				After_flag = 1;
 				Before_flag = 0;
 				Both_flag = 0;
-     			}
-     			if ( y >= ControlDiv_y[26] && y < ControlDiv_y[27] )
-     			{
+			}
+			if ( y >= ControlDiv_y[26] && y < ControlDiv_y[27] )
+			{
 /* Both Before and After Turned On */
 				After_flag = 1;
 				/*AppliedForce_flag = 0;*/
@@ -331,77 +331,77 @@ void bmControlMouse(int button, int state, int x, int y)
 				/*Material_flag = 0;
 				strain_flag = 0;
 				stress_flag = 0;*/
-     			}
-     			if ( y >= ControlDiv_y[27] && y < ControlDiv_y[28] )
-     			{
+			}
+			if ( y >= ControlDiv_y[27] && y < ControlDiv_y[28] )
+			{
 /* Amplification increased */
-     			    if ( post_flag )
-     			    {
-			    	After_flag = 1;
+			    if ( post_flag )
+			    {
+				After_flag = 1;
 				amplify_step = amplify_step0;
 				if( amplify_factor < 1.0 - SMALL2 )
-                                	amplify_step = .1;
-			    	amplify_factor += amplify_step;
-			    	Amplify_flag = 1;
-			    	/*AppliedForce_flag = 0;
-			    	AppliedDisp_flag = 0;*/
+					amplify_step = .1;
+				amplify_factor += amplify_step;
+				Amplify_flag = 1;
+				/*AppliedForce_flag = 0;
+				AppliedDisp_flag = 0;*/
 
-                        	for ( i = 0; i < numnp; ++i )
-                        	{
-			   	    *(coord + nsd*i) = *(coord0+nsd*i) +
+				for ( i = 0; i < numnp; ++i )
+				{
+				    *(coord + nsd*i) = *(coord0+nsd*i) +
 					*(U+ndof*i)*amplify_factor;
-			   	    *(coord + nsd*i+1) = *(coord0+nsd*i+1) +
+				    *(coord + nsd*i+1) = *(coord0+nsd*i+1) +
 					*(U+ndof*i+1)*amplify_factor;
-			   	    *(coord + nsd*i+2) = *(coord0+nsd*i+2) +
+				    *(coord + nsd*i+2) = *(coord0+nsd*i+2) +
 					*(U+ndof*i+2)*amplify_factor;
-                        	}
+				}
 
 /* Update force graphics vectors */	
 				for( i = 0; i < bc.num_force[0]; ++i)
 				{
-			   	    fpointx = *(coord+nsd*bc.force[i]);
-			   	    fpointy = *(coord+nsd*bc.force[i] + 1);
-			   	    fpointz = *(coord+nsd*bc.force[i] + 2);
-			   	    force_vec[i].x = fpointx - force_vec0[i].x;
-			   	    force_vec[i].y = fpointy - force_vec0[i].y;
-			   	    force_vec[i].z = fpointz - force_vec0[i].z;
-			   	    force_vec[i].phix = fpointx - force_vec0[i].phix;
-			   	    force_vec[i].phiy = fpointy - force_vec0[i].phiy;
-			   	    force_vec[i].phiz = fpointz - force_vec0[i].phiz;
+				    fpointx = *(coord+nsd*bc.force[i]);
+				    fpointy = *(coord+nsd*bc.force[i] + 1);
+				    fpointz = *(coord+nsd*bc.force[i] + 2);
+				    force_vec[i].x = fpointx - force_vec0[i].x;
+				    force_vec[i].y = fpointy - force_vec0[i].y;
+				    force_vec[i].z = fpointz - force_vec0[i].z;
+				    force_vec[i].phix = fpointx - force_vec0[i].phix;
+				    force_vec[i].phiy = fpointy - force_vec0[i].phiy;
+				    force_vec[i].phiz = fpointz - force_vec0[i].phiz;
 				}
 /* Update distributed load graphics vectors */	
-            			for( k = 0; k < bc.num_dist_load[0]; ++k)
-            			{
-                			node0 = *(connecter+bc.dist_load[k]*npel);
-                			node1 = *(connecter+bc.dist_load[k]*npel+1);
+				for( k = 0; k < bc.num_dist_load[0]; ++k)
+				{
+					node0 = *(connecter+bc.dist_load[k]*npel);
+					node1 = *(connecter+bc.dist_load[k]*npel+1);
 
-                			*(coord_el)=*(coord+nsd*node0);
-                			*(coord_el+1)=*(coord+nsd*node0+1);
-                			*(coord_el+2)=*(coord+nsd*node0+2);
+					*(coord_el)=*(coord+nsd*node0);
+					*(coord_el+1)=*(coord+nsd*node0+1);
+					*(coord_el+2)=*(coord+nsd*node0+2);
 
-                			*(coord_el+3)=*(coord+nsd*node1);
-                			*(coord_el+4)=*(coord+nsd*node1+1);
-                			*(coord_el+5)=*(coord+nsd*node1+2);
+					*(coord_el+3)=*(coord+nsd*node1);
+					*(coord_el+4)=*(coord+nsd*node1+1);
+					*(coord_el+5)=*(coord+nsd*node1+2);
 
-			        	*(vec_in) =  0.0;
-                			*(vec_in+1) =  dist_load_vec0[k].qy;
-                			*(vec_in+2) =  dist_load_vec0[k].qz;
+					*(vec_in) =  0.0;
+					*(vec_in+1) =  dist_load_vec0[k].qy;
+					*(vec_in+2) =  dist_load_vec0[k].qz;
 
-                			check = bmrotate(coord_el, vec_in, vec_out);
-                			if(!check) printf( " Problems with bmrotate \n");
+					check = bmrotate(coord_el, vec_in, vec_out);
+					if(!check) printf( " Problems with bmrotate \n");
 
-                			dist_load_vec[k].x = *(vec_out);
-                			dist_load_vec[k].y = *(vec_out+1);
-                			dist_load_vec[k].z = *(vec_out+2);
-            			}
-                	    }
-     			}
+					dist_load_vec[k].x = *(vec_out);
+					dist_load_vec[k].y = *(vec_out+1);
+					dist_load_vec[k].z = *(vec_out+2);
+				}
+			    }
+			}
 
 /* These are for the Engineering Analysis Option Keys */
-     			if ( y >= ControlDiv_y[30] )
-     			{
+			if ( y >= ControlDiv_y[30] )
+			{
 /* Stresses or displacement Turned On */
-			        if( post_flag)
+				if( post_flag)
 				{
 				   After_flag = 1;
 				   Before_flag = 0;
@@ -415,81 +415,81 @@ void bmControlMouse(int button, int state, int x, int y)
 /* Moments XX*/
 				strain_flag = 0;
 				stress_flag = 1;
-				color_choice = 10;
-     			}
-     			if ( y >= ControlDiv_y[31] )
-     			{
+				color_choice = 50;
+			}
+			if ( y >= ControlDiv_y[31] )
+			{
 /* Moments YY*/
 				angle_flag = 0;
 				disp_flag = 0;
-				color_choice = 11;
-     			}
-     			if ( y >= ControlDiv_y[32] )
-     			{
+				color_choice = 51;
+			}
+			if ( y >= ControlDiv_y[32] )
+			{
 /* Moments ZZ*/
 				angle_flag = 0;
 				disp_flag = 0;
-				color_choice = 12;
-     			}
-     			if ( y >= ControlDiv_y[33] )
-     			{
+				color_choice = 52;
+			}
+			if ( y >= ControlDiv_y[33] )
+			{
 /* Stresses XX*/
 				angle_flag = 0;
 				disp_flag = 0;
-				color_choice = 13;
-     			}
-     			if ( y >= ControlDiv_y[35] )
-     			{
+				color_choice = 10;
+			}
+			if ( y >= ControlDiv_y[35] )
+			{
 /* Stresses XY*/
 				angle_flag = 0;
 				disp_flag = 0;
-				color_choice = 14;
-     			}
-     			if ( y >= ControlDiv_y[36] )
-     			{
+				color_choice = 13;
+			}
+			if ( y >= ControlDiv_y[36] )
+			{
 /* Stresses ZX*/
 				angle_flag = 0;
 				disp_flag = 0;
-				color_choice = 15;
-     			}
+				color_choice = 14;
+			}
 
 
 
 /* Displacement */
-     			if ( y >= ControlDiv_y[38] )
-     			{
+			if ( y >= ControlDiv_y[38] )
+			{
 /* Displacement X*/
 				angle_flag = 0;
 				disp_flag = 1;
 				stress_flag = 0;
 				color_choice = 19;
-     			}
-     			if ( y >= ControlDiv_y[40] )
-     			{
+			}
+			if ( y >= ControlDiv_y[40] )
+			{
 /* Displacement Y*/
 				angle_flag = 0;
 				disp_flag = 1;
 				stress_flag = 0;
 				color_choice = 20;
-     			}
-     			if ( y >= ControlDiv_y[41] )
-     			{
+			}
+			if ( y >= ControlDiv_y[41] )
+			{
 /* Displacement Z*/
 				angle_flag = 0;
 				disp_flag = 1;
 				stress_flag = 0;
 				color_choice = 21;
-     			}
-     		}
+			}
+		}
 		if ( x >= textDiv_xa && x < textDiv_xb )
-     		{
-     			if ( y >= ControlDiv_y[3] && y <= ControlDiv_y[4] )
-     			{
+		{
+			if ( y >= ControlDiv_y[3] && y <= ControlDiv_y[4] )
+			{
 /* Distributed Load Turned Off */
 				Dist_Load_flag = 0;
-     			}
-     			if ( y >= ControlDiv_y[4] && y < ControlDiv_y[5] )
-     			{
+			}
+			if ( y >= ControlDiv_y[4] && y < ControlDiv_y[5] )
+			{
 /* Node ID Turned On increment down */
 				AppliedForce_flag = 0;
 				angle_flag = 0;
@@ -499,28 +499,28 @@ void bmControlMouse(int button, int state, int x, int y)
 				Element_flag = 0;
 				Material_flag = 0;
 				Node_flag = 1;
-                		node_choicef += .5;
-                		if ( node_choicef > 1.0 )
-                		{
-                			node_choicef = 0.0;
-                		}
-                		node_choice -= (int)node_choicef;
-                		if ( node_choice < 0 )
-                		{
-                        		node_choice = numnp-1;
-                		}
+				node_choicef += .5;
+				if ( node_choicef > 1.0 )
+				{
+					node_choicef = 0.0;
+				}
+				node_choice -= (int)node_choicef;
+				if ( node_choice < 0 )
+				{
+					node_choice = numnp-1;
+				}
 				color_choice = 31;
 				strain_flag = 0;
 				stress_flag = 0;
-     				if ( Both_flag )
-     				{
+				if ( Both_flag )
+				{
 					After_flag = 0;
 					Before_flag = 1;
 					Both_flag = 0;
-     				}
-     			}
-     			if ( y >= ControlDiv_y[5] && y < ControlDiv_y[6] )
-     			{
+				}
+			}
+			if ( y >= ControlDiv_y[5] && y < ControlDiv_y[6] )
+			{
 /* Element ID Turned On increment down */
 				/*ScreenShot( 350, 700);*/
 
@@ -532,29 +532,29 @@ void bmControlMouse(int button, int state, int x, int y)
 				Element_flag = 1;
 				Material_flag = 0;
 				Node_flag = 0;
-                		ele_choicef += .5;
-                		if ( ele_choicef > 1.0 )
-                		{
-                			ele_choicef = 0.0;
-                		}
-                		ele_choice -= (int)ele_choicef;
-                		if ( ele_choice < 0 )
-                		{
-                        		ele_choice = numel-1;
-                		}
+				ele_choicef += .5;
+				if ( ele_choicef > 1.0 )
+				{
+					ele_choicef = 0.0;
+				}
+				ele_choice -= (int)ele_choicef;
+				if ( ele_choice < 0 )
+				{
+					ele_choice = numel-1;
+				}
 				color_choice = 32;
 				strain_flag = 0;
 				stress_flag = 0;
-     				if ( Both_flag )
-     				{
+				if ( Both_flag )
+				{
 					After_flag = 0;
 					Before_flag = 1;
 					Both_flag = 0;
-     				}
-     			}
-     			if ( y >= ControlDiv_y[6] && y < ControlDiv_y[7] )
-     			{
-/* Material Turned On increment down */
+				}
+			}
+			if ( y >= ControlDiv_y[6] && y < ControlDiv_y[7] )
+			{
+/* Material ID Turned On increment down */
 				AppliedForce_flag = 0;
 				angle_flag = 0;
 				disp_flag = 0;
@@ -563,144 +563,144 @@ void bmControlMouse(int button, int state, int x, int y)
 				Element_flag = 0;
 				Node_flag = 0;
 				Material_flag = 1;
-                		matl_choicef += .5;
-                		if ( matl_choicef > 1.0 )
-                		{
-                			matl_choicef = 0.0;
-                		}
-                		matl_choice -= (int)matl_choicef;
-                		if ( matl_choice < 0 )
-                		{
-                        		matl_choice = nmat-1;
-                		}
+				matl_choicef += .5;
+				if ( matl_choicef > 1.0 )
+				{
+					matl_choicef = 0.0;
+				}
+				matl_choice -= (int)matl_choicef;
+				if ( matl_choice < 0 )
+				{
+					matl_choice = nmat-1;
+				}
 				color_choice = 30;
 				strain_flag = 0;
 				stress_flag = 0;
-     				if ( Both_flag )
-     				{
+				if ( Both_flag )
+				{
 					After_flag = 0;
 					Before_flag = 1;
 					Both_flag = 0;
-     				}
-     			}
-     			if ( y >= ControlDiv_y[7] && y <= ControlDiv_y[8] )
-     			{
+				}
+			}
+			if ( y >= ControlDiv_y[7] && y <= ControlDiv_y[8] )
+			{
 /* Fixed Disp Turned Off */
 				AppliedDisp_flag = 0;
-     			}
-     			if ( y >= ControlDiv_y[8] && y < ControlDiv_y[9] )
-     			{
+			}
+			if ( y >= ControlDiv_y[8] && y < ControlDiv_y[9] )
+			{
 /* Applied Force Turned Off */
 				AppliedForce_flag = 0;
-     			}
-     			if ( y >= ControlDiv_y[9] && y < ControlDiv_y[10] )
-     			{
+			}
+			if ( y >= ControlDiv_y[9] && y < ControlDiv_y[10] )
+			{
 /* Axes Turned Off */
 				Axes_flag = 0;
-     			}
+			}
 /* These are for the Rotation Keys */
-     			if ( y >= ControlDiv_y[12] && y < ControlDiv_y[13] )
-     			{
+			if ( y >= ControlDiv_y[12] && y < ControlDiv_y[13] )
+			{
 /* Rotate +x */
 				xAngle += 5.0;
-     			}
-     			if ( y >= ControlDiv_y[13] && y < ControlDiv_y[14] )
-     			{
+			}
+			if ( y >= ControlDiv_y[13] && y < ControlDiv_y[14] )
+			{
 /* Rotate +y */
 				yAngle += 5.0;
-     			}
-     			if ( y >= ControlDiv_y[14] && y < ControlDiv_y[15] )
-     			{
+			}
+			if ( y >= ControlDiv_y[14] && y < ControlDiv_y[15] )
+			{
 /* Rotate +z */
 				zAngle += 5.0;
-     			}
+			}
 /* These are for the Move Keys */
-     			if ( y >= ControlDiv_y[17] && y < ControlDiv_y[18] )
-     			{
+			if ( y >= ControlDiv_y[17] && y < ControlDiv_y[18] )
+			{
 /* Move +x */
 				left_right += step_sizex;
-     			}
-     			if ( y >= ControlDiv_y[18] && y < ControlDiv_y[19] )
-     			{
+			}
+			if ( y >= ControlDiv_y[18] && y < ControlDiv_y[19] )
+			{
 /* Move +y */
 				up_down += step_sizey;
-     			}
-     			if ( y >= ControlDiv_y[19] && y < ControlDiv_y[20] )
-     			{
+			}
+			if ( y >= ControlDiv_y[19] && y < ControlDiv_y[20] )
+			{
 /* Move +z */
 				in_out += step_sizez;
-     			}
+			}
 /* These are for the Deformation Keys */
-     			if ( y >= ControlDiv_y[27] && y < ControlDiv_y[28] )
-     			{
+			if ( y >= ControlDiv_y[27] && y < ControlDiv_y[28] )
+			{
 /* Amplification decreased */
-            		    if( post_flag )
-            		    {
-			    	After_flag = 1;
+			    if( post_flag )
+			    {
+				After_flag = 1;
 				amplify_step = amplify_step0;
 				if( amplify_factor < 1.0 + amplify_step0 - SMALL2 )
 					amplify_step = .1;
-			    	amplify_factor -= amplify_step;
-			    	/*Amplify_flag = 1;*/
-     			    	if ( amplify_factor < 0.0 )
+				amplify_factor -= amplify_step;
+				/*Amplify_flag = 1;*/
+				if ( amplify_factor < 0.0 )
 				    amplify_factor = 0.0;
 
-                        	for ( i = 0; i < numnp; ++i )
-                        	{
-			   	    *(coord + nsd*i) = *(coord0+nsd*i) +
+				for ( i = 0; i < numnp; ++i )
+				{
+				    *(coord + nsd*i) = *(coord0+nsd*i) +
 					*(U+ndof*i)*amplify_factor;
-			   	    *(coord + nsd*i+1) = *(coord0+nsd*i+1) +
+				    *(coord + nsd*i+1) = *(coord0+nsd*i+1) +
 					*(U+ndof*i+1)*amplify_factor;
-			   	    *(coord + nsd*i+2) = *(coord0+nsd*i+2) +
+				    *(coord + nsd*i+2) = *(coord0+nsd*i+2) +
 					*(U+ndof*i+2)*amplify_factor;
-                        	}
+				}
 
 /* Update force graphics vectors */	
 				for( i = 0; i < bc.num_force[0]; ++i)
 				{
-			   	    fpointx = *(coord+nsd*bc.force[i]);
-			   	    fpointy = *(coord+nsd*bc.force[i] + 1);
-			   	    fpointz = *(coord+nsd*bc.force[i] + 2);
-			   	    force_vec[i].x = fpointx - force_vec0[i].x;
-			   	    force_vec[i].y = fpointy - force_vec0[i].y;
-			   	    force_vec[i].z = fpointz - force_vec0[i].z;
-			   	    force_vec[i].phix = fpointx - force_vec0[i].phix;
-			   	    force_vec[i].phiy = fpointy - force_vec0[i].phiy;
-			   	    force_vec[i].phiz = fpointz - force_vec0[i].phiz;
+				    fpointx = *(coord+nsd*bc.force[i]);
+				    fpointy = *(coord+nsd*bc.force[i] + 1);
+				    fpointz = *(coord+nsd*bc.force[i] + 2);
+				    force_vec[i].x = fpointx - force_vec0[i].x;
+				    force_vec[i].y = fpointy - force_vec0[i].y;
+				    force_vec[i].z = fpointz - force_vec0[i].z;
+				    force_vec[i].phix = fpointx - force_vec0[i].phix;
+				    force_vec[i].phiy = fpointy - force_vec0[i].phiy;
+				    force_vec[i].phiz = fpointz - force_vec0[i].phiz;
 				}
 /* Update distributed load graphics vectors */	
-            			for( k = 0; k < bc.num_dist_load[0]; ++k)
-            			{
-                			node0 = *(connecter+bc.dist_load[k]*npel);
-                			node1 = *(connecter+bc.dist_load[k]*npel+1);
+				for( k = 0; k < bc.num_dist_load[0]; ++k)
+				{
+					node0 = *(connecter+bc.dist_load[k]*npel);
+					node1 = *(connecter+bc.dist_load[k]*npel+1);
 
-                			*(coord_el)=*(coord+nsd*node0);
-                			*(coord_el+1)=*(coord+nsd*node0+1);
-                			*(coord_el+2)=*(coord+nsd*node0+2);
+					*(coord_el)=*(coord+nsd*node0);
+					*(coord_el+1)=*(coord+nsd*node0+1);
+					*(coord_el+2)=*(coord+nsd*node0+2);
 
-                			*(coord_el+3)=*(coord+nsd*node1);
-                			*(coord_el+4)=*(coord+nsd*node1+1);
-                			*(coord_el+5)=*(coord+nsd*node1+2);
+					*(coord_el+3)=*(coord+nsd*node1);
+					*(coord_el+4)=*(coord+nsd*node1+1);
+					*(coord_el+5)=*(coord+nsd*node1+2);
 
-			        	*(vec_in) =  0.0;
-                			*(vec_in+1) =  dist_load_vec0[k].qy;
-                			*(vec_in+2) =  dist_load_vec0[k].qz;
+					*(vec_in) =  0.0;
+					*(vec_in+1) =  dist_load_vec0[k].qy;
+					*(vec_in+2) =  dist_load_vec0[k].qz;
 
-                			check = bmrotate(coord_el, vec_in, vec_out);
-                			if(!check) printf( " Problems with bmrotate \n");
+					check = bmrotate(coord_el, vec_in, vec_out);
+					if(!check) printf( " Problems with bmrotate \n");
 
-                			dist_load_vec[k].x = *(vec_out);
-                			dist_load_vec[k].y = *(vec_out+1);
-                			dist_load_vec[k].z = *(vec_out+2);
-            			}
-                	    }
-     			}
+					dist_load_vec[k].x = *(vec_out);
+					dist_load_vec[k].y = *(vec_out+1);
+					dist_load_vec[k].z = *(vec_out+2);
+				}
+			    }
+			}
 
 /* These are for the Engineering Analysis Option Keys */
-     			if ( y >= ControlDiv_y[30] )
-     			{
+			if ( y >= ControlDiv_y[30] )
+			{
 /* Strains Turned On */
-			        if( post_flag)
+				if( post_flag)
 				{
 				   After_flag = 1;
 				   Before_flag = 0;
@@ -713,69 +713,69 @@ void bmControlMouse(int button, int state, int x, int y)
 
 /* Curvature XX*/
 				strain_flag = 1;
-				color_choice = 1;
+				color_choice = 41;
 				stress_flag = 0;
-     			}
-     			if ( y >= ControlDiv_y[31] )
-     			{
+			}
+			if ( y >= ControlDiv_y[31] )
+			{
 /* Curvature YY*/
 				angle_flag = 0;
 				disp_flag = 0;
-				color_choice = 2;
-     			}
-     			if ( y >= ControlDiv_y[32] )
-     			{
+				color_choice = 42;
+			}
+			if ( y >= ControlDiv_y[32] )
+			{
 /* Curvature ZZ*/
 				angle_flag = 0;
 				disp_flag = 0;
-				color_choice = 3;
-     			}
-     			if ( y >= ControlDiv_y[33] )
-     			{
+				color_choice = 43;
+			}
+			if ( y >= ControlDiv_y[33] )
+			{
 /* Strains XX*/
 				angle_flag = 0;
 				disp_flag = 0;
-				color_choice = 4;
-     			}
-     			if ( y >= ControlDiv_y[35] )
-     			{
+				color_choice = 1;
+			}
+			if ( y >= ControlDiv_y[35] )
+			{
 /* Strains XY*/
 				angle_flag = 0;
 				disp_flag = 0;
-				color_choice = 5;
-     			}
-     			if ( y >= ControlDiv_y[36] )
-     			{
+				color_choice = 4;
+			}
+			if ( y >= ControlDiv_y[36] )
+			{
 /* Strains ZX*/
 				angle_flag = 0;
 				disp_flag = 0;
-				color_choice = 6;
-     			}
+				color_choice = 5;
+			}
 
 /* Angle */
-     			if ( y >= ControlDiv_y[38] )
-     			{
+			if ( y >= ControlDiv_y[38] )
+			{
 /* Angle X*/
 				angle_flag = 1;
 				disp_flag = 0;
 				stress_flag = 0;
 				color_choice = 22;
-     			}
-     			if ( y >= ControlDiv_y[40] )
-     			{
+			}
+			if ( y >= ControlDiv_y[40] )
+			{
 /* Angle Y*/
 				angle_flag = 2;
 				disp_flag = 0;
 				color_choice = 23;
-     			}
-     			if ( y >= ControlDiv_y[41] )
-     			{
+			}
+			if ( y >= ControlDiv_y[41] )
+			{
 /* Angle Z*/
 				angle_flag = 3;
 				disp_flag = 0;
 				color_choice = 24;
-     			}
-     		}
+			}
+		}
 	}
 
 	sprintf( RotateData[0], "%8.2f ", xAngle);
@@ -793,9 +793,9 @@ void bmControlMouse(int button, int state, int x, int y)
 		Color_flag[i] = 0;
 	}
 
-    	switch (color_choice) {
-                case 1:
-                        strncpy(BoxText, "curve XX", 8);
+	switch (color_choice) {
+		case 41:
+			strncpy(BoxText, "curve XX", 8);
 			Color_flag[29] = 1;
 			strain_flag = 1;
 			stress_flag = 0;
@@ -808,9 +808,9 @@ void bmControlMouse(int button, int state, int x, int y)
 			sprintf( BoxData[12], "%10.3e ", curve_div[2].xx);
 			sprintf( BoxData[14], "%10.3e ", curve_div[1].xx);
 			sprintf( BoxData[16], "%10.3e ", curve_div[0].xx);
-                break;
-                case 2:
-                        strncpy(BoxText, "curve YY", 8);
+		break;
+		case 42:
+			strncpy(BoxText, "curve YY", 8);
 			Color_flag[30] = 1;
 			strain_flag = 1;
 			stress_flag = 0;
@@ -823,9 +823,9 @@ void bmControlMouse(int button, int state, int x, int y)
 			sprintf( BoxData[12], "%10.3e ", curve_div[2].yy);
 			sprintf( BoxData[14], "%10.3e ", curve_div[1].yy);
 			sprintf( BoxData[16], "%10.3e ", curve_div[0].yy);
-                break;
-                case 3:
-                        strncpy(BoxText, "curve ZZ", 8);
+		break;
+		case 43:
+			strncpy(BoxText, "curve ZZ", 8);
 			Color_flag[31] = 1;
 			strain_flag = 1;
 			stress_flag = 0;
@@ -838,9 +838,9 @@ void bmControlMouse(int button, int state, int x, int y)
 			sprintf( BoxData[12], "%10.3e ", curve_div[2].zz);
 			sprintf( BoxData[14], "%10.3e ", curve_div[1].zz);
 			sprintf( BoxData[16], "%10.3e ", curve_div[0].zz);
-                break;
-                case 4:
-                        strncpy(BoxText, "strain XX", 9);
+		break;
+		case 1:
+			strncpy(BoxText, "strain XX", 9);
 			Color_flag[33] = 1;
 			strain_flag = 1;
 			stress_flag = 0;
@@ -853,9 +853,9 @@ void bmControlMouse(int button, int state, int x, int y)
 			sprintf( BoxData[12], "%10.3e ", strain_div[2].xx);
 			sprintf( BoxData[14], "%10.3e ", strain_div[1].xx);
 			sprintf( BoxData[16], "%10.3e ", strain_div[0].xx);
-                break;
-                case 5:
-                        strncpy(BoxText, "strain XY", 9);
+		break;
+		case 4:
+			strncpy(BoxText, "strain XY", 9);
 			Color_flag[34] = 1;
 			strain_flag = 1;
 			stress_flag = 0;
@@ -868,9 +868,9 @@ void bmControlMouse(int button, int state, int x, int y)
 			sprintf( BoxData[12], "%10.3e ", strain_div[2].xy);
 			sprintf( BoxData[14], "%10.3e ", strain_div[1].xy);
 			sprintf( BoxData[16], "%10.3e ", strain_div[0].xy);
-                break;
-                case 6:
-                        strncpy(BoxText, "strain ZX", 9);
+		break;
+		case 5:
+			strncpy(BoxText, "strain ZX", 9);
 			Color_flag[35] = 1;
 			strain_flag = 1;
 			stress_flag = 0;
@@ -883,9 +883,9 @@ void bmControlMouse(int button, int state, int x, int y)
 			sprintf( BoxData[12], "%10.3e ", strain_div[2].zx);
 			sprintf( BoxData[14], "%10.3e ", strain_div[1].zx);
 			sprintf( BoxData[16], "%10.3e ", strain_div[0].zx);
-                break;
-      		case 10:
-    			strncpy(BoxText, "moment XX", 9);
+		break;
+		case 50:
+			strncpy(BoxText, "moment XX", 9);
 			Color_flag[29] = 1;
 			strain_flag = 0;
 			stress_flag = 1;
@@ -898,9 +898,9 @@ void bmControlMouse(int button, int state, int x, int y)
 			sprintf( BoxData[12], "%10.3e ", moment_div[2].xx);
 			sprintf( BoxData[14], "%10.3e ", moment_div[1].xx);
 			sprintf( BoxData[16], "%10.3e ", moment_div[0].xx);
-       		break;
-      		case 11:
-    			strncpy(BoxText, "moment YY", 9);
+		break;
+		case 51:
+			strncpy(BoxText, "moment YY", 9);
 			Color_flag[30] = 1;
 			strain_flag = 0;
 			stress_flag = 1;
@@ -913,9 +913,9 @@ void bmControlMouse(int button, int state, int x, int y)
 			sprintf( BoxData[12], "%10.3e ", moment_div[2].yy);
 			sprintf( BoxData[14], "%10.3e ", moment_div[1].yy);
 			sprintf( BoxData[16], "%10.3e ", moment_div[0].yy);
-       		break;
-      		case 12:
-    			strncpy(BoxText, "moment ZZ", 9);
+		break;
+		case 52:
+			strncpy(BoxText, "moment ZZ", 9);
 			Color_flag[31] = 1;
 			strain_flag = 0;
 			stress_flag = 1;
@@ -928,9 +928,9 @@ void bmControlMouse(int button, int state, int x, int y)
 			sprintf( BoxData[12], "%10.3e ", moment_div[2].zz);
 			sprintf( BoxData[14], "%10.3e ", moment_div[1].zz);
 			sprintf( BoxData[16], "%10.3e ", moment_div[0].zz);
-       		break;
-      		case 13:
-    			strncpy(BoxText, "stress XX", 9);
+		break;
+		case 10:
+			strncpy(BoxText, "stress XX", 9);
 			Color_flag[33] = 1;
 			strain_flag = 0;
 			stress_flag = 1;
@@ -943,9 +943,9 @@ void bmControlMouse(int button, int state, int x, int y)
 			sprintf( BoxData[12], "%10.3e ", stress_div[2].xx);
 			sprintf( BoxData[14], "%10.3e ", stress_div[1].xx);
 			sprintf( BoxData[16], "%10.3e ", stress_div[0].xx);
-       		break;
-      		case 14:
-    			strncpy(BoxText, "stress XY", 9);
+		break;
+		case 13:
+			strncpy(BoxText, "stress XY", 9);
 			Color_flag[34] = 1;
 			strain_flag = 0;
 			stress_flag = 1;
@@ -958,9 +958,9 @@ void bmControlMouse(int button, int state, int x, int y)
 			sprintf( BoxData[12], "%10.3e ", stress_div[2].xy);
 			sprintf( BoxData[14], "%10.3e ", stress_div[1].xy);
 			sprintf( BoxData[16], "%10.3e ", stress_div[0].xy);
-       		break;
-      		case 15:
-    			strncpy(BoxText, "stress ZX", 9);
+		break;
+		case 14:
+			strncpy(BoxText, "stress ZX", 9);
 			Color_flag[35] = 1;
 			strain_flag = 0;
 			stress_flag = 1;
@@ -973,9 +973,9 @@ void bmControlMouse(int button, int state, int x, int y)
 			sprintf( BoxData[12], "%10.3e ", stress_div[2].zx);
 			sprintf( BoxData[14], "%10.3e ", stress_div[1].zx);
 			sprintf( BoxData[16], "%10.3e ", stress_div[0].zx);
-       		break;
-                case 19:
-                        strncpy(BoxText, "disp X", 6);
+		break;
+		case 19:
+			strncpy(BoxText, "disp X", 6);
 			Color_flag[38] = 1;
 			strain_flag = 0;
 			stress_flag = 0;
@@ -990,9 +990,9 @@ void bmControlMouse(int button, int state, int x, int y)
 			sprintf( BoxData[12], "%10.3e ", Ux_div[2]*coord_rescale);
 			sprintf( BoxData[14], "%10.3e ", Ux_div[1]*coord_rescale);
 			sprintf( BoxData[16], "%10.3e ", Ux_div[0]*coord_rescale);
-                break;
-                case 20:
-                        strncpy(BoxText, "disp Y", 6);
+		break;
+		case 20:
+			strncpy(BoxText, "disp Y", 6);
 			Color_flag[39] = 1;
 			strain_flag = 0;
 			stress_flag = 0;
@@ -1007,9 +1007,9 @@ void bmControlMouse(int button, int state, int x, int y)
 			sprintf( BoxData[12], "%10.3e ", Uy_div[2]*coord_rescale);
 			sprintf( BoxData[14], "%10.3e ", Uy_div[1]*coord_rescale);
 			sprintf( BoxData[16], "%10.3e ", Uy_div[0]*coord_rescale);
-                break;
-                case 21:
-                        strncpy(BoxText, "disp Z", 6);
+		break;
+		case 21:
+			strncpy(BoxText, "disp Z", 6);
 			Color_flag[40] = 1;
 			strain_flag = 0;
 			stress_flag = 0;
@@ -1024,9 +1024,9 @@ void bmControlMouse(int button, int state, int x, int y)
 			sprintf( BoxData[12], "%10.3e ", Uz_div[2]*coord_rescale);
 			sprintf( BoxData[14], "%10.3e ", Uz_div[1]*coord_rescale);
 			sprintf( BoxData[16], "%10.3e ", Uz_div[0]*coord_rescale);
-                break;
-                case 22:
-                        strncpy(BoxText, "Angle X", 7);
+		break;
+		case 22:
+			strncpy(BoxText, "Angle X", 7);
 			Color_flag[38] = 1;
 			strain_flag = 0;
 			stress_flag = 0;
@@ -1041,9 +1041,9 @@ void bmControlMouse(int button, int state, int x, int y)
 			sprintf( BoxData[12], "%10.3e ", Uphi_x_div[2]);
 			sprintf( BoxData[14], "%10.3e ", Uphi_x_div[1]);
 			sprintf( BoxData[16], "%10.3e ", Uphi_x_div[0]);
-                break;
-                case 23:
-                        strncpy(BoxText, "Angle Y", 7);
+		break;
+		case 23:
+			strncpy(BoxText, "Angle Y", 7);
 			Color_flag[39] = 1;
 			strain_flag = 0;
 			stress_flag = 0;
@@ -1058,9 +1058,9 @@ void bmControlMouse(int button, int state, int x, int y)
 			sprintf( BoxData[12], "%10.3e ", Uphi_y_div[2]);
 			sprintf( BoxData[14], "%10.3e ", Uphi_y_div[1]);
 			sprintf( BoxData[16], "%10.3e ", Uphi_y_div[0]);
-                break;
-                case 24:
-                        strncpy(BoxText, "Angle Z", 7);
+		break;
+		case 24:
+			strncpy(BoxText, "Angle Z", 7);
 			Color_flag[40] = 1;
 			strain_flag = 0;
 			stress_flag = 0;
@@ -1075,11 +1075,11 @@ void bmControlMouse(int button, int state, int x, int y)
 			sprintf( BoxData[12], "%10.3e ", Uphi_z_div[2]);
 			sprintf( BoxData[14], "%10.3e ", Uphi_z_div[1]);
 			sprintf( BoxData[16], "%10.3e ", Uphi_z_div[0]);
-                break;
-                case 30:
-    			strncpy(BoxText, "Material", 8);
-			Color_flag[7] = 1;
-        		input_color_flag = 0;
+		break;
+		case 30:
+			strncpy(BoxText, "Material", 8);
+			Color_flag[5] = 1;
+			input_color_flag = 0;
 			strain_flag = 0;
 			stress_flag = 0;
 			angle_flag = 0;
@@ -1088,27 +1088,27 @@ void bmControlMouse(int button, int state, int x, int y)
 			Node_flag = 0;
 			Material_flag = 1;
 			sprintf( BoxData[0], "%4d ", matl_choice);
-    			strncpy( BoxData[1], "Emod", 4);
+			strncpy( BoxData[1], "Emod", 4);
 			sprintf( BoxData[2], "%10.3e ", matl_crtl[matl_choice].E);
-    			strncpy( BoxData[3], "Poisson", 7);
+			strncpy( BoxData[3], "Poisson", 7);
 			sprintf( BoxData[4], "%10.3e ", matl_crtl[matl_choice].nu);
-    			strncpy( BoxData[5], "Mass", 4);
+			strncpy( BoxData[5], "Mass", 4);
 			sprintf( BoxData[6], "%10.3e ", matl_crtl[matl_choice].rho);
-    			strncpy( BoxData[7], "Area", 4);
+			strncpy( BoxData[7], "Area", 4);
 			sprintf( BoxData[8], "%10.3e ", matl_crtl[matl_choice].area);
-    			strncpy( BoxData[9], "Area Sy", 7);
+			strncpy( BoxData[9], "Area Sy", 7);
 			sprintf( BoxData[10], "%10.3e ", matl_crtl[matl_choice].areaSy);
-    			strncpy( BoxData[11], "Area Sz", 7);
+			strncpy( BoxData[11], "Area Sz", 7);
 			sprintf( BoxData[12], "%10.3e ", matl_crtl[matl_choice].areaSz);
-    			strncpy( BoxData[13], "Iy", 2);
+			strncpy( BoxData[13], "Iy", 2);
 			sprintf( BoxData[14], "%10.3e ", matl_crtl[matl_choice].Iy);
-    			strncpy( BoxData[15], "Iz", 2);
+			strncpy( BoxData[15], "Iz", 2);
 			sprintf( BoxData[16], "%10.3e ", matl_crtl[matl_choice].Iz);
-                break;
-                case 31:
-    			strncpy(BoxText, "Node", 4);
+		break;
+		case 31:
+			strncpy(BoxText, "Node", 4);
 			Color_flag[3] = 1;
-        		input_color_flag = 0;
+			input_color_flag = 0;
 			strain_flag = 0;
 			stress_flag = 0;
 			angle_flag = 0;
@@ -1134,11 +1134,11 @@ void bmControlMouse(int button, int state, int x, int y)
 			sprintf( BoxData[12], "%10.3e ", fpointz);
 			sprintf( BoxData[14], " " );
 			sprintf( BoxData[16], " " );
-                break;
-                case 32:
-    			strncpy(BoxText, "Element", 7);
+		break;
+		case 32:
+			strncpy(BoxText, "Element", 7);
 			Color_flag[4] = 1;
-        		input_color_flag = 0;
+			input_color_flag = 0;
 			strain_flag = 0;
 			stress_flag = 0;
 			angle_flag = 0;
@@ -1147,43 +1147,43 @@ void bmControlMouse(int button, int state, int x, int y)
 			Node_flag = 0;
 			Element_flag = 1;
 			sprintf( BoxData[0], "%4d ", ele_choice);
-    			strncpy( BoxData[2], "Material", 8);
+			strncpy( BoxData[2], "Material", 8);
 			sprintf( BoxData[4], "%4d ", *(el_matl_color+ele_choice));
-    			strncpy( BoxData[6], "type", 4);
+			strncpy( BoxData[6], "type", 4);
 			dum1 = *(el_type+ele_choice);
 			switch (dum1) {
 			   case 1:
-    				strncpy( BoxData[8], "  truss", 7);
+				strncpy( BoxData[8], "  truss", 7);
 			   break;
 			   case 2:
-    				strncpy( BoxData[8], "EB beam", 7);
+				strncpy( BoxData[8], "EB beam", 7);
 			   break;
 			   case 3:
-    				strncpy( BoxData[8], "RM beam", 7);
+				strncpy( BoxData[8], "RM beam", 7);
 			   break;
 			   case 4:
-    				strncpy( BoxData[8], " hinged", 7);
+				strncpy( BoxData[8], " hinged", 7);
 			   break;
 			   case 5:
-    				strncpy( BoxData[8], "C0 truss", 8);
+				strncpy( BoxData[8], "C0 truss", 8);
 			   break;
 			   case 6:
-    				strncpy( BoxData[8], "C0 RM beam", 10);
+				strncpy( BoxData[8], "C0 RM beam", 10);
 			   break;
 			   case 7:
-    				strncpy( BoxData[8], "C0 truss", 8);
+				strncpy( BoxData[8], "C0 truss", 8);
 			   break;
 			   case 8:
-    				strncpy( BoxData[8], "C1 EB beam", 10);
+				strncpy( BoxData[8], "C1 EB beam", 10);
 			   break;
 			   case 9:
-    				strncpy( BoxData[8], "C1 RM beam", 10);
+				strncpy( BoxData[8], "C1 RM beam", 10);
 			   break;
 			   default:
-    				strncpy( BoxData[8], "   beam", 7);
+				strncpy( BoxData[8], "   beam", 7);
 			   break;
 			}
-    			strncpy( BoxData[10], "Connect", 7);
+			strncpy( BoxData[10], "Connect", 7);
 			dum1 = *(connecter + npel*ele_choice);
 			dum2 = *(connecter + npel*ele_choice+1);
 			sprintf( BoxData[12], "%4d,%4d ",dum1, dum2);
@@ -1191,10 +1191,10 @@ void bmControlMouse(int button, int state, int x, int y)
 			sprintf( BoxData[14], " " );
 			sprintf( BoxData[15], " " );
 			sprintf( BoxData[16], " " );
-                break;
-        }
+		break;
+	}
 
-        input_color_flag = 0;
+	input_color_flag = 0;
 
 /* If there is a post file, then turn the input_color_flag on so that the before
    mesh will be drawn in pink.  If there is no post file, turn on the
@@ -1202,12 +1202,14 @@ void bmControlMouse(int button, int state, int x, int y)
    element or node is selected.
  */
 
-        if( color_choice < 10)
-             input_color_flag = 1;
-        if( color_choice > 15 && color_choice < 19)
-             input_color_flag = 1;
-        if( post_flag > 0 && color_choice < 30)
-             input_color_flag = 1;
+	if( color_choice < 10)
+	     input_color_flag = 1;
+	if( color_choice > 15 && color_choice < 19)
+	     input_color_flag = 1;
+	if( post_flag > 0 && color_choice < 30)
+	     input_color_flag = 1;
+	if( color_choice > 40 && color_choice < 50)
+	     input_color_flag = 1;
 
 	Color_flag[2] = Dist_Load_flag;
 /*
@@ -1226,8 +1228,8 @@ void bmControlMouse(int button, int state, int x, int y)
 	Color_flag[25] = Both_flag;
 	Color_flag[26] = Amplify_flag;
 
-        if(!post_flag) After_flag = 0;
-        if(!input_flag) Before_flag = 0;
+	if(!post_flag) After_flag = 0;
+	if(!input_flag) Before_flag = 0;
 
 	glutPostWindowRedisplay(ControlWindow);
 	glutPostWindowRedisplay(MeshWindow);

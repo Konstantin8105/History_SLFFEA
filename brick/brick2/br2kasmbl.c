@@ -14,7 +14,7 @@
 		Updated 9/26/01
 
     SLFFEA source file
-    Version:  1.3
+    Version:  1.4
     Copyright (C) 1999, 2000  San Le 
 
     The source code contained in this file is released under the
@@ -56,13 +56,13 @@ int brickB( double *,double *);
 int brshg( double *, int, double *, double *, double *);
 
 int brstress_shg( double *, int, double *, double *, double * );
-               
+	       
 int br2Kassemble(double *A, int *connect, int *connect_surf, double *coord, int *el_matl,
 	int *el_matl_surf, double *force, int *id, int *idiag, double *K_diag, int *lm,
 	MATL *matl, double *node_counter, STRAIN *strain, SDIM *strain_node,
 	STRESS *stress, SDIM *stress_node, double *T, double *U)
 {
-        int i, i1, i2, j, k, dof_el[neqel], Tdof_el[Tneqel], sdof_el[npel*nsd];
+	int i, i1, i2, j, k, dof_el[neqel], Tdof_el[Tneqel], sdof_el[npel*nsd];
 	int check, counter, node, surf_el_counter, surface_el_flag;
 	int matl_num;
 	XYZF Emod, alpha;
@@ -74,7 +74,7 @@ int br2Kassemble(double *A, int *connect, int *connect_surf, double *coord, int 
 	double K_temp[neqlsq], K_el[neqlsq];
 	double force_el_U[neqel], force_el_heat[neqel], force_el_dum[neqel],
 		U_el[neqel], T_el[Tneqel];
-        double coord_el_trans[npel*nsd];
+	double coord_el_trans[npel*nsd];
 	double stress_el[sdim], stress_el_th[sdim], strain_el[sdim], strain_el_th[sdim],
 		stress_el_th_node[sdim], strain_el_th_node[sdim], invariant[nsd],
 		yzsq, zxsq, xzsq, xysq, xxyy,
@@ -82,8 +82,8 @@ int br2Kassemble(double *A, int *connect, int *connect_surf, double *coord, int 
 	double det[num_int], det_node[num_int], wXdet;
 
 	surf_el_counter = 0;
-        for( k = 0; k < numel; ++k )
-        {
+	for( k = 0; k < numel; ++k )
+	{
 
 		matl_num = *(el_matl+k);
 
@@ -155,7 +155,7 @@ int br2Kassemble(double *A, int *connect, int *connect_surf, double *coord, int 
 		printf("%14.6e %14.6e %14.6e\n ",lamda, lamda, lamda+2.0*mu);
 */
 
-        	/*printf("lamda, mu, Emod.x, Pois  %f %f %f %f \n", lamda, mu, Emod.x, Pois);*/
+		/*printf("lamda, mu, Emod.x, Pois  %f %f %f %f \n", lamda, mu, Emod.x, Pois);*/
 
 /* Create the coord_el transpose vector for one element */
 
@@ -202,27 +202,27 @@ int br2Kassemble(double *A, int *connect, int *connect_surf, double *coord, int 
    for several quantities */
 
 		memset(U_el,0,neqel*sof);
-                memset(K_el,0,neqlsq*sof);
+		memset(K_el,0,neqlsq*sof);
 		memset(force_el_U,0,neqel*sof);
 		memset(force_el_heat,0,neqel*sof);
 
-                for( j = 0; j < num_int; ++j )
-                {
+		for( j = 0; j < num_int; ++j )
+		{
 
-                    memset(B,0,soB*sof);
+		    memset(B,0,soB*sof);
 		    memset(B_T2,0,Tneqel*sof);
 		    memset(B_T2_node,0,Tneqel*sof);
-                    memset(DB,0,soB*sof);
-                    memset(K_temp,0,neqlsq*sof);
+		    memset(DB,0,soB*sof);
+		    memset(K_temp,0,neqlsq*sof);
 		    memset(force_el_dum,0,neqel*sof);
-                    memset(stress_el_th,0,sdim*sof);
-                    memset(strain_el_th_node,0,sdim*sof);
-                    memset(stress_el_th_node,0,sdim*sof);
+		    memset(stress_el_th,0,sdim*sof);
+		    memset(strain_el_th_node,0,sdim*sof);
+		    memset(stress_el_th_node,0,sdim*sof);
 
 /* Assembly of the B matrix */
 
 		    check = brickB((shg+npel*(nsd+1)*j),B);
-                    if(!check) printf( "Problems with brickB \n");
+		    if(!check) printf( "Problems with brickB \n");
 
 /* Assembly of the B_T2 matrix */
 
@@ -236,8 +236,9 @@ int br2Kassemble(double *A, int *connect, int *connect_surf, double *coord, int 
 
 /* Calculate the value of T(Temperature) at the integration point */
 
-                    check=dotX( &fdum, T_el, B_T2, Tneqel);
-                    if(!check) printf( "Problems with dotX \n");
+		    check=dotX( &fdum, T_el, B_T2, Tneqel);
+		    if(!check) printf( "Problems with dotX \n");
+
 
 /* Calculate the thermal strain matrix.  Look at equations 2.1-12 to 2.1-14 on
    page 2-3 of the ANSYS manual to see how the thermal strains are defined.
@@ -267,15 +268,15 @@ int br2Kassemble(double *A, int *connect, int *connect_surf, double *coord, int 
 		    {
 /* Calculate the value of T(Temperature) at integration point */
 
-                    	check=dotX( &fdum, T_el, B_T2, Tneqel);
-                    	if(!check) printf( "Problems with dotX \n");
+			check=dotX( &fdum, T_el, B_T2, Tneqel);
+			if(!check) printf( "Problems with dotX \n");
 		    }
 		    else
 		    {
 /* Calculate the value of T(Temperature) at the nodal point */
 
-                    	check=dotX( &fdum, T_el, B_T2_node, Tneqel);
-                    	if(!check) printf( "Problems with dotX \n");
+			check=dotX( &fdum, T_el, B_T2_node, Tneqel);
+			if(!check) printf( "Problems with dotX \n");
 		    }
 
 /* Calculate the strain node matrix */
@@ -299,12 +300,12 @@ int br2Kassemble(double *A, int *connect, int *connect_surf, double *coord, int 
 		    *(stress_el_th_node+4) = *(strain_el_th_node+4)*G.xz;
 		    *(stress_el_th_node+5) = *(strain_el_th_node+5)*G.yz;
 
-           	    /*printf("\nffff %14.6e %14.6e %14.6e %14.6e %14.6e %14.6e %14.6e",fdum,
+		    /*printf("\nffff %14.6e %14.6e %14.6e %14.6e %14.6e %14.6e %14.6e",fdum,
 			*(stress_el_th_node),*(stress_el_th_node+1),*(stress_el_th_node+2),
 			*(stress_el_th_node+3),*(stress_el_th_node+4),*(stress_el_th_node+5));
 
 		    printf("\nstrain %4d %4d %14.6e %14.6e %14.6e %14.6e %14.6e %14.6e",k, j,
-                        *(strain_el_th_node), *(strain_el_th_node+1), *(strain_el_th_node+2));*/
+			*(strain_el_th_node), *(strain_el_th_node+1), *(strain_el_th_node+2));*/
 
 		    if(analysis_flag==1)
 		    {
@@ -320,53 +321,53 @@ int br2Kassemble(double *A, int *connect, int *connect_surf, double *coord, int 
 
 		    }
 
-                    for( i1 = 0; i1 < neqel; ++i1 )
+		    for( i1 = 0; i1 < neqel; ++i1 )
 		    {
-		    	*(DB+i1) = *(B+i1)*D11+
+			*(DB+i1) = *(B+i1)*D11+
 				*(B+neqel*1+i1)*D12+
 				*(B+neqel*2+i1)*D13;
-		    	*(DB+neqel*1+i1) = *(B+i1)*D21+
+			*(DB+neqel*1+i1) = *(B+i1)*D21+
 				*(B+neqel*1+i1)*D22+
 				*(B+neqel*2+i1)*D23;
-		    	*(DB+neqel*2+i1) = *(B+i1)*D31+
+			*(DB+neqel*2+i1) = *(B+i1)*D31+
 				*(B+neqel*1+i1)*D32+
 				*(B+neqel*2+i1)*D33;
-		    	*(DB+neqel*3+i1) = *(B+neqel*3+i1)*G.xy;
-		    	*(DB+neqel*4+i1) = *(B+neqel*4+i1)*G.xz;
-		    	*(DB+neqel*5+i1) = *(B+neqel*5+i1)*G.yz; 
+			*(DB+neqel*3+i1) = *(B+neqel*3+i1)*G.xy;
+			*(DB+neqel*4+i1) = *(B+neqel*4+i1)*G.xz;
+			*(DB+neqel*5+i1) = *(B+neqel*5+i1)*G.yz; 
 		    }
 
 		    wXdet = *(w+j)*(*(det+j));
 
-                    check=matXT(K_temp, B, DB, neqel, neqel, sdim);
-                    if(!check) printf( "Problems with matXT \n");
-                    for( i2 = 0; i2 < neqlsq; ++i2 )
-                    {
-                          *(K_el+i2) += *(K_temp+i2)*wXdet;
-                    }
+		    check=matXT(K_temp, B, DB, neqel, neqel, sdim);
+		    if(!check) printf( "Problems with matXT \n");
+		    for( i2 = 0; i2 < neqlsq; ++i2 )
+		    {
+			  *(K_el+i2) += *(K_temp+i2)*wXdet;
+		    }
 
 		    if(analysis_flag==1)
 		    {
-                    	check=matXT(force_el_dum, B, stress_el_th, neqel, 1, sdim);
-                    	if(!check) printf( "Problems with matXT \n");
-                    	for( i2 = 0; i2 < neqel; ++i2 )
-                    	{
-                        	*(force_el_heat+i2) += *(force_el_dum+i2)*wXdet;
-           		   	/*printf("mmmm %14.6e\n ",*(force_el_heat+i2));*/
-                    	}
-           		/*printf("\n");*/
-                    }
-                }
+			check=matXT(force_el_dum, B, stress_el_th, neqel, 1, sdim);
+			if(!check) printf( "Problems with matXT \n");
+			for( i2 = 0; i2 < neqel; ++i2 )
+			{
+				*(force_el_heat+i2) += *(force_el_dum+i2)*wXdet;
+				/*printf("mmmm %14.6e\n ",*(force_el_heat+i2));*/
+			}
+			/*printf("\n");*/
+		    }
+		}
 
 		for( j = 0; j < neqel; ++j )
-                {
+		{
 			*(U_el + j) = *(U + *(dof_el+j));
-           		/*printf("\n U_el %3d %3d %3d %14.6e %14.6e ",k,j,*(dof_el+j),
+			/*printf("\n U_el %3d %3d %3d %14.6e %14.6e ",k,j,*(dof_el+j),
 				*(U_el+j), *(U+*(dof_el+j)));*/
 		}
 
-                check = matX(force_el_U, K_el, U_el, neqel, 1, neqel);
-                if(!check) printf( "Problems with matX \n");
+		check = matX(force_el_U, K_el, U_el, neqel, 1, neqel);
+		if(!check) printf( "Problems with matX \n");
 
 		if(analysis_flag == 1)
 		{
@@ -374,7 +375,7 @@ int br2Kassemble(double *A, int *connect, int *connect_surf, double *coord, int 
 /* Compute the equivalant nodal forces based on prescribed and on heat */
 
 			for( j = 0; j < neqel; ++j )
-                	{
+			{
 				*(force + *(dof_el+j)) -= *(force_el_U + j) +
 					*(force_el_heat + j);
 			}
@@ -607,24 +608,24 @@ int br2Kassemble(double *A, int *connect, int *connect_surf, double *coord, int 
 
 	  if(LU_decomp_flag)
 	  {
-             counter = 0;
-             for( i = 0; i < dof ; ++i )
-             {
-            	if( *(id + i ) > -1 )
-            	{
-                	*(force + counter ) = *(force + i );
-                	++counter;
-            	}
-             }
-          }
-        }
+	     counter = 0;
+	     for( i = 0; i < dof ; ++i )
+	     {
+		if( *(id + i ) > -1 )
+		{
+			*(force + counter ) = *(force + i );
+			++counter;
+		}
+	     }
+	  }
+	}
 	if(analysis_flag == 2)
 	{
 
 /* Average all the stresses and strains at the nodes */
 
-          for( i = 0; i < numnp ; ++i )
-          {
+	  for( i = 0; i < numnp ; ++i )
+	  {
 		strain_node[i].xx /= *(node_counter + i);
 		strain_node[i].yy /= *(node_counter + i);
 		strain_node[i].zz /= *(node_counter + i);
@@ -644,8 +645,8 @@ int br2Kassemble(double *A, int *connect, int *connect_surf, double *coord, int 
 		stress_node[i].I /= *(node_counter + i);
 		stress_node[i].II /= *(node_counter + i);
 		stress_node[i].III /= *(node_counter + i);
-          }
-        }
+	  }
+	}
 
 	return 1;
 }

@@ -7,8 +7,8 @@
 		Updated 11/2/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -50,8 +50,6 @@ int teMassPassemble(int *connect, double *coord, int *el_matl, double *mass,
 	double P_el[neqel];
 
 	memset(P_global,0,dof*sof);
-	memset(B_mass,0,MsoB*sof);
-	memset(B2_mass,0,MsoB*sof);
 
 	if(consistent_mass_store)
 	{
@@ -95,10 +93,6 @@ int teMassPassemble(int *connect, double *coord, int *el_matl, double *mass,
             {
                 matl_num = *(el_matl+k);
                 rho = matl[matl_num].rho;
-
-/* Zero out the Element mass matrices */
-
-        	memset(M_el,0,neqlsq*sof);
 
 /* Create the coord_el transpose vector for one element */
 
@@ -179,6 +173,11 @@ int teMassPassemble(int *connect, double *coord, int *el_matl, double *mass,
 */
 		volume_el = pt1667*fdum;
 		/*printf("This is the Volume %10.6f for element %4d\n",volume_el,k);*/
+
+/* Zero out the Element mass matrices */
+
+        	memset(M_el,0,neqlsq*sof);
+		memset(M_temp,0,neqlsq*sof);
 
 /*
    This is taken from "Theory of Matrix Structural Analysis" by 

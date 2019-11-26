@@ -1,7 +1,7 @@
 
-                             SLFFEA 1.2 Triangle README
+                             SLFFEA 1.4 Triangle README
 
-                    Copyright (C) 1999 San Le
+                    Copyright (C) 1999-2005 San Le
 
                     email:     slffea@yahoo.com
                     homepage:  http://www.geocities.com/Athens/2099/slffea.html
@@ -10,3 +10,70 @@
 You can do either plane stress or plane strain analysis.  For plane stress,
 set the plane_stress_flag in your input file to 1.  For plane strain, set
 it to 0.
+
+I once considered merging the triangle element together with the wedge because
+I could have coded the wedge so that it would read in the 3 nodes of a
+triangle and treat the second set of wedge nodes on top as nodes parallel to
+the first 3.  But it is fortunate that I did not because I modified the triangle
+code so that it could also solve for 3-D 3 node membrane elements.  This may
+have been complicated in terms of adding this capacity to the wedge.  I say more
+about this modification below.
+
+------------------------------------------------------------------------------------------------
+3-D 3 Node Triangular Membrane Elements
+
+In October 2005, I added code to make the 2-D triangle element into a 3-D
+element.  This meant adding rotations between 3-D global coordinates and 2-D
+local coordinates.  The 2-D coordinates are similar to the lamina part of the
+shell.  Because there are no rotational DOFs, this element is essentially a
+membrane which can only support loads in its local planer coordinates.  This
+can be considered analogous to the relationship between a 3-D beam(shell) and a
+truss(3-D plane stress/plane strain element).  The main implications are that
+you have to be very careful about singular input meshes which can occur when
+there are co-linear elements.  For these types of situations, you will either
+have to fix displacements in enough directions to remove the singularities, or
+add a non-co-linear element at nodes where the co-linear elements are joined.
+
+A good illustration of the need for care in dealing with this element's membrane 
+limitations can be seen in the need for 3 different patch test meshes for
+each x, y, and z direction.  Here are the comments at the top of trpatch.c:
+
+    There are 3 output patch test files: patch.x, patch.y, and patch.z.
+    This triangle element is like the truss element in that it can not
+    handle loads perpendicular to the local plane of an element because
+    it is simply a membrane.  I had tried to do a mesh which had x, y, and
+    z components with displacements co-linear with the plane, but the
+    results showed that this was not a valid analysis.  You can see this
+    by taking a single element in the global x-y plane and leaving one node
+    completely free.  Even if you put a load with only x-y components, the
+    global stiffness will still be singular because the z DOF needs to be
+    fixed.  If the calculation does not blow up, it will still produce
+    incorrect results.  This is why the patch test needs to be broken down
+    into 3 meshes with only 2 DOFs on the free center node corresponding to
+    the plane of the mesh for each patch.
+
+I also had singularity trouble with the trbubble2 mesh which was a hemisphere with
+a small opening at the top.  I had to close this opening by adding additional
+non-co-linear elements.  Interestingly, the problem of singularity only revealed
+itself when I did modal analysis.  At the bottom of the trbubble2 file, I say:
+
+  This mesh was singular until I added elements 400-410 and node 210.  I also had
+  to place node 210 at (0.0, 0.0, 9.8) because if it were at (0.0, 0.0, 10.0) then
+  all the elements:
+
+     400       200     201    210         0
+     401       201     202    210         0
+     402       202     203    210         0
+     403       203     204    210         0
+     404       204     205    210         0
+     405       205     206    210         0
+     406       206     207    210         0
+     407       207     208    210         0
+     408       208     209    210         0
+     409       209     200    210         0
+
+  would be on the same plane.  Even putting 210 at an elevation of (0.0, 0.0, 10.1) would
+  not be enough.  Note that the mesh trbubble does not have to be modified like this.  I did
+  a similar modification with tsbubble2.
+
+ 

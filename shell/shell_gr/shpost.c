@@ -2,11 +2,11 @@
     This program shows the 3 dimensional model of the finite
     element mesh for shell elements.
   
-   			Last Update 10/10/06
+	          Last Update 12/4/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -83,11 +83,13 @@ int shset( BOUND, int *, double *, XYZPhiF *, SDIM *,
 
 int shparameter( double *, SDIM *, SDIM *, double * );
 
+int shMemory2_gr( XYZPhiF **, int );
+
 int dotX(double *,double *, double *, int );
 
-int shnormal_vectors (int *, double *, NORM * );
+int shlocal_vectors( double *, double *, double * );
 
-int shMemory2_gr( XYZPhiF **, int );
+int shnormal_vectors (int *, double *, NORM * );
 
 int shTopCoordinates(int *, double *, int *, double *, MATL *, double *);
 
@@ -96,14 +98,14 @@ int node_normals( int *, double *, double *, double *, int, int);
 int shreader_gr( FILE *, SDIM *, SDIM *);
 
 int shreader( BOUND , int *, double *, int *, double *, MATL *,
-        char *, FILE *, STRESS *, SDIM *, double *);
+	char *, FILE *, STRESS *, SDIM *, double *);
 
-int shMemory_gr( ISTRAIN **, ISTRESS **, NORM **, int, int );
+int shMemory_gr( ISTRAIN **, ISTRESS **, int, NORM **, int );
 
 int shMemory( double **, int , int **, int , MATL **, int , XYZPhiI **,
 	int , SDIM **, int, STRAIN **, STRESS **, int  );
 
-int filecheck( char *, char *, FILE **, FILE **, FILE **, char * );
+int filecheck( char *, char *, FILE **, FILE **, FILE **, char *, int );
 
 /******** For the Mesh ********/
 
@@ -159,7 +161,7 @@ double *mem_double;
 SDIM *mem_SDIM;
 NORM *mem_NORM;
 double *coord, *coord0;
-double *U, *Uz_fib;
+double *U, *Uz_fib, *fiber_xyz, *lamina_ref;
 int *connecter;
 BOUND bc;
 MATL *matl;
@@ -223,6 +225,7 @@ int com_mesh_height0 = mesh_height0;
 
 /* These Variables are for the Control Panel */
 
+int sof = sizeof(double);
 int sofi = sizeof(int);
 int row_number = rowdim;
 int ControlDiv_y[rowdim + 2], ControlDiv_x[rowdim + 2];
@@ -242,7 +245,7 @@ char RotateData[3][25] = { "    0.00", "    0.00", "    0.00" };
 char MoveData[3][25] = { "    0.00", "    0.00", "    0.00" };
 char AmplifyData[25] = { " 1.000e+00"};
 char BoxData[2*boxnumber+2][25] = { "", "", "", "", "", "", "", "",
-        "", "", "", "", "", "", "", "", "", "" };
+	"", "", "", "", "", "", "", "", "", "" };
 char BoxText[25];
 
 int del_height = 0;
@@ -269,8 +272,8 @@ double max_Uphi_x, min_Uphi_x, del_Uphi_x, max_Uphi_y, min_Uphi_y, del_Uphi_y,
 
 /* These are the flags */
 
-int input_flag = 1,          /* Tells whether an input file exist or not */
-    post_flag = 1,           /* Tells whether a post file exist or not   */
+int input_flag = 1,          /* Tells whether an input file exists or not */
+    post_flag = 1,           /* Tells whether a post file exists or not   */
     color_choice = 1,        /* Set to desired color analysis(range 1 - 24) */
     choice = 0,              /* currently unused */
     matl_choice = -1,        /* Set to which material to view  */
@@ -318,80 +321,81 @@ int main(int argc, char** argv)
 	int sofmi, sofmf, sofmSTRESS, sofmISTRESS, sofmSTRAIN,
 		sofmXYZPhiI, sofmXYZPhiF, sofmSDIM, sofmNORM, ptr_inc;
 	char name[30], name2[30], osh_exten[4], buf[ BUFSIZ ];
+	int osh_exten_length = 4;
 	FILE *o1, *o2, *o3;
 
-        right=0;
-        top=0;
-        left=1000;
-        bottom=1000;
-        fscale=0;
-        near=1.0;
-        far=10.0;
-        /*mesh_width=500;
-        mesh_height=20;
-        control_width=1000;
-        control_height=1500;*/
+	right=0;
+	top=0;
+	left=1000;
+	bottom=1000;
+	fscale=0;
+	near=1.0;
+	far=10.0;
+	/*mesh_width=500;
+	mesh_height=20;
+	control_width=1000;
+	control_height=1500;*/
 
 /* Initialize filenames */
 
 	memset(name,0,30*sizeof(char));
 	memset(name2,0,30*sizeof(char));
-	memset(osh_exten,0,4*sizeof(char));
+	memset(osh_exten,0,osh_exten_length*sizeof(char));
 
-	ccheck = strncpy(osh_exten,".osh",4);
+	ccheck = strncpy(osh_exten,".osh",osh_exten_length);
 	if(!ccheck) printf( " Problems with strncpy \n");
 
-        printf("What is the name of the input file containing the \n");
-        printf("shell structural data? \n");
-        scanf( "%30s",name2);
+	printf("What is the name of the input file containing the \n");
+	printf("shell structural data? (example: bubble4node)\n");
+	scanf( "%30s",name2);
 
 /*   o1 contains all the structural data for input
      o3 contains all the structural data for postprocessing
      o2 is used to determine the existance of input and post files
 */
-        o2 = fopen( name2,"r" );
-        if(o2 == NULL ) {
-                printf("Can't find file %30s\n", name2);
-                exit(1);
-        }
-        /*printf( "%3d %30s\n ",name2_length,name2);*/
+	o2 = fopen( name2,"r" );
+	if(o2 == NULL ) {
+		printf("Can't find file %30s\n", name2);
+		exit(1);
+	}
+	/*printf( "%3d %30s\n ",name2_length,name2);*/
 
-        fgets( buf, BUFSIZ, o2 );
-        fscanf( o2, "%d %d %d %d %d\n ",&numel,&numnp,&nmat,&nmode,&integ_flag);
-        dof=numnp*ndof;
+	fgets( buf, BUFSIZ, o2 );
+	fscanf( o2, "%d %d %d %d %d\n ",&numel,&numnp,&nmat,&nmode,&integ_flag);
+	dof=numnp*ndof;
 	sdof=numnp*nsd;
 	nmode = abs(nmode);
 
 /* Begin exmaining and checking for the existence of data files */
 
-        check = filecheck( name, name2, &o1, &o2, &o3, osh_exten );
+	check = filecheck( name, name2, &o1, &o2, &o3, osh_exten, osh_exten_length );
 	if(!check) printf( " Problems with filecheck \n");
 
 	if( input_flag )
 	{
-        	fgets( buf, BUFSIZ, o1 );
-        	fscanf( o1, "%d %d %d %d %d\n ",&dum,&dum1,&dum2,&dum3,&dum4);
-        	printf( "%d %d %d %d %d\n ",dum,dum1,dum2,dum3,dum4);
-                /*printf( "name %30s\n ",name);*/
+		fgets( buf, BUFSIZ, o1 );
+		fscanf( o1, "%d %d %d %d %d\n ",&dum,&dum1,&dum2,&dum3,&dum4);
+		printf( "%d %d %d %d %d\n ",dum,dum1,dum2,dum3,dum4);
+		/*printf( "name %30s\n ",name);*/
 	}
 	if( post_flag )
 	{
-        	fgets( buf, BUFSIZ, o3 );
-        	fscanf( o3, "%d %d %d %d %d\n ",&dum,&dum1,&dum2,&dum3,&dum4);
-        	printf( "%d %d %d %d %d\n ",dum,dum1,dum2,dum3,dum4);
-                /*printf( "out %30s\n ",out);*/
+		fgets( buf, BUFSIZ, o3 );
+		fscanf( o3, "%d %d %d %d %d\n ",&dum,&dum1,&dum2,&dum3,&dum4);
+		printf( "%d %d %d %d %d\n ",dum,dum1,dum2,dum3,dum4);
+		/*printf( "out %30s\n ",out);*/
 	}
 
 /*   Begin allocation of meomory */
 
 /* For the doubles */
-        sofmf=4*sdof+2*dof+numnp+2*numnp+sdof;
+	sofmf=4*sdof+2*dof+numnp+2*numnp+sdof+numnp*nsdsq+numnp*nsd;
 
 /* For the integers */
-        sofmi= numel*npell+numel+numnp+1+1+dof;
+	sofmi= numel*npell+numel+numnp+1+1+dof;
 
 /* For the XYZPhiI integers */
-        sofmXYZPhiI=numnp+1+1;
+	sofmXYZPhiI=numnp+1+1;
 
 /* For the SDIM doubles */
 	sofmSDIM = 2*2*numnp;
@@ -406,14 +410,14 @@ int main(int argc, char** argv)
 	sofmNORM=numel;
 	if( input_flag && post_flag ) sofmNORM=2*numel;
 
-        check = shMemory( &mem_double, sofmf, &mem_int, sofmi, &matl, nmat,
-                &mem_XYZPhiI, sofmXYZPhiI, &mem_SDIM, sofmSDIM, &strain,
+	check = shMemory( &mem_double, sofmf, &mem_int, sofmi, &matl, nmat,
+		&mem_XYZPhiI, sofmXYZPhiI, &mem_SDIM, sofmSDIM, &strain,
 		&stress, sofmSTRESS );
-        if(!check) printf( " Problems with shMemory \n");
+	if(!check) printf( " Problems with shMemory \n");
 
-        check = shMemory_gr( &strain_color, &stress_color, &mem_NORM,
-		sofmISTRESS, sofmNORM );
-        if(!check) printf( " Problems with shMemory_gr \n");
+	check = shMemory_gr( &strain_color, &stress_color, sofmISTRESS,
+		&mem_NORM, sofmNORM );
+	if(!check) printf( " Problems with shMemory_gr \n");
 
 /* For the doubles */
 	                                        ptr_inc=0;
@@ -424,6 +428,8 @@ int main(int argc, char** argv)
 	Uz_fib=(mem_double+ptr_inc);            ptr_inc += numnp;
 	node_counter=(mem_double+ptr_inc);      ptr_inc += 2*numnp;
 	fiber_vec=(mem_double+ptr_inc);         ptr_inc += sdof;
+	fiber_xyz=(mem_double+ptr_inc);         ptr_inc += numnp*nsdsq;
+	lamina_ref=(mem_double+ptr_inc);        ptr_inc += numnp*nsd;
 
 /* For the materials */
 
@@ -440,17 +446,17 @@ int main(int argc, char** argv)
 	el_matl_color = el_matl;
 
 /* For the XYZPhiI integers */
-	                                  	ptr_inc = 0;
-	bc.fix =(mem_XYZPhiI+ptr_inc);       	ptr_inc += numnp+1;
-	bc.num_fix=(mem_XYZPhiI+ptr_inc);    	ptr_inc += 1;
+	                                        ptr_inc = 0;
+	bc.fix =(mem_XYZPhiI+ptr_inc);          ptr_inc += numnp+1;
+	bc.num_fix=(mem_XYZPhiI+ptr_inc);       ptr_inc += 1;
 
 /* For the SDIM doubles */
-                                                ptr_inc = 0;
+	                                        ptr_inc = 0;
 	stress_node=(mem_SDIM+ptr_inc);         ptr_inc += 2*numnp;
 	strain_node=(mem_SDIM+ptr_inc);         ptr_inc += 2*numnp;
 
 /* For the NORM doubles */
-                                                ptr_inc = 0;
+	                                        ptr_inc = 0;
 	norm =(mem_NORM+ptr_inc);
 	if( input_flag && post_flag )           ptr_inc += numel;
 	norm0 =(mem_NORM+ptr_inc);              ptr_inc += numel;
@@ -507,7 +513,7 @@ int main(int argc, char** argv)
 	{
 		check = shreader( bc, connecter, coord0, el_matl, force, matl,
 			name, o1, stress, stress_node, U);
-        	if(!check) printf( " Problems with shreader \n");
+		if(!check) printf( " Problems with shreader \n");
 
 		if(!doubly_curved_flag)
 		{
@@ -530,12 +536,21 @@ int main(int argc, char** argv)
 	{
 		check = shnormal_vectors(connecter, coord, norm );
 		if(!check) printf( " Problems with shnormal_vectors \n");
+
+		if( !input_flag )
+		{
+		   check = shlocal_vectors( coord, lamina_ref, fiber_xyz );
+		   if(!check) printf( " Problems with shlocal_vectors\n");
+		}
 	}
 
 	if( input_flag )
 	{
 		check = shnormal_vectors(connecter, coord0, norm0 );
 		if(!check) printf( " Problems with shnormal_vectors \n");
+
+		check = shlocal_vectors( coord0, lamina_ref, fiber_xyz );
+		if(!check) printf( " Problems with shlocal_vectors\n");
 	}
 
 /* For the XYZPhiF doubles */
@@ -545,21 +560,21 @@ int main(int argc, char** argv)
    number of force vectors read from shreader and stored in bc.num_force[0].
 */
 
-        check = shMemory2_gr( &mem_XYZPhiF, sofmXYZPhiF );
-        if(!check) printf( " Problems with shMemory2_gr \n");
+	check = shMemory2_gr( &mem_XYZPhiF, sofmXYZPhiF );
+	if(!check) printf( " Problems with shMemory2_gr \n");
 
-                                                   ptr_inc = 0;
-        force_vec =(mem_XYZPhiF+ptr_inc);          ptr_inc += bc.num_force[0];
-        force_vec0 =(mem_XYZPhiF+ptr_inc);         ptr_inc += bc.num_force[0];
+	                                           ptr_inc = 0;
+	force_vec =(mem_XYZPhiF+ptr_inc);          ptr_inc += bc.num_force[0];
+	force_vec0 =(mem_XYZPhiF+ptr_inc);         ptr_inc += bc.num_force[0];
 
 /* Search for extreme values */
  
 /* In mesh viewer, search for extreme values of nodal points, displacements
-   and stresss and strains to obtain viewing parameters and make color
+   and stress and strains to obtain viewing parameters and make color
    assignments.  Also initialize variables */
 
 	check = shparameter( coord, strain_node, stress_node, U );
-        if(!check) printf( " Problems with shparameter \n");
+	if(!check) printf( " Problems with shparameter \n");
 
 /* Rescale undeformed coordinates */
 
@@ -580,59 +595,10 @@ int main(int argc, char** argv)
 	   }
 	}
 
-	if( !input_flag )
+/* Calcuate the local z fiber displacement on each node */
+
+	for( i = 0; i < numnp; ++i )
 	{
-/* Calcuate the local z fiber displacement on each node */
-
-            for( i = 0; i < numnp; ++i )
-            {
-/* Calcuate the projection of displacement vector to local z fiber vector */
-
-	   	*(node_vec) = *(coord+nsd*(numnp+i))-*(coord+nsd*i);
-	   	*(node_vec+1) = *(coord+nsd*(numnp+i)+1)-*(coord+nsd*i+1);
-	   	*(node_vec+2) = *(coord+nsd*(numnp+i)+2)-*(coord+nsd*i+2);
-	   	fdum = *(node_vec)*(*(node_vec)) +
-		    *(node_vec+1)*(*(node_vec+1)) + *(node_vec+2)*(*(node_vec+2));
-	   	fdum = sqrt(fdum);
-	   	*(node_vec) /= fdum;
-	   	*(node_vec+1) /= fdum;
-	   	*(node_vec+2) /= fdum;
-	   	check = check=dotX( (Uz_fib+i), (node_vec), (U+ndof*i), nsd);
-	   	if(!check) printf( " Problems with dotX \n");
-
-		*(coord0 + nsd*i) =
-			*(coord+nsd*i) -  (*(U+ndof*i) +
-			*(Uz_fib + i)*(*(U+ndof*i+4)));
-		*(coord0 + nsd*i+1) =
-			*(coord+nsd*i+1) -  (*(U+ndof*i+1) -
-			*(Uz_fib + i)*(*(U+ndof*i+3)));
-		*(coord0 + nsd*i+2) =
-			*(coord+nsd*i+2) - *(U+ndof*i+2);
-
-		*(coord0 + nsd*(numnp+i)) =
-			*(coord+nsd*(numnp+i)) -  (*(U+ndof*i) +
-			*(Uz_fib + i)*(*(U+ndof*i+4)));
-		*(coord0 + nsd*(numnp+i) + 1) =
-			*(coord+nsd*(numnp+i)+1) -  (*(U+ndof*i+1) -
-			*(Uz_fib + i)*(*(U+ndof*i+3)));
-		*(coord0 + nsd*(numnp+i) + 2) =
-			*(coord+nsd*(numnp+i)+2) - *(U+ndof*i+2);
-            }
-
-	    /*for ( i = 0; i < numnp; ++i)
-	    {
-		*(coord0 + nsd*i) = *(coord+nsd*i) - *(U+ndof*i) -
-			*(U+ndof*i+2)*(*(U+ndof*i+4));
-		*(coord0 + nsd*i + 1) = *(coord+nsd*i+1) - *(U+ndof*i+1) +
-			*(U+ndof*i+2)*(*(U+ndof*i+3));
-		*(coord0 + nsd*i + 2) = *(coord+nsd*i+2) - *(U+ndof*i+2);
-	    }*/
-	}
-
-/* Calcuate the local z fiber displacement on each node */
-
-        for( i = 0; i < numnp; ++i )
-        {
 /* Calcuate the projection of displacement vector to local z fiber vector */
 
 	   *(node_vec) = *(coord+nsd*(numnp+i))-*(coord+nsd*i);
@@ -649,24 +615,131 @@ int main(int argc, char** argv)
 
 	   /*printf("\n node %3d %14.9f %14.9f %14.9f %14.9f %14.9f",
 		i,*(Uz_fib+i),fdum,*(node_vec), *(node_vec+1), *(node_vec+2));*/
-        }
+	}
+
+	if( !input_flag )
+	{
+/* Calcuate the local z fiber displacement on each node */
+
+	    for( i = 0; i < numnp; ++i )
+	    {
+/* Calcuate the projection of displacement vector to local z fiber vector */
+
+#if 0
+		*(node_vec) = *(coord+nsd*(numnp+i))-*(coord+nsd*i);
+		*(node_vec+1) = *(coord+nsd*(numnp+i)+1)-*(coord+nsd*i+1);
+		*(node_vec+2) = *(coord+nsd*(numnp+i)+2)-*(coord+nsd*i+2);
+		fdum = *(node_vec)*(*(node_vec)) +
+		    *(node_vec+1)*(*(node_vec+1)) + *(node_vec+2)*(*(node_vec+2));
+		fdum = sqrt(fdum);
+		*(node_vec) /= fdum;
+		*(node_vec+1) /= fdum;
+		*(node_vec+2) /= fdum;
+		check = check=dotX( (Uz_fib+i), (node_vec), (U+ndof*i), nsd);
+		if(!check) printf( " Problems with dotX \n");
+#endif
+
+#if 0
+		*(coord0 + nsd*i) =
+			*(coord+nsd*i) - (*(U+ndof*i) +
+			*(Uz_fib + i)*(*(U+ndof*i+4)));
+		*(coord0 + nsd*i+1) =
+			*(coord+nsd*i+1) - (*(U+ndof*i+1) -
+			*(Uz_fib + i)*(*(U+ndof*i+3)));
+		*(coord0 + nsd*i+2) =
+			*(coord+nsd*i+2) - *(U+ndof*i+2);
+
+		*(coord0 + nsd*(numnp+i)) =
+			*(coord+nsd*(numnp+i)) - (*(U+ndof*i) +
+			*(Uz_fib + i)*(*(U+ndof*i+4)));
+		*(coord0 + nsd*(numnp+i) + 1) =
+			*(coord+nsd*(numnp+i)+1) - (*(U+ndof*i+1) -
+			*(Uz_fib + i)*(*(U+ndof*i+3)));
+		*(coord0 + nsd*(numnp+i) + 2) =
+			*(coord+nsd*(numnp+i)+2) - *(U+ndof*i+2);
+#endif
+
+/* Below is a calculation of the undeformed coordinates calculated as the difference between the
+   deformed coordinates and the displacements.  It is based on equations 6.2.20-6.2.24 of "The Finite
+   Element Method" by Thomas Hughes, page 388-389.  (David Benson, in "AMES 232 B Course Notes" page 50,
+   does the same as Hughes.)  I have made some modifications, specifically, I replace za in equation
+   6.2.23 with "Uz_fib" which is the projection of the displacement at a node in the fiber "e3"
+   direction.
+
+   It should be noted that in the "ANSYS User's Manual", page 12-12, these same equations mistakenly
+   switch the fiber vectors e1 and e2(which are called "a" and "b" in ANSYS).  The first time these
+   equations appear are in 12.5.1, 12.5.2, 12.5.3.  They also appear incorrectly like this later.
+*/
+		fdum = - *(fiber_xyz + nsdsq*i + 1*nsd)*(*(U+ndof*i+3)) +
+			*(fiber_xyz + nsdsq*i)*(*(U+ndof*i+4));
+		*(coord0 + nsd*i) =
+			*(coord+nsd*i) - (*(U+ndof*i) +
+			*(Uz_fib + i)*fdum);
+		*(coord0 + nsd*(numnp+i)) =
+			*(coord+nsd*(numnp+i)) - (*(U+ndof*i) +
+			*(Uz_fib + i)*fdum);
+
+		fdum = - *(fiber_xyz + nsdsq*i + 1*nsd + 1)*(*(U+ndof*i+3)) +
+			*(fiber_xyz + nsdsq*i + 1)*(*(U+ndof*i+4));
+		*(coord0 + nsd*i+1) =
+			*(coord+nsd*i+1) - (*(U+ndof*i+1) +
+			*(Uz_fib + i)*fdum);
+		*(coord0 + nsd*(numnp+i) + 1) =
+			*(coord+nsd*(numnp+i)+1) - (*(U+ndof*i+1) +
+			*(Uz_fib + i)*fdum);
+
+		fdum = - *(fiber_xyz + nsdsq*i + 1*nsd + 2)*(*(U+ndof*i+3)) +
+			*(fiber_xyz + nsdsq*i + 2)*(*(U+ndof*i+4));
+		*(coord0 + nsd*i+2) =
+			*(coord+nsd*i+2) - (*(U+ndof*i+2) +
+			*(Uz_fib + i)*fdum);
+		*(coord0 + nsd*(numnp+i) + 2) =
+			*(coord+nsd*(numnp+i)+2) - (*(U+ndof*i+2) +
+			*(Uz_fib + i)*fdum);
+	    }
+
+	    /*for ( i = 0; i < numnp; ++i)
+	    {
+		*(coord0 + nsd*i) = *(coord+nsd*i) - *(U+ndof*i) -
+			*(U+ndof*i+2)*(*(U+ndof*i+4));
+		*(coord0 + nsd*i + 1) = *(coord+nsd*i+1) - *(U+ndof*i+1) +
+			*(U+ndof*i+2)*(*(U+ndof*i+3));
+		*(coord0 + nsd*i + 2) = *(coord+nsd*i+2) - *(U+ndof*i+2);
+	    }*/
+	}
 
 	check = shset( bc, connecter, force, force_vec0, strain_node,
 		strain_color, stress_node, stress_color, U, U_color );
-        if(!check) printf( " Problems with shset \n");
+	if(!check) printf( " Problems with shset \n");
 
 /* Initialize the mesh viewer */
 
 
-        glutInit(&argc, argv);
-  	glutInitWindowSize(mesh_width0, mesh_height0);
-  	glutInitWindowPosition(400, 215);
+	glutInit(&argc, argv);
+	glutInitWindowSize(mesh_width0, mesh_height0);
+	glutInitWindowPosition(400, 215);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-        MeshWindow = glutCreateWindow("SLFFEA");
-        MeshInit ();
+	MeshWindow = glutCreateWindow("SLFFEA");
+	MeshInit ();
 
-  	AxesList = glGenLists(1);
-  	agvMakeAxesList(AxesList);
+	AxesList = glGenLists(1);
+	agvMakeAxesList(AxesList);
+
+/* Below, I calculate force_vec[i].* for the force vectors graphics.  The reason I
+   have coded things like this is because I think it gives me a slight improvement in
+   speed.  When glutDisplayFunc displays the mesh, it continuously calls all the
+   functions used in displaying the mesh like the subroutines which draw the force and
+   prescribed displacement vectors.  This doesn't matter for the undeformed mesh where
+   everything is drawn from display lists, but for the deformed mesh, it is an issue.
+   So I calculate force_vec[i].* outside those functions, rather than simply passing
+   force_vec0[i].* to the particular *force_vectors function and doing something like:
+
+                fx = fpointx - force_vec0[node_num].x;
+                fy = fpointy - force_vec0[node_num].y;
+                fz = fpointz - force_vec0[node_num].z;
+
+   There is probably only a small advantage, but that is the reason.
+*/
 
 	if( input_flag )
 	{
@@ -674,23 +747,23 @@ int main(int argc, char** argv)
 /* create display list for displacement and force grapics vectors
    on undeformed mesh*/
 
-  	    DispList = glGenLists(1);
-  	    shdisp_vectors0(DispList, bc, coord0);
+	    DispList = glGenLists(1);
+	    shdisp_vectors0(DispList, bc, coord0);
 
-            for( i = 0; i < bc.num_force[0]; ++i)
-            {
-                fpointx = *(coord0+nsd*bc.force[i]);
-                fpointy = *(coord0+nsd*bc.force[i] + 1);
-                fpointz = *(coord0+nsd*bc.force[i] + 2);
-                force_vec[i].x = fpointx - force_vec0[i].x;
-                force_vec[i].y = fpointy - force_vec0[i].y;
-                force_vec[i].z = fpointz - force_vec0[i].z;
-                force_vec[i].phix = fpointx - force_vec0[i].phix;
+	    for( i = 0; i < bc.num_force[0]; ++i)
+	    {
+		fpointx = *(coord0+nsd*bc.force[i]);
+		fpointy = *(coord0+nsd*bc.force[i] + 1);
+		fpointz = *(coord0+nsd*bc.force[i] + 2);
+		force_vec[i].x = fpointx - force_vec0[i].x;
+		force_vec[i].y = fpointy - force_vec0[i].y;
+		force_vec[i].z = fpointz - force_vec0[i].z;
+		force_vec[i].phix = fpointx - force_vec0[i].phix;
 		force_vec[i].phiy = fpointy - force_vec0[i].phiy;
-            }
+	    }
     
-  	    ForceList = glGenLists(1);
-  	    shforce_vectors0(ForceList, bc, coord0, force_vec);
+	    ForceList = glGenLists(1);
+	    shforce_vectors0(ForceList, bc, coord0, force_vec);
     
 	}
 
@@ -698,31 +771,31 @@ int main(int argc, char** argv)
 	{
 /* create force grapics vectors for deformed mesh*/
 
-            for( i = 0; i < bc.num_force[0]; ++i)
-            {
-                fpointx = *(coord+nsd*bc.force[i]);
-                fpointy = *(coord+nsd*bc.force[i] + 1);
-                fpointz = *(coord+nsd*bc.force[i] + 2);
+	    for( i = 0; i < bc.num_force[0]; ++i)
+	    {
+		fpointx = *(coord+nsd*bc.force[i]);
+		fpointy = *(coord+nsd*bc.force[i] + 1);
+		fpointz = *(coord+nsd*bc.force[i] + 2);
 		force_vec[i].x = fpointx - force_vec0[i].x;
 		force_vec[i].y = fpointy - force_vec0[i].y;
 		force_vec[i].z = fpointz - force_vec0[i].z;
-                force_vec[i].phix = fpointx - force_vec0[i].phix;
+		force_vec[i].phix = fpointx - force_vec0[i].phix;
 		force_vec[i].phiy = fpointy - force_vec0[i].phiy;
-            }
+	    }
 	}
 
 /* Initiate variables in Control Panel */
 
 	memset(Color_flag,0,rowdim*sofi);
 
-        check = ControlDimInit();
-        if(!check) printf( " Problems with ControlDimInit \n");
+	check = ControlDimInit();
+	if(!check) printf( " Problems with ControlDimInit \n");
 
 /* call display function  */
 
-        glutDisplayFunc(shMeshDisplay);
+	glutDisplayFunc(shMeshDisplay);
 
-        glutReshapeFunc(MeshReshape);
+	glutReshapeFunc(MeshReshape);
 
 /* Initialize Mouse Functions */
 
@@ -731,40 +804,40 @@ int main(int argc, char** argv)
 
 /* Initialize Keyboard Functions */
 
-        glutKeyboardFunc(shMeshKeys);
-        glutSpecialFunc(MeshKey_Special);
+	glutKeyboardFunc(shMeshKeys);
+	glutSpecialFunc(MeshKey_Special);
 
 /* Initialize the Control Panel */
 
-        glutInitWindowSize(control_width0, control_height0);
-        glutInitWindowPosition(0, 0);
-        glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB );
-        ControlWindow = glutCreateWindow("SLFFEA Control Panel");
+	glutInitWindowSize(control_width0, control_height0);
+	glutInitWindowPosition(0, 0);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB );
+	ControlWindow = glutCreateWindow("SLFFEA Control Panel");
 
-        ControlInit();
+	ControlInit();
 	shMenu();
-        glutDisplayFunc(shControlDisplay);
-        glutReshapeFunc(ControlReshape);
+	glutDisplayFunc(shControlDisplay);
+	glutReshapeFunc(ControlReshape);
 
-        glutMouseFunc(shControlMouse);
+	glutMouseFunc(shControlMouse);
 
 /* call function for hotkeys
  */
 #if 0
 	glutKeyboardFunc(ControlHandleKeys);
 #endif
-        glutMainLoop();
+	glutMainLoop();
 
-        free(strain);
-        free(stress);
+	free(strain);
+	free(stress);
 	free(mem_SDIM);
-        free(strain_color);
-        free(stress_color);
+	free(strain_color);
+	free(stress_color);
 	free(mem_NORM);
-        free(matl);
-        free(mem_double);
-        free(mem_int);
-        free(mem_XYZPhiI);
-        free(mem_XYZPhiF);
-  	return 1;    /* ANSI C requires main to return int. */
+	free(matl);
+	free(mem_double);
+	free(mem_int);
+	free(mem_XYZPhiI);
+	free(mem_XYZPhiF);
+	return 1;    /* ANSI C requires main to return int. */
 }

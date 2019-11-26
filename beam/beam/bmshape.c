@@ -3,7 +3,7 @@
     element.
 
     SLFFEA source file
-    Version:  1.3
+    Version:  1.4
     Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005  San Le 
 
     The source code contained in this file is released under the
@@ -61,7 +61,7 @@ int bmshape_mass(SHAPE *sh, double s, double L, double Lsq)
 /* Maps from L2 space to coordinate space and
    calculates the shape functions for mass matrices 
 
-		Updated 9/11/00
+                Updated 9/11/00
 */
 
 	s = L*(1. + s)/2.;

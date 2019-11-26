@@ -65,8 +65,8 @@ int qd3reader( BOUND bc, int *connect, int *edge_connect, int *el_edge_connect,
 	{
 	   fscanf( o1, "%d ",&dum);
 	   printf( "material (%3d) permittivity, permeability, oper. fq.",dum);
-	   fscanf( o1, " %lf %lf %lf\n",&matl[dum].eta, &matl[dum].nu, &matl[dum].ko);
-	   printf( " %7.3e %7.3e %7.3e\n",matl[dum].eta, matl[dum].nu, matl[dum].ko);
+	   fscanf( o1, " %lf %lf %lf\n", &matl[dum].eta, &matl[dum].nu, &matl[dum].ko);
+	   printf( " %7.3e %7.3e %7.3e\n", matl[dum].eta, matl[dum].nu, matl[dum].ko);
 	}
 	fgets( buf, BUFSIZ, o1 );
 	printf( "\n");

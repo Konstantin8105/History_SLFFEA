@@ -1,5 +1,5 @@
 # SLFFEA Makefile
-# Version:  1.3
+# Version:  1.4
 # Copyright (C) 1999, 2000, 2001, 2002  San Le (slffea@yahoo.com)
 # http://slffea.com/
 #
@@ -39,14 +39,14 @@ PROGS = te tep
 all: te tep
 
 te: femte.o \
-		tememory.o \
+		memory2.o \
 		tereader.o \
-		teid.o \
+		id.o \
 		teshape.o \
 		tetrab.o \
 		tekasmbl.o \
 		teconj.o \
-		tebound.o \
+		bound.o \
 		temasmbl.o \
 		telanczos.o \
 		temassp.o \
@@ -55,14 +55,14 @@ te: femte.o \
 		teconst.h \
 		testruct.h 
 	$(CC) -o te femte.o \
-		tememory.o \
+		memory2.o \
 		tereader.o \
-		teid.o \
+		id.o \
 		teshape.o \
 		tetrab.o \
 		tekasmbl.o \
 		teconj.o \
-		tebound.o \
+		bound.o \
 		temasmbl.o \
 		telanczos.o \
 		temassp.o \
@@ -91,8 +91,8 @@ telanczos.o: telanczos.c
 temasmbl.o: temasmbl.c
 	$(CC) -c temasmbl.c 
 
-tebound.o: tebound.c
-	$(CC) -c tebound.c -DTETRA1
+bound.o: $(COMMON)/bound.c
+	$(CC) -c $(COMMON)/bound.c -DTETRA1
 
 teconj.o: teconj.c
 	$(CC) -c teconj.c 
@@ -106,14 +106,14 @@ tetrab.o: tetrab.c
 teshape.o: teshape.c
 	$(CC) -c teshape.c 
 
-teid.o: teid.c
-	$(CC) -c teid.c -DTETRA1
+id.o: $(COMMON)/id.c
+	$(CC) -c $(COMMON)/id.c -DTETRA1
 
 tereader.o: tereader.c
 	$(CC) -c tereader.c
 
-tememory.o: tememory.c
-	$(CC) -c tememory.c -DTETRA1
+memory2.o: $(COMMON)/memory2.c
+	$(CC) -c $(COMMON)/memory2.c -DTETRA1
 
 femte.o: femte.c
 	$(CC) -c femte.c

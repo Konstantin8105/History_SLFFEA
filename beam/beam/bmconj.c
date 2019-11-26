@@ -6,11 +6,11 @@
     which allocates the memory and goes through the steps of the algorithm.
     These go with the calculation of displacement.
 
-		Updated 11/1/04
+		Updated 11/6/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -46,27 +46,28 @@ int matXrot(double *, double *, double *, int, int);
 
 int rotXmat(double *, double *, double *, int, int);
 
+int rotTXmat(double *, double *, double *, int, int);
+
 int dotX(double *, double *, double *, int);
 
 int bmBoundary( double *, BOUND );
 
 
-int bmConjPassemble(double *A, double *axis_z, int *connect, double *coord, int *el_matl,
-	int *el_type, MATL *matl, double *P_global_CG, double *U)
+int bmConjPassemble(double *A, int *connect, double *coord, int *el_matl, int *el_type,
+	double *length, double *local_xyz, MATL *matl, double *P_global_CG, double *U)
 {
 /* This function assembles the P_global_CG matrix for the displacement calculation by
    taking the product [K_el]*[U_el].  Some of the [K_el] is stored in [A].
 
-			Updated 1/23/03
+                        Updated 11/6/06
 */
 	int i, i1, i2, j, k, dof_el[neqel], sdof_el[npel*nsd];
 	int check, node0, node1;
 	int matl_num, type_num;
 	double area, Emod, EmodXarea, wXjacob, EmodXIy, EmodXIz, G, GXIp;
-	double L, Lx, Ly, Lz, Lsq, Lxysq, axis_x[nsd], axis_y[nsd];
+	double L, Lsq;
 	double B[soB], DB[soB], jacob;
-	double K_temp[neqlsq], K_el[neqlsq], K_local[neqlsq],
-		rotate[nsdsq], rotateT[nsdsq];
+	double K_temp[neqlsq], K_el[neqlsq], K_local[neqlsq], rotate[nsdsq];
 	SHAPE sh;
 	double U_el[neqel];
 	double coord_el_trans[npel*nsd];
@@ -124,53 +125,23 @@ int bmConjPassemble(double *A, double *axis_z, int *connect, double *coord, int 
 
 		node0 = *(connect+k*npel);
 		node1 = *(connect+k*npel+1);
-		Lx = *(coord+nsd*node1) - *(coord+nsd*node0);
-		Ly = *(coord+nsd*node1+1) - *(coord+nsd*node0+1);
-		Lz = *(coord+nsd*node1+2) - *(coord+nsd*node0+2);
 
-		/*printf(" Lx, Ly, Lz %f %f %f\n ", Lx, Ly, Lz);*/
-
-		Lsq = Lx*Lx+Ly*Ly+Lz*Lz;
-		L = sqrt(Lsq);
-		Lx /= L; Ly /= L; Lz /= L;
-		*(axis_x) = Lx;
-		*(axis_x+1) = Ly;
-		*(axis_x+2) = Lz;
+		L = *(length + k);
+		Lsq = L*L;
 
 		jacob = L/2.0;
 
-/* To find axis_y, take cross product of axis_z and axis_x */
-
-		check = bmnormcrossX((axis_z+nsd*k), axis_x, axis_y);
-		if(!check) printf( "Problems with bmnormcrossX \n");
-
-/* Assembly of the 3X3 rotation matrix for the 12X12 global rotation
-   matrix */
 		memset(rotate,0,nsdsq*sof);
-		*(rotate) = *(axis_x);
-		*(rotate+1) = *(axis_x+1);
-		*(rotate+2) = *(axis_x+2);
-		*(rotate+3) = *(axis_y);
-		*(rotate+4) = *(axis_y+1);
-		*(rotate+5) = *(axis_y+2);
-		*(rotate+6) = *(axis_z+nsd*k);
-		*(rotate+7) = *(axis_z+nsd*k+1);
-		*(rotate+8) = *(axis_z+nsd*k+2);
 
-
-/* Assembly of the 3X3 transposed rotation matrix for the 12X12 global rotation
-   matrix */
-
-		memset(rotateT,0,nsdsq*sof);
-		*(rotateT) = *(rotate);
-		*(rotateT+1) = *(rotate+3);
-		*(rotateT+2) = *(rotate+6);
-		*(rotateT+3) = *(rotate+1);
-		*(rotateT+4) = *(rotate+4);
-		*(rotateT+5) = *(rotate+7);
-		*(rotateT+6) = *(rotate+2);
-		*(rotateT+7) = *(rotate+5);
-		*(rotateT+8) = *(rotate+8);
+		*(rotate)     = *(local_xyz + nsdsq*k);
+		*(rotate + 1) = *(local_xyz + nsdsq*k + 1);
+		*(rotate + 2) = *(local_xyz + nsdsq*k + 2);
+		*(rotate + 3) = *(local_xyz + nsdsq*k + 3);
+		*(rotate + 4) = *(local_xyz + nsdsq*k + 4);
+		*(rotate + 5) = *(local_xyz + nsdsq*k + 5);
+		*(rotate + 6) = *(local_xyz + nsdsq*k + 6);
+		*(rotate + 7) = *(local_xyz + nsdsq*k + 7);
+		*(rotate + 8) = *(local_xyz + nsdsq*k + 8);
 
 /* defining the components of an el element vector */
 
@@ -256,9 +227,8 @@ int bmConjPassemble(double *A, double *axis_z, int *connect, double *coord, int 
 		check = matXrot(K_temp, K_el, rotate, neqel, neqel);
 		if(!check) printf( "Problems with matXrot \n");
 
-		check = rotXmat(K_el, rotateT, K_temp, neqel, neqel);
+		check = rotTXmat(K_el, rotate, K_temp, neqel, neqel);
 		if(!check) printf( "Problems with rotXmat \n");
-
 
 /* Assembly of the global P matrix */
 
@@ -280,16 +250,16 @@ int bmConjPassemble(double *A, double *axis_z, int *connect, double *coord, int 
 }
 
 
-int bmConjGrad(double *A, double *axis_z, BOUND bc, int *connect, double *coord,
-	int *el_matl, int *el_type, double *force, double *K_diag, MATL *matl,
-	double *U)
+int bmConjGrad(double *A, BOUND bc, int *connect, double *coord, int *el_matl,
+	int *el_type, double *force, double *K_diag, double *length, double *local_xyz,
+	MATL *matl, double *U)
 {
 /* This function does memory allocation and uses the conjugate gradient
    method to solve the linear system arising from the calculation of
    displacements.  It also makes the call to bmConjPassemble to get the
    product of [A]*[p].
 
-			Updated 1/7/03
+                        Updated 11/6/06
 
    It is taken from the algorithm 10.3.1 given in "Matrix Computations",
    by Golub, page 534.
@@ -313,7 +283,7 @@ int bmConjGrad(double *A, double *axis_z, BOUND bc, int *connect, double *coord,
 
 /* For the Conjugate Gradient Method doubles */
 
-						ptr_inc = 0;
+	                                        ptr_inc = 0;
 	p=(mem_double+ptr_inc);                 ptr_inc += dof;
 	P_global_CG=(mem_double+ptr_inc);       ptr_inc += dof;
 	r=(mem_double+ptr_inc);                 ptr_inc += dof;
@@ -352,8 +322,8 @@ int bmConjGrad(double *A, double *axis_z, BOUND bc, int *connect, double *coord,
 	{
 
 		printf( "\n %3d %16.8e\n",counter, fdum2);
-		check = bmConjPassemble( A, axis_z, connect, coord, el_matl, el_type,
-			matl, P_global_CG, p);
+		check = bmConjPassemble( A, connect, coord, el_matl, el_type,
+			length, local_xyz, matl, P_global_CG, p);
 		if(!check) printf( " Problems with bmConjPassemble \n");
 		check = bmBoundary (P_global_CG, bc);
 		if(!check) printf( " Problems with bmBoundary \n");
@@ -379,8 +349,8 @@ int bmConjGrad(double *A, double *axis_z, BOUND bc, int *connect, double *coord,
 		    /*printf( "%4d %14.5f  %14.5f  %14.5f  %14.5f %14.5f\n",j,alpha,
 			*(U+j),*(r+j),*(P_global_CG+j),*(force+j));
 		    printf( "%4d %14.8f  %14.8f  %14.8f  %14.8f %14.8f\n",j,
-			*(U+j)*bet,*(r+j)*bet,*(P_global_CG+j)*alp/(*(mass+j)),
-			*(force+j)*alp/(*(mass+j)));*/
+			*(U+j)*beta,*(r+j)*beta,*(P_global_CG+j)*alpha,
+			*(force+j)*alpha);*/
 		    *(p+j) = *(z+j)+beta*(*(p+j));
 		}
 		check = bmBoundary (p, bc);
@@ -402,7 +372,8 @@ The lines below are for testing the quality of the calculation:
 */
 
 /*
-	check = bmConjPassemble( A, axis_z, connect, coord, el_matl, el_type, matl, P_global_CG, U);
+	check = bmConjPassemble( A, connect, coord, el_matl, el_type, length, local_xyz,
+		matl, P_global_CG, U);
 	if(!check) printf( " Problems with bmConjPassemble \n");
 
 	for( j = 0; j < dof; ++j )

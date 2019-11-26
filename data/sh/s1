@@ -1,0 +1,32 @@
+   numel numnp nmat nmode  integ_flag This is spl
+	1    4  1   -5   1   
+ matl no., E mod., Poiss. Ratio, mass, shear fac.
+0	3.0e7   0.3   2322.3800    .8333333
+el no., connectivity, matl no
+0    0    1    2    3   0
+node no., coordinates
+0     0.000000  0.000000  1.00000
+1     3.333333  0.000000  1.00000
+2     3.333333  3.333333  1.00000
+3     0.000000  3.333333  1.00000
+these are the corresponding top nodes
+0     0.000000  0.000000  1.10000
+1     3.333333  0.000000  1.10000
+2     3.333333  3.333333  1.10000
+3     0.000000  3.333333  1.10000
+prescribed displacement x: node  disp value
+ -10
+prescribed displacement y: node  disp value
+ -10
+prescribed displacement z: node  disp value
+ -10
+ prescribed angle phi x: node angle value
+ -10
+ prescribed angle phi y: node angle value
+ -10
+node with point load x, y, z and 2 moments phi x, phi y
+3    0.0 0.0 -2.50  0.0  0.0 
+ -10
+element no. and gauss pt. no. with stress and stress vector in lamina xx,yy,xy,zx,yz
+ -10
+

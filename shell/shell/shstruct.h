@@ -1,10 +1,10 @@
 /*
     This file contains the structures of the shell FEM code.
 
-	Updated 9/25/06
+	Updated 9/22/06
 
     SLFFEA source file
-    Version:  1.3
+    Version:  1.4
     Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
 
     The source code contained in this file is released under the
@@ -19,15 +19,15 @@
 #include "shconst.h"
 
 typedef struct {
-        double xx,yy,xy,zx,yz,I,II,III;
+	double xx,yy,xy,zx,yz,I,II,III;
 } SDIM;
 
 typedef struct {
-        double x, y, z, phix, phiy;
+	double x, y, z, phix, phiy;
 } XYZPhiF;
 
 typedef struct {
-        int x, y, z, phix, phiy;
+	int x, y, z, phix, phiy;
 } XYZPhiI;
 
 typedef struct {
@@ -38,41 +38,41 @@ typedef struct {
 } BOUND;
 
 typedef struct {
-        double E;
-        double nu;
-        double rho;
-        double thick;
-        double shear;
+	double E;
+	double nu;
+	double rho;
+	double thick;
+	double shear;
 	int extrathick;
 } MATL;
 
 typedef struct {
-        double *bend;
+	double *bend;
 	double *shear;
-        double *bend_z;
-        double *shear_z;
+	double *bend_z;
+	double *shear_z;
 } SH;
 
 typedef struct {
-        double hat[nsd*npell];
+	double hat[nsd*npell];
 	double bar[nsd*npell];
 } XL;
 
 typedef struct {
-        double hat[soxshat];
+	double hat[soxshat];
 	double bar[soxsbar];
 } XLXS;
 
 typedef struct {
 	double *l_shear;
-        double *l_bend;
-        double *f_shear;
+	double *l_bend;
+	double *f_shear;
 } ROTATE;
 
 typedef struct {
-        SDIM pt[num_int];
+	SDIM pt[num_int];
 } STRESS;
 
 typedef struct {
-        SDIM pt[num_int];
+	SDIM pt[num_int];
 } STRAIN;

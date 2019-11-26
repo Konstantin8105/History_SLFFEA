@@ -1,11 +1,11 @@
 /*
     This program draws the drag down menus.  It works with a plate FEM code.
   
-   			Last Update 6/9/01
+	                Last Update 9/15/06
 
     SLFFEA source file
-    Version:  1.3
-    Copyright (C) 1999, 2000, 2001, 2002  San Le 
+    Version:  1.4
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -26,7 +26,7 @@
 #include <GL/glut.h>
 
 extern int nmat, numnp, numel, dof;
-extern double *coord, *coord0, *zcoord;
+extern double *coord, *coord0;
 extern double *U;
 extern int *connecter;
 extern BOUND bc;
@@ -35,7 +35,7 @@ extern MDIM *moment_node;
 extern SDIM *stress_node;
 extern MDIM *curve_node;
 extern SDIM *strain_node;
-extern ZPhiF *force_vec, *force_vec0;
+extern XYZPhiF *force_vec, *force_vec0;
 extern IMOMENT *moment_color;
 extern ICURVATURE *curve_color;
 extern ISTRESS *stress_color;
@@ -52,9 +52,9 @@ extern int Before_flag, After_flag,
     Both_flag, Amplify_flag;
 extern double amplify_factor, amplify_step, amplify_step0;
 
-int plset( BOUND bc, int *, MDIM *, ICURVATURE *, double *, ZPhiF *,
-        MDIM *, IMOMENT *, SDIM *, ISTRAIN *, SDIM *, ISTRESS *,
-        double *, int * );
+int plset( BOUND bc, int *, MDIM *, ICURVATURE *, double *, XYZPhiF *,
+	MDIM *, IMOMENT *, SDIM *, ISTRAIN *, SDIM *, ISTRESS *,
+	double *, int * );
 
 void plReGetparameter( void);
 

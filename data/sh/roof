@@ -1,5 +1,5 @@
    numel numnp nmat  nmode  integ_flag This is the roof problem
-    16    25    1    -5    1  
+    16    25    1    0    1  
  matl no., E mod., Poiss., density, Ratio, shear fac.
    0  4.32e8  0.0   9290.0000   0.8333333 
  el no., connectivity, matl no

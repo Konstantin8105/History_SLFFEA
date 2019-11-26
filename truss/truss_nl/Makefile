@@ -31,8 +31,8 @@ COMMON = ../../common
 TRUSS = ../truss
 OBJECTS = $(COMMON)/matxt.o $(COMMON)/matx.o $(COMMON)/dotx.o \
 	$(COMMON)/rotate.o
-OBJECTS_TS = $(TRUSS)/tsmemory.o $(TRUSS)/tsreader.o $(TRUSS)/tsid.o \
-	$(TRUSS)/tsbound.o $(TRUSS)/tswriter.o $(TRUSS)/tslength.o
+OBJECTS_TS = $(TRUSS)/tsmemory.o $(TRUSS)/tsreader.o $(TRUSS)/id.o \
+	$(TRUSS)/bound.o $(TRUSS)/tswriter.o $(TRUSS)/tslength.o
 
 PROGS = nts 
 

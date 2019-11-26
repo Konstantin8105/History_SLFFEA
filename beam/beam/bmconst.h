@@ -5,7 +5,7 @@
                 Updated 3/16/05
 
     SLFFEA source file
-    Version:  1.3
+    Version:  1.4
     Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004  San Le 
 
     The source code contained in this file is released under the
@@ -18,13 +18,13 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define	pt5           .5 
-#define	pt25          .25
-#define	pt1667        .166666666667
-#define	sq3          1.732050808 
-#define	sq3pt33      1.825741858 
-#define	sqpt3        0.547722557 
-#define	ONE          0.99999 
+#define pt5           .5 
+#define pt25          .25
+#define pt1667        .166666666667
+#define sq3          1.732050808 
+#define sq3pt33      1.825741858 
+#define sqpt3        0.547722557 
+#define ONE          0.99999 
 
 #define nsd            3                  /* number of spatial dimensions per node */
 #define ndof           6                  /* degrees of freedom per node */
@@ -35,7 +35,7 @@
 #define num_int3       3                  /* number of integration points for 3 pt. Gauss */
 #define num_int4       4                  /* number of integration points for 4 pt. Gauss */
 #define num_int_mass   4                  /* number of integration points for mass */
-#define nsdsq          nsd*nsd 	          /* nsd squared */
+#define nsdsq          nsd*nsd            /* nsd squared */
 #define neqlsq         neqel*neqel        /* neqel squared */
 #define lenb           3*neqel*num_int    /*  */
 #define sdim           4                  /* stress dimensions per Euler-Bernoulli element */
