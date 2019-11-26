@@ -2,11 +2,11 @@
     This file contains the structures of the graphics program
     for shell elements.
 
-	Updated 9/22/06
+	Updated 9/22/08
 
     SLFFEA source file
-    Version:  1.4
-    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
+    Version:  1.5
+    Copyright (C) 1999-2008  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -24,11 +24,11 @@ typedef struct {
 } ISDIM;
 
 typedef struct {
-	ISDIM pt[num_int];
+	ISDIM pt[num_int8];
 } ISTRESS;
 
 typedef struct {
-	ISDIM pt[num_int];
+	ISDIM pt[num_int8];
 } ISTRAIN;
 
 /* The structure below is a repeat of XYZF found in ../shell/shstruct.h.

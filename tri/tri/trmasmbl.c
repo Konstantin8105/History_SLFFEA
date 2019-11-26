@@ -4,11 +4,11 @@
     the element mass matrices.  This is for a finite element program
     which does analysis on a triangle.  It is for modal analysis.
 
-		Updated 10/20/06
+		Updated 11/25/08
 
     SLFFEA source file
-    Version:  1.4
-    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
+    Version:  1.5
+    Copyright (C) 1999-2008  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -51,9 +51,7 @@ int trMassemble(int *connect, double *coord, int *el_matl, int *id,
 	double M_temp[neqlsq], M_el[neqlsq], rotate[nsd2*nsd];
 	double coord_el[npel*nsd], coord_el_trans[npel*nsd],
 		coord_el_local[npel*nsd2], coord_el_local_trans[npel*nsd2];
-	double X1, X2, X3, Y1, Y2, Y3, Z1, Z2, Z3, X12, X13, Y12, Y13, Z12, Z13;
-	double Xp, Xr, Xq, Yp, Yr, Yq, Zp, Zr, Zq, Xpr, Xpq, Ypr, Ypq, Zpr, Zpq;
-	double Lpq, Ltr, Mpq, Mtr, Npq, Ntr, Dpq, Dpt, Dtr;
+	double X1, X2, X3, Y1, Y2, Y3;
 	double det[num_int], area_el, wXdet;
 	double mass_el[neqel];
 

@@ -2,11 +2,11 @@
     This library function reads in data for a finite element
     program which does analysis on a shell element.
 
-		Updated 9/30/06
+		Updated 9/30/08
 
     SLFFEA source file
-    Version:  1.4
-    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
+    Version:  1.5
+    Copyright (C) 1999-2008  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -21,13 +21,14 @@
 #include "shstruct.h"
 
 extern int dof, nmat, nmode, numel, numnp;
-extern int stress_read_flag, element_stress_read_flag, doubly_curved_flag;
+extern int stress_read_flag, element_stress_read_flag, doubly_curved_flag,
+	flag_quad_element;
 
 int shreader( BOUND bc, int *connect, double *coord, int *el_matl, double *force,
 	MATL *matl, char *name, FILE *o1, STRESS *stress, SDIM *stress_node,
 	double *U)
 {
-	int i, j, dum, dum2, name_length, file_loc;
+	int i, j, dum, dum1, dum2, dum3, dum4, dum5, name_length, file_loc;
 	double fdum1, fdum2, fdum3;
 	char *ccheck, one_char;
 	char buf[ BUFSIZ ];
@@ -107,20 +108,62 @@ int shreader( BOUND bc, int *connect, double *coord, int *el_matl, double *force
 	fgets( buf, BUFSIZ, o1 );
 	printf( "\n");
 
-	for( i = 0; i < numel; ++i )
+	file_loc = ftell(o1);
+
+	fscanf( o1,"%d %d %d %d %d",&dum, &dum1, &dum2, &dum3, &dum4);
+
+/* Check if this is a quadrilateral or triangle element data file.  */
+
+	flag_quad_element = 0;
+	while(( one_char = (unsigned char) fgetc(o1)) != '\n')
 	{
-	   fscanf( o1,"%d ",&dum);
-	   printf( "connectivity for element (%6d) ",dum);
-	   for( j = 0; j < npell; ++j )
-	   {
-		fscanf( o1, "%d",(connect+npell*dum+j));
-		printf( "%6d ",*(connect+npell*dum+j));
-	   }
-	   fscanf( o1,"%d\n",(el_matl+dum));
-	   printf( " with matl %3d\n",*(el_matl+dum));
+		if(one_char != ' ' )
+		{
+		    ungetc( one_char, o1);
+		    fscanf( o1,"%d", &dum5);
+		    flag_quad_element = 1;
+		    break;
+		}
+	}
+
+	fseek(o1, file_loc, 0);
+
+	if( !flag_quad_element )
+	{
+
+/* We have triangle elements. */
+
+	    for( i = 0; i < numel; ++i )
+	    {
+	       fscanf( o1,"%d ",&dum);
+	       printf( "connectivity for element (%6d) ",dum);
+	       for( j = 0; j < npell3; ++j )
+	       {
+		    fscanf( o1, "%d",(connect+npell3*dum+j));
+		    printf( "%6d ",*(connect+npell3*dum+j));
+	       }
+	       fscanf( o1,"%d\n",(el_matl+dum));
+	       printf( " with matl %3d\n",*(el_matl+dum));
+	    }
+	}
+	else
+	{
+	    for( i = 0; i < numel; ++i )
+	    {
+	       fscanf( o1,"%d ",&dum);
+	       printf( "connectivity for element (%6d) ",dum);
+	       for( j = 0; j < npell4; ++j )
+	       {
+		    fscanf( o1, "%d",(connect+npell4*dum+j));
+		    printf( "%6d ",*(connect+npell4*dum+j));
+	       }
+	       fscanf( o1,"%d\n",(el_matl+dum));
+	       printf( " with matl %3d\n",*(el_matl+dum));
+	    }
 	}
 	fgets( buf, BUFSIZ, o1 );
 	printf( "\n");
+
 
 	for( i = 0; i < numnp; ++i )
 	{

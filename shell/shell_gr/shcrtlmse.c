@@ -2,11 +2,11 @@
     This program contains the control mouse routine for the FEM GUI
     for shell elements.
   
-                  Last Update 10/15/06
+                  Last Update 9/25/08
 
     SLFFEA source file
-    Version:  1.4
-    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le
+    Version:  1.5
+    Copyright (C) 1999-2008  San Le
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -31,7 +31,7 @@
 
 /****** FEA globals ******/
 
-extern int dof, nmat, numnp, numel;
+extern int dof, nmat, numnp, numel, flag_quad_element;
 extern double *coord, *coord0;
 extern double *U, *Uz_fib, *fiber_xyz;
 extern int *connecter;
@@ -89,7 +89,9 @@ extern double Ux_div[boxnumber+1], Uy_div[boxnumber+1], Uz_div[boxnumber+1],
 	Uphi_x_div[boxnumber+1], Uphi_y_div[boxnumber+1];
 extern SDIM stress_div[boxnumber+1], strain_div[boxnumber+1];
 
-int shnormal_vectors (int *, double *, NORM * );
+int brnormal_vectors (int *, double *, NORM * );
+
+int wenormal_vectors (int *, double *, NORM * );
 
 void ScreenShot( int , int );
 
@@ -396,8 +398,16 @@ void shControlMouse(int button, int state, int x, int y)
 					*(Uz_fib + i)*fdum)*amplify_factor;
 				}
 /* Update force graphics vectors */
-				check = shnormal_vectors(connecter, coord, norm );
-				if(!check) printf( " Problems with shnormal_vectors \n");
+				if(flag_quad_element)
+				{
+				    check = brnormal_vectors(connecter, coord, norm );
+				    if(!check) printf( " Problems with brnormal_vectors \n");
+				}
+				else
+				{
+				    check = wenormal_vectors(connecter, coord, norm );
+				    if(!check) printf( " Problems with wenormal_vectors \n");
+				}
 
 				for( i = 0; i < bc.num_force[0]; ++i)
 				{
@@ -734,8 +744,16 @@ void shControlMouse(int button, int state, int x, int y)
 					*(Uz_fib + i)*fdum)*amplify_factor;
 				}
 /* Update force graphics vectors */
-				check = shnormal_vectors(connecter, coord, norm );
-				if(!check) printf( " Problems with shnormal_vectors \n");
+				if(flag_quad_element)
+				{
+				    check = brnormal_vectors(connecter, coord, norm );
+				    if(!check) printf( " Problems with brnormal_vectors \n");
+				}
+				else
+				{
+				    check = wenormal_vectors(connecter, coord, norm );
+				    if(!check) printf( " Problems with wenormal_vectors \n");
+				}
 
 				for( i = 0; i < bc.num_force[0]; ++i)
 				{
@@ -1251,12 +1269,23 @@ void shControlMouse(int button, int state, int x, int y)
 			strncpy( BoxData[2], "Material", 8);
 			sprintf( BoxData[4], "%4d ", *(el_matl_color+ele_choice));
 			strncpy( BoxData[6], "Connect", 7);
-			dum1 = *(connecter + npell*ele_choice);
-			dum2 = *(connecter + npell*ele_choice+1);
-			sprintf( BoxData[8], "%4d,%4d ",dum1, dum2);
-			dum1 = *(connecter + npell*ele_choice+2);
-			dum2 = *(connecter + npell*ele_choice+3);
-			sprintf( BoxData[10], "%4d,%4d ",dum1, dum2);
+			if(flag_quad_element)
+			{
+			    dum1 = *(connecter + npell4*ele_choice);
+			    dum2 = *(connecter + npell4*ele_choice+1);
+			    sprintf( BoxData[8], "%4d,%4d ",dum1, dum2);
+			    dum1 = *(connecter + npell4*ele_choice+2);
+			    dum2 = *(connecter + npell4*ele_choice+3);
+			    sprintf( BoxData[10], "%4d,%4d ",dum1, dum2);
+			}
+			else
+			{
+			    dum1 = *(connecter + npell3*ele_choice);
+			    dum2 = *(connecter + npell3*ele_choice+1);
+			    sprintf( BoxData[8], "%4d,%4d ",dum1, dum2);
+			    dum1 = *(connecter + npell3*ele_choice+2);
+			    sprintf( BoxData[10], "%4d ",dum1);
+			}
 			sprintf( BoxData[12], " " );
 			sprintf( BoxData[14], " " );
 			sprintf( BoxData[16], " " );

@@ -1,5 +1,5 @@
 # SLFFEA Makefile
-# Version:  1.4
+# Version:  1.5
 # Copyright (C) 1999, 2000  San Le (slffea@yahoo.com)
 # http://slffea.com/
 #
@@ -118,7 +118,7 @@ bc_vec.o: $(COMMON_GR)/bc_vec.c
 	$(CC) -c $(COMMON_GR)/bc_vec.c -DWEDGE1
 
 wenorm_vec.o: wenorm_vec.c 
-	$(CC) -c wenorm_vec.c 
+	$(CC) -c wenorm_vec.c -DWEDGE1
 
 set.o: $(COMMON_GR)/set.c 
 	$(CC) -c $(COMMON_GR)/set.c -DWEDGE1

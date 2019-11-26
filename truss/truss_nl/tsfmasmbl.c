@@ -1,12 +1,31 @@
 /*
     This utility function assembles the Mass and force matrix for a finite
     element program which does analysis on a truss which can behave
-    nonlinearly.  The equations are solved using dynamic relaxation.
+    nonlinearly.  The mass is used both in the dynamic relaxation
+    method as well as the conjugate gradient method.   It is not really
+    needed in the conjugate gradient method except to act as a
+    preconditioner.
+
+    Note that the mass matrix is made up of the diagonal of the stiffness
+    matrix.
+
+    Currently, there are quantities at 1/2 time used to calculate
+    the stiffness.  Because coordh and coord are the same at the beginning
+    of the calculation, there is no difference in which is used.  But
+    because there is a possibility that I will recalculate the mass
+    during the main calculation loop which has coordinate updating,
+    I will leave the code as it is.  If this does happen, then I will
+    need to comment out the lines dealing with force.
+
+    Note that I do not use Lh for K_local in ts2Passemble when the conjugate
+    gradient method is used.  This is because I want to keep things consistent
+    with weConjPassemble.
+
 
         Updated 3/15/06
 
     SLFFEA source file
-    Version:  1.3
+    Version:  1.5
     Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
 
     The source code contained in this file is released under the
@@ -42,6 +61,9 @@ int tsFMassemble(int *connect, double *coord, double *coordh, int *el_matl,
         double stress_el[sdim], strain_el[sdim];
 	double x[num_int], w[num_int];
 	double mass_el[neqel];
+
+/* initialize all variables  */
+	memset(mass,0,dof*sof);
 
         *(x)=0.0;
         *(w)=2.0;
@@ -106,6 +128,7 @@ int tsFMassemble(int *connect, double *coord, double *coordh, int *el_matl,
 
 		memset(U_el,0,neqel*sof);
 		memset(K_el,0,neqlsq*sof);
+		memset(mass_el,0,neqel*sof);
 		memset(force_el,0,neqel*sof);
 		memset(force_ax,0,npel*sof);
 		memset(K_temp,0,npel*neqel*sof);
@@ -162,7 +185,7 @@ int tsFMassemble(int *connect, double *coord, double *coordh, int *el_matl,
 		printf( "\n");
 		for( i3 = 0; i3 < neqel; ++i3 )
 		{
-		   *(mass_el+i3) = 100.0*(*(K_el+neqel*i3+i3));
+		    *(mass_el+i3) = 100.0*(*(K_el+neqel*i3+i3));
 		}
 		for( j = 0; j < npel; ++j )
 		{
@@ -173,7 +196,7 @@ int tsFMassemble(int *connect, double *coord, double *coordh, int *el_matl,
 	}
 	for( i = 0; i < dof ; ++i )
 	{
-		printf( " force %4d %16.4e \n",i,*(force+i));
+		printf( " force %4d %16.8e \n",i,*(force+i));
 	}
 
 	return 1;

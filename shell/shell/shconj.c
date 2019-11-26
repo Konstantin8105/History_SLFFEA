@@ -6,11 +6,11 @@
     which allocates the memory and goes through the steps of the algorithm.
     These go with the calculation of displacement.
 
-		Updated 10/10/06
+		Updated 10/10/08
 
     SLFFEA source file
-    Version:  1.4
-    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
+    Version:  1.5
+    Copyright (C) 1999-2008  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -27,11 +27,11 @@
 
 #define SMALL      1.e-20
 
-extern int analysis_flag, dof, integ_flag, numel, numnp, sof;
+extern int analysis_flag, dof, integ_flag, numel, numnp, sof, flag_quad_element;
 extern int LU_decomp_flag, numel_K, numel_P;
-extern SH shg, shg_node, shl, shl_node;
+extern SH shg, shg_node, shl, shl_node, shl_tri;
 extern ROTATE rotate, rotate_node;
-extern double w[num_int];
+extern double w[num_int8], w_tri[num_int6];
 extern int  iteration_max, iteration_const, iteration;
 extern double tolerance;
 
@@ -43,7 +43,7 @@ int shellB1ptT(double *, double *,double *, double *, double *, double *);
 
 int shellB1ptM(double *, double *, double *, double *);
 
-int shellB4pt(double *, double *,double *, double *, double *, double *);
+int shellBNpt(double *, double *,double *, double *, double *, double *);
 
 int shshg( double *, int , SH , SH , XL , double *, double *, double *,
 	double *, ROTATE );
@@ -59,33 +59,53 @@ int shConjPassemble(double *A, int *connect, double *coord, int *el_matl, double
 /* This function assembles the P_global_CG matrix for the displacement calculation by
    taking the product [K_el]*[U_el].  Some of the [K_el] is stored in [A].
 
-                        Updated 10/10/06
+                        Updated 10/10/08
 */
-	int i, i1, i2, i4, j, k, dof_el[neqel], sdof_el[npel*nsd];
+	int i, i1, i2, i4, j, k, dof_el[neqel20], sdof_el[npel8*nsd];
 	int check, node;
 	int matl_num;
 	double Emod, Pois, G1, G2, G3, shearK, const1, const2;
 	double fdum, fdum1, fdum2, fdum3, fdum4;
 	double D11,D12,D21,D22;
-	double B[soB], DB[soB];
-	double K_temp[neqlsq], K_el[neqlsq];
-	double U_el[neqel];
-	double coord_el_trans[npel*nsd], zm1[npell], zp1[npell],
-		znode[npell*num_ints], dzdt_node[npell];
+	double B[soB100], DB[soB100];
+	double K_temp[neqlsq400], K_el[neqlsq400];
+	double U_el[neqel20];
+	double coord_el_trans[npel8*nsd], zm1[npell4], zp1[npell4],
+		znode[npell4*num_ints], dzdt_node[npell4];
 	double local_x[nsd], local_y[nsd], local_z[nsd], vec_dum[nsd];
-	double det[num_int+num_ints], wXdet;
+	double det[num_int8+num_ints], wXdet;
 	XL xl;
-	double P_el[neqel];
+	double P_el[neqel20];
+	int npell_, neqel_, num_intb_, neqlsq_, soB_, npel_;
+	SH *shl_;
 
+	npell_ = npell4;
+	neqel_ = neqel20;
+	num_intb_ = num_intb4;
+	neqlsq_ = neqlsq400;
+	soB_ = soB100;
+	npel_ = npel8;
+	shl_ = &shl;
+
+	if(!flag_quad_element)
+	{
+		npell_ = npell3;
+		neqel_ = neqel15;
+		num_intb_ = num_intb3;
+		neqlsq_ = neqlsq225;
+		soB_ = soB75;
+		npel_ = npel6;
+		shl_ = &shl_tri;
+	}
 
 	memset(P_global_CG,0,dof*sof);
 
 	for( k = 0; k < numel_K; ++k )
 	{
 
-		for( j = 0; j < npell; ++j )
+		for( j = 0; j < npell_; ++j )
 		{
-			node = *(connect+npell*k+j);
+			node = *(connect+npell_*k+j);
 
 			*(dof_el+ndof*j) = ndof*node;
 			*(dof_el+ndof*j+1) = ndof*node+1;
@@ -97,15 +117,15 @@ int shConjPassemble(double *A, int *connect, double *coord, int *el_matl, double
 
 /* Assembly of the global P matrix */
 
-		for( j = 0; j < neqel; ++j )
+		for( j = 0; j < neqel_; ++j )
 		{
 			*(U_el + j) = *(U + *(dof_el+j));
 		}
 
-		check = matX(P_el, (A+k*neqlsq), U_el, neqel, 1, neqel);
+		check = matX(P_el, (A+k*neqlsq_), U_el, neqel_, 1, neqel_);
 		if(!check) printf( "Problems with matX \n");
 
-		for( j = 0; j < neqel; ++j )
+		for( j = 0; j < neqel_; ++j )
 		{
 			*(P_global_CG+*(dof_el+j)) += *(P_el+j);
 		}
@@ -136,17 +156,17 @@ int shConjPassemble(double *A, int *connect, double *coord, int *el_matl, double
 
 /* Create the coord transpose vector for one element */
 
-		for( j = 0; j < npell; ++j )
+		for( j = 0; j < npell_; ++j )
 		{
-			node = *(connect+npell*k+j);
+			node = *(connect+npell_*k+j);
 
 			*(sdof_el+nsd*j)=nsd*node;
 			*(sdof_el+nsd*j+1)=nsd*node+1;
 			*(sdof_el+nsd*j+2)=nsd*node+2;
 
-			*(sdof_el+nsd*npell+nsd*j)=nsd*(node+numnp);
-			*(sdof_el+nsd*npell+nsd*j+1)=nsd*(node+numnp)+1;
-			*(sdof_el+nsd*npell+nsd*j+2)=nsd*(node+numnp)+2;
+			*(sdof_el+nsd*npell_+nsd*j)=nsd*(node+numnp);
+			*(sdof_el+nsd*npell_+nsd*j+1)=nsd*(node+numnp)+1;
+			*(sdof_el+nsd*npell_+nsd*j+2)=nsd*(node+numnp)+2;
 
 			*(dof_el+ndof*j) = ndof*node;
 			*(dof_el+ndof*j+1) = ndof*node+1;
@@ -158,35 +178,35 @@ int shConjPassemble(double *A, int *connect, double *coord, int *el_matl, double
 
 			*(coord_el_trans+j) =
 				*(coord+*(sdof_el+nsd*j));
-			*(coord_el_trans+npel*1+j) =
+			*(coord_el_trans+npel_*1+j) =
 				*(coord+*(sdof_el+nsd*j+1));
-			*(coord_el_trans+npel*2+j) =
+			*(coord_el_trans+npel_*2+j) =
 				*(coord+*(sdof_el+nsd*j+2));
 
-			*(coord_el_trans+npell+j) =
-				*(coord+*(sdof_el+nsd*npell+nsd*j));
-			*(coord_el_trans+npel*1+npell+j) =
-				*(coord+*(sdof_el+nsd*npell+nsd*j+1));
-			*(coord_el_trans+npel*2+npell+j) =
-				*(coord+*(sdof_el+nsd*npell+nsd*j+2));
+			*(coord_el_trans+npell_+j) =
+				*(coord+*(sdof_el+nsd*npell_+nsd*j));
+			*(coord_el_trans+npel_*1+npell_+j) =
+				*(coord+*(sdof_el+nsd*npell_+nsd*j+1));
+			*(coord_el_trans+npel_*2+npell_+j) =
+				*(coord+*(sdof_el+nsd*npell_+nsd*j+2));
 
 /* Create the coord_bar and coord_hat vector for one element */
 
 			xl.bar[j] = *(lamina_ref + nsd*node);
-			xl.bar[npell*1+j] = *(lamina_ref + nsd*node + 1);
-			xl.bar[npell*2+j] = *(lamina_ref + nsd*node + 2);
+			xl.bar[npell_*1+j] = *(lamina_ref + nsd*node + 1);
+			xl.bar[npell_*2+j] = *(lamina_ref + nsd*node + 2);
 
-			fdum1=*(coord_el_trans+npell+j)-*(coord_el_trans+j);
-			fdum2=*(coord_el_trans+npel*1+npell+j)-*(coord_el_trans+npel*1+j);
-			fdum3=*(coord_el_trans+npel*2+npell+j)-*(coord_el_trans+npel*2+j);
+			fdum1=*(coord_el_trans+npell_+j)-*(coord_el_trans+j);
+			fdum2=*(coord_el_trans+npel_*1+npell_+j)-*(coord_el_trans+npel_*1+j);
+			fdum3=*(coord_el_trans+npel_*2+npell_+j)-*(coord_el_trans+npel_*2+j);
 			fdum4=sqrt(fdum1*fdum1+fdum2*fdum2+fdum3*fdum3);
 
 			*(zp1+j)=.5*(1.0-zeta)*fdum4;
 			*(zm1+j)=-.5*(1.0+zeta)*fdum4;
 
 			xl.hat[j] = *(fiber_xyz + nsdsq*node + 2*nsd);
-			xl.hat[npell*1+j] = *(fiber_xyz + nsdsq*node + 2*nsd + 1);
-			xl.hat[npell*2+j] = *(fiber_xyz + nsdsq*node + 2*nsd + 2);
+			xl.hat[npell_*1+j] = *(fiber_xyz + nsdsq*node + 2*nsd + 1);
+			xl.hat[npell_*2+j] = *(fiber_xyz + nsdsq*node + 2*nsd + 2);
 
 
 /* Create the rotation matrix */
@@ -202,45 +222,45 @@ int shConjPassemble(double *A, int *connect, double *coord, int *el_matl, double
 			}
 		}
 
-		memcpy(rotate_node.f_shear,rotate.f_shear,sorfs*sizeof(double));
+		memcpy(rotate_node.f_shear,rotate.f_shear,sorfs36*sizeof(double));
 
 /* Assembly of the shg matrix for each integration point */
 
-		check=shshg( det, k, shl, shg, xl, zp1, zm1, znode,
+		check=shshg( det, k, *shl_, shg, xl, zp1, zm1, znode,
 			dzdt_node, rotate);
 		if(!check) printf( "Problems with shshg \n");
 
-		memset(U_el,0,neqel*sof);
-		memset(K_el,0,neqlsq*sof);
+		memset(U_el,0,neqel_*sof);
+		memset(K_el,0,neqlsq_*sof);
 
 /* The loop over i4 below calculates the 2 fiber points of the gaussian integration */
 		for( i4 = 0; i4 < num_ints; ++i4 )
 		{
 
-/* The loop over j below calculates the 2X2 points of the gaussian integration
+/* The loop over j below calculates the 2X2 or 3 points of the gaussian integration
    over the lamina for several quantities */
 
-		   for( j = 0; j < num_intb; ++j )
+		   for( j = 0; j < num_intb_; ++j )
 		   {
-			memset(B,0,soB*sof);
-			memset(DB,0,soB*sof);
-			memset(K_temp,0,neqlsq*sof);
+			memset(B,0,soB_*sof);
+			memset(DB,0,soB_*sof);
+			memset(K_temp,0,neqlsq_*sof);
 
 /* Assembly of the B matrix */
 
 			check =
-			   shellB4pt((shg.bend+npell*(nsd+1)*num_intb*i4+npell*(nsd+1)*j),
-			   (shg.bend_z+npell*(nsd)*num_intb*i4+npell*(nsd)*j),
-			   (znode+npell*i4),B,(rotate.l_bend+nsdsq*num_intb*i4+nsdsq*j),
+			   shellBNpt((shg.bend+npell_*(nsd+1)*num_intb_*i4+npell_*(nsd+1)*j),
+			   (shg.bend_z+npell_*(nsd)*num_intb_*i4+npell_*(nsd)*j),
+			   (znode+npell_*i4),B,(rotate.l_bend+nsdsq*num_intb_*i4+nsdsq*j),
 			   rotate.f_shear);
-			if(!check) printf( "Problems with shellB4pt \n");
+			if(!check) printf( "Problems with shellBNpt \n");
 
 			if( integ_flag == 0 || integ_flag == 2 ) 
 			{
 /* Calculate the membrane shear terms in B using 1X1 point gaussian integration in lamina */
 
-			    check = shellB1ptM((shg.shear+npell*(nsd+1)*i4),
-				(B+(sdim-2)*neqel),
+			    check = shellB1ptM((shg.shear+npell_*(nsd+1)*i4),
+				(B+(sdim-2)*neqel_),
 				(rotate.l_shear+nsdsq*i4), rotate.f_shear);
 			    if(!check) printf( "Problems with shellB1pt \n");
 			}
@@ -249,30 +269,32 @@ int shConjPassemble(double *A, int *connect, double *coord, int *el_matl, double
 			{
 /* Calculate the transverse shear terms in B using 1X1 point gaussian integration in lamina */
 
-			    check = shellB1ptT((shg.shear+npell*(nsd+1)*i4),
-				(shg.bend_z+npell*(nsd)*num_intb*i4+npell*(nsd)*j),
-				(znode+npell*i4),(B+(sdim-2)*neqel),
+			    check = shellB1ptT((shg.shear+npell_*(nsd+1)*i4),
+				(shg.bend_z+npell_*(nsd)*num_intb_*i4+npell_*(nsd)*j),
+				(znode+npell_*i4),(B+(sdim-2)*neqel_),
 				(rotate.l_shear+nsdsq*i4), rotate.f_shear);
 			    if(!check) printf( "Problems with shellB1pt \n");
 			}
 
-			for( i1 = 0; i1 < neqel; ++i1 )
+			for( i1 = 0; i1 < neqel_; ++i1 )
 			{
 				*(DB+i1)=*(B+i1)*D11 +
-					*(B+neqel*1+i1)*D12;
-				*(DB+neqel*1+i1)=*(B+i1)*D21 +
-					*(B+neqel*1+i1)*D22;
-				*(DB+neqel*2+i1)=*(B+neqel*2+i1)*G1;
-				*(DB+neqel*3+i1)=*(B+neqel*3+i1)*G2;
-				*(DB+neqel*4+i1)=*(B+neqel*4+i1)*G3;
+					*(B+neqel_*1+i1)*D12;
+				*(DB+neqel_*1+i1)=*(B+i1)*D21 +
+					*(B+neqel_*1+i1)*D22;
+				*(DB+neqel_*2+i1)=*(B+neqel_*2+i1)*G1;
+				*(DB+neqel_*3+i1)=*(B+neqel_*3+i1)*G2;
+				*(DB+neqel_*4+i1)=*(B+neqel_*4+i1)*G3;
 			}
 
-			wXdet = *(w+num_intb*i4+j)*(*(det+num_intb*i4+j));
+			wXdet = *(w+num_intb_*i4+j)*(*(det+num_intb_*i4+j));
+			if(!flag_quad_element)
+				wXdet = 0.5*(*(w_tri+num_intb_*i4+j))*(*(det+num_intb_*i4+j));
 
-			check=matXT(K_temp, B, DB, neqel, neqel, sdim);
+			check=matXT(K_temp, B, DB, neqel_, neqel_, sdim);
 			if(!check) printf( "Problems with matXT \n");
 
-			for( i2 = 0; i2 < neqlsq; ++i2 )
+			for( i2 = 0; i2 < neqlsq_; ++i2 )
 			{
 			   *(K_el+i2) += *(K_temp+i2)*wXdet;
 			}
@@ -281,15 +303,15 @@ int shConjPassemble(double *A, int *connect, double *coord, int *el_matl, double
 
 /* Assembly of the global P matrix */
 
-		for( j = 0; j < neqel; ++j )
+		for( j = 0; j < neqel_; ++j )
 		{
 			*(U_el + j) = *(U + *(dof_el+j));
 		}
 
-		check = matX(P_el, K_el, U_el, neqel, 1, neqel);
+		check = matX(P_el, K_el, U_el, neqel_, 1, neqel_);
 		if(!check) printf( "Problems with matX \n");
 
-		for( j = 0; j < neqel; ++j )
+		for( j = 0; j < neqel_; ++j )
 		{
 			*(P_global_CG+*(dof_el+j)) += *(P_el+j);
 		}
@@ -381,7 +403,8 @@ int shConjGrad(double *A, BOUND bc, int *connect, double *coord, int *el_matl,
 
 		for( j = 0; j < dof; ++j )
 		{
-		    /*printf( "%4d %14.5e  %14.5e  %14.5e  %14.5e  %14.5e %14.5e\n",j,alpha,
+		    /*if( counter > 14 && counter < 18 )
+		    printf( "%4d %18.10e  %16.8e  %16.8e  %16.8e  %18.10e %16.8e\n",j,alpha,
 			beta,*(U+j),*(r+j),*(P_global_CG+j),*(p+j));*/
 		    *(U+j) += alpha*(*(p+j));
 		    *(r+j) -=  alpha*(*(P_global_CG+j));

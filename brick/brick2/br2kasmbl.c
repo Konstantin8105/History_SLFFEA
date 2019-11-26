@@ -14,7 +14,7 @@
 		Updated 9/26/01
 
     SLFFEA source file
-    Version:  1.4
+    Version:  1.5
     Copyright (C) 1999, 2000  San Le 
 
     The source code contained in this file is released under the
@@ -238,7 +238,6 @@ int br2Kassemble(double *A, int *connect, int *connect_surf, double *coord, int 
 
 		    check=dotX( &fdum, T_el, B_T2, Tneqel);
 		    if(!check) printf( "Problems with dotX \n");
-
 
 /* Calculate the thermal strain matrix.  Look at equations 2.1-12 to 2.1-14 on
    page 2-3 of the ANSYS manual to see how the thermal strains are defined.

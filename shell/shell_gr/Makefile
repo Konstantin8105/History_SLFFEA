@@ -1,5 +1,5 @@
 # SLFFEA Makefile
-# Version:  1.4
+# Version:  1.5
 # Copyright (C) 1999, 2000  San Le (slffea@yahoo.com)
 # http://slffea.com/
 #
@@ -35,6 +35,10 @@ COMMON = ../../common
 
 COMMON_GR = ../../common_gr
 
+BRICK_GR = ../../brick/brick_gr
+
+WEDGE_GR = ../../wedge/wedge_gr
+
 OBJECTS_GR = $(COMMON_GR)/pwinston.o $(COMMON_GR)/axes.o \
 	$(COMMON_GR)/mshcommon.o $(COMMON_GR)/crtlcommon.o \
 	$(COMMON_GR)/printext.o $(COMMON_GR)/screenshot.o \
@@ -51,7 +55,7 @@ COMMON_GR = ../../common_gr
 
 PROGS = shpost pvs
 
-CC = /usr/bin/gcc
+CC = /usr/bin/gcc -g
 
 LIBS = -lm
 
@@ -61,7 +65,8 @@ shpost: shpost.o \
 		shparam.o \
 		shregetparam.o \
 		shset.o \
-		shnorm_vec.o \
+		brnorm_vec.o \
+		wenorm_vec.o \
 		shbc_vec.o \
 		shmshdsp.o \
 		shmesh.o \
@@ -81,7 +86,8 @@ shpost: shpost.o \
 		shparam.o \
 		shregetparam.o \
 		shset.o \
-		shnorm_vec.o \
+		brnorm_vec.o \
+		wenorm_vec.o \
 		shbc_vec.o \
 		shmshdsp.o \
 		shmesh.o \
@@ -128,8 +134,11 @@ shmshdsp.o: shmshdsp.c
 shbc_vec.o: shbc_vec.c 
 	$(CC) -c shbc_vec.c 
 
-shnorm_vec.o: shnorm_vec.c 
-	$(CC) -c shnorm_vec.c 
+brnorm_vec.o: $(BRICK_GR)/brnorm_vec.c 
+	$(CC) -c $(BRICK_GR)/brnorm_vec.c -DSHELL1
+
+wenorm_vec.o: $(WEDGE_GR)/wenorm_vec.c 
+	$(CC) -c $(WEDGE_GR)/wenorm_vec.c -DSHELL1
 
 shset.o: shset.c 
 	$(CC) -c shset.c

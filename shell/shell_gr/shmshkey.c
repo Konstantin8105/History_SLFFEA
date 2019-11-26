@@ -2,11 +2,11 @@
     This program contains the mesh key routine for the FEM GUI
     for shell elements.
   
-                  Last Update 10/10/06
+                  Last Update 9/25/08
 
     SLFFEA source file
-    Version:  1.4
-    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le
+    Version:  1.5
+    Copyright (C) 1999-2008  San Le
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -28,7 +28,7 @@
 #include <GL/glu.h>
 #include <GL/glut.h>
 
-extern int nmat, numnp, numel, dof;
+extern int nmat, numnp, numel, dof, flag_quad_element;
 extern double *coord, *coord0;
 extern double *U, *Uz_fib, *fiber_xyz;
 extern int *connecter;
@@ -77,7 +77,9 @@ void shReGetparameter( void);
 
 int shGetNewMesh(void);
 
-int shnormal_vectors (int *, double *, NORM * );
+int brnormal_vectors (int *, double *, NORM * );
+
+int wenormal_vectors (int *, double *, NORM * );
 
 void MeshReshape(int , int );
 
@@ -338,8 +340,17 @@ void shMeshKeys( unsigned char key, int x, int y )
 
 			}
 /* Update force graphics vectors */
-			check = shnormal_vectors(connecter, coord, norm );
-			if(!check) printf( " Problems with shnormal_vectors \n");
+
+			if(flag_quad_element)
+			{
+			    check = brnormal_vectors(connecter, coord, norm );
+			    if(!check) printf( " Problems with brnormal_vectors \n");
+			}
+			else
+			{
+			    check = wenormal_vectors(connecter, coord, norm );
+			    if(!check) printf( " Problems with wenormal_vectors \n");
+			}
 	
 			for( i = 0; i < bc.num_force[0]; ++i)
 			{
@@ -423,8 +434,16 @@ void shMeshKeys( unsigned char key, int x, int y )
 				   *(Uz_fib + i)*fdum)*amplify_factor;
 			}
 	
-			check = shnormal_vectors(connecter, coord, norm );
-			if(!check) printf( " Problems with shnormal_vectors \n");
+			if(flag_quad_element)
+			{
+			    check = brnormal_vectors(connecter, coord, norm );
+			    if(!check) printf( " Problems with brnormal_vectors \n");
+			}
+			else
+			{
+			    check = wenormal_vectors(connecter, coord, norm );
+			    if(!check) printf( " Problems with wenormal_vectors \n");
+			}
 	
 			for( i = 0; i < bc.num_force[0]; ++i)
 			{

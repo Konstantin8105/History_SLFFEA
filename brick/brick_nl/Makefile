@@ -30,11 +30,12 @@ LIBS = -lm
 COMMON = ../../common
 BRICK = ../brick
 OBJECTS = $(COMMON)/matxt.o $(COMMON)/matx.o $(COMMON)/crossx.o \
-	$(COMMON)/dotx.o $(COMMON)/cubic.o 
+	$(COMMON)/dotx.o $(COMMON)/cubic.o $(COMMON)/kasmbl.o \
+	$(COMMON)/gnuplotwrite2.o
 OBJECTS2 = $(COMMON)/crossx.o 
 OBJECTS_BR = $(BRICK)/memory.o $(BRICK)/brreader.o $(BRICK)/id.o $(BRICK)/brshape.o \
 	$(BRICK)/brickb.o $(BRICK)/bound.o $(BRICK)/brwriter.o $(BRICK)/brvolume.o  \
-	$(BRICK)/brwriter2.o $(BRICK)/brconj.o 
+	$(BRICK)/brwriter2.o $(BRICK)/brconj.o $(BRICK)/brkasmbl.o $(BRICK)/brstress.o
 
 #PROGS = nbr pvv
 PROGS = nbr

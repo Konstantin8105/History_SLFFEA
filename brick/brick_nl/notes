@@ -1,0 +1,119 @@
+=========================
+Dynamic Relaxation Method
+=========================
+
+The derivation of the expression for the incremental displacement updating in
+"femnbr.c" as given by:
+
+  *(dU+ndof*j) = bet*(*(dUm1+ndof*j)) - alp*( *(P_global+ndof*j) -
+      *(force+ndof*j) )/(*(mass+ndof*j));
+  *(dU+ndof*j+1) = bet*(*(dUm1+ndof*j+1)) - alp*( *(P_global+ndof*j+1) -
+      *(force+ndof*j+1) )/(*(mass+ndof*j+1));
+  *(dU+ndof*j+2) = bet*(*(dUm1+ndof*j+2)) - alp*( *(P_global+ndof*j+2) -
+      *(force+ndof*j+2) )/(*(mass+ndof*j+2));
+
+is where dynamic relaxation is applied.  I tried to look in my collection of
+dynamic relaxation papers to see where this expression may have come from, but
+it seems I had derived it myself. 
+
+This formula begins from the general expression of the equation of motion:
+
+   [M][a] + [C][v] + [K][u] = [F]                            Equation 1
+
+where:
+
+   [M] = mass
+   [a] = acceleration
+   [C] = damping coefficients
+   [v] = velocity
+   [K] = stiffness
+   [u] = displacement
+   [F] = force
+
+I make the following assumptions:
+
+   [v]    = [du]/dt
+   [a]    = [dv]/dt
+   [C]    = [C][M]
+   [K][u] = [P]
+
+From this point, I will only use brackets to refer to the iteration step, n.  So:
+
+   [du]    = dU
+   dU[n]   = dU
+   dU[n-1] = dUm1
+   [v]     = v[n-1/2] = 1/2*(dU + dUm1)/dt 
+   [a]     = a[n-1/2] = dv/dt = (dU - dUm1)/dt/dt 
+   [M]     = M
+   [C]     = C
+   [P]     = P
+   [F]     = F
+
+Substituting all the above into equation 1 gives:
+
+
+   M*(dU - dUm1)/(dt*dt) + C*M*(dU + dUm1)/(2*dt) + P = F
+
+and:
+
+   M*(dU - dUm1) + C*M*dt*(dU + dUm1)/2 = (dt*dt)*(F - P)
+
+Now, assuming that M is a diagonal matrix, I can divide through by
+M to get:
+
+   dU - dUm1 + C*(dU + dUm1)/(2*dt) = (dt*dt)*(F - P)/M
+
+   dU + C*dU/(2*dt) - dUm1 + C*dUm1/(2*dt) = (dt*dt)*(F - P)/M
+
+   dU*(1 + C/(2*dt)) - dUm1(1 - C/(2*dt)) = (dt*dt)*(F - P)/M
+
+   dU*(1 + C/(2*dt)) = dUm1(1 - C/(2*dt)) + (dt*dt)*(F - P)/M 
+
+Assuming that C is a diagonal matrix, I can divide through by
+(1 + C/(2*dt)) to get:
+
+   dU = dUm1*(1 - C/(2*dt))/(1 + C/(2*dt)) + (dt*dt)*(F - P)/M/(1 + C/(2*dt)) 
+
+So using the new variables:
+
+   bet = (1 - C/(2*dt))/(1 + C/(2*dt)) = (2 - C/dt)/(2 + C/dt)
+
+   alp = (dt*dt)/(1 + C/(2*dt)) = (2*dt*dt)/(2 + C/dt)
+
+with the substitutions of "bet" and "alp", we get:
+
+   dU = bet*dUm1 + alp*(F - P)/M
+
+which is what is expressed in the code.
+
+=========================
+Conjugate Gradient Method
+=========================
+
+I have recently added the conjugate gradient(CG) method for solving non-linear problems.
+The results seem to be OK, but unlike dynamic relaxation which converges based on a
+pseudo dynamic process, the CG method is not physical.  I did some tests to see how
+the solution is reached, and it oscillates around the solution until it converges.  I
+think this is due to the way this method is based on using search directions added to
+the last iteration of the solution vector.  These searches are based on their mathematical
+derivation instead of physics.  See page 520-524 in:
+
+ Golub, Gene H. and C.F. Van Loan, Matrix Computations 3rd Ed., The Johns Hopkins
+        University Press, Baltimore, 1996.
+
+Despite this, I still use the updated coordinates to for new calculations of the
+element stiffnesses.  Also, I calculate stresses either based on stress updating or
+a total Lagrangian calculation after all the displacements are found.  Note though,
+that the residual is based on the difference between force the P_global_CG rather
+than P_global.  The reasons why can be read about in the code.
+
+Basing coordinate and stress updating on the non-physical convergence of this
+method seems questionable, but the results seemed reasonable.  The displacements
+looked qualitatively accurate, and for the stresses, stress updating and the
+results from a total Lagrangian calculation were comparable when compared
+with the stresses of dynamic relaxation.
+
+
+
+
+

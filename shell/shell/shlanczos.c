@@ -16,7 +16,7 @@
                         Updated 10/10/06 
 
     SLFFEA source file
-    Version:  1.4
+    Version:  1.5
     Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le
 
     The source code contained in this file is released under the
@@ -76,7 +76,7 @@ int shLanczos(double *K, BOUND bc, int *connect, double *coord, EIGEN *eigen,
 	int *el_matl, int *id, int *idiag, double *K_diag, double *lamina_ref,
 	double *fiber_xyz, double *M, MATL *matl, double *ritz, int num_eigen)
 {
-	int i,i2,j,jsave,k,check;
+	int i,i2,j,jsave,k,check, dum;
 	int sofmf, sofeigen, ptr_inc;
 	int *index;
 	double *mem_double;

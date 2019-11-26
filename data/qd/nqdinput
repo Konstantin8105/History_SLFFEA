@@ -1,0 +1,76 @@
+dynamic relaxation(DR) or conjugate gradient(CG) method ( 0 = CG, 1 = DR )
+1
+number of iterations for DR or CG
+2000
+time step for DR
+1.0
+damping constant for DR
+.005
+stress calculation for CG (Lagrangian = 0, stress updating = 1)
+0
+
+2000
+1.0
+.005
+comb-hill-back 
+
+5000
+2.0
+.002088
+comb-hill-back with DR can probably stop at 2000
+
+0.5
+.05088
+nsquash
+
+
+1.0
+.12088
+40
+ball, nsquash
+
+
+3.5
+.08088
+404
+This is for tensile
+
+
+
+2.0
+.02088
+1000
+This is for rubber 
+Remember to multiply load by 10
+
+
+
+
+
+
+3.5
+.08088
+404
+This is for patch
+
+
+
+
+
+
+
+
+
+
+3.5
+.08088
+1604
+This is for torsion
+
+
+
+
+
+
+
+

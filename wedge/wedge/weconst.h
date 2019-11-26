@@ -3,11 +3,11 @@
     which uses wedge elements.  It is set up for all the different
     wedge elements including the thermal.
 
-                Updated 11/15/01
+                Updated 9/25/08
 
     SLFFEA source file
-    Version:  1.4
-    Copyright (C) 1999, 2000, 2001, 2002  San Le 
+    Version:  1.5
+    Copyright (C) 1999-2008  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -29,6 +29,7 @@
 #define nsd           3                /* number of spatial dimensions per node */
 #define ndof          3                /* degrees of freedom per node */
 #define npel          6                /* nodes per element */
+#define npel6         6                /* nodes per 6 node element */
 #define neqel         npel*ndof        /* degrees of freedom per element */
 #define num_int       6                /* number of integration points */
 #define neqlsq        neqel*neqel      /* neqel squared */

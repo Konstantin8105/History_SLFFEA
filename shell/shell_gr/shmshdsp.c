@@ -2,11 +2,11 @@
     This program contains the mesh display routine for the FEM GUI
     for shell elements.
   
-                  Last Update 1/21/06
+                  Last Update 9/28/08
 
     SLFFEA source file
-    Version:  1.4
-    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le
+    Version:  1.5
+    Copyright (C) 1999-2008  San Le
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -26,11 +26,14 @@
 #include <GL/glu.h>
 #include <GL/glut.h>
 
+void shmeshdraw_triangle(void);
 void shmeshdraw(void);
+void shrender_triangle(void);
 void shrender(void);
 void shdisp_vectors(BOUND , double *);
 void shforce_vectors(BOUND , double *, XYZPhiF *);
 
+extern int flag_quad_element;
 extern double *coord;
 extern BOUND bc;
 
@@ -84,9 +87,15 @@ void shMeshDisplay(void)
 	}
 	glLineWidth (2.0);
 	if(Render_flag)
-		shrender();
+	{
+		if(flag_quad_element) shrender();
+		else shrender_triangle();
+	}
 	else
-		shmeshdraw();
+	{
+		if(flag_quad_element) shmeshdraw();
+		else shmeshdraw_triangle();
+	}
 	if(Axes_flag)
 	{
 		AxesNumbers();

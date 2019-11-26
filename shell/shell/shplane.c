@@ -13,7 +13,7 @@
 		Updated 5/12/99
 
     SLFFEA source file
-    Version:  1.4
+    Version:  1.5
     Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
@@ -74,7 +74,7 @@ int main(int argc, char** argv)
         {
            fscanf( o1,"%d ",&dum);
            printf( "%4d ",dum);
-           for( j = 0; j < npell; ++j )
+           for( j = 0; j < npell4; ++j )
            {
                 fscanf( o1, "%d",&dum3);
                 printf( "%4d ",dum3);

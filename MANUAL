@@ -1,7 +1,7 @@
 
-                             SLFFEA 1.4  MANUAL
+                             SLFFEA 1.5  MANUAL
 
-                    Copyright (C) 1999, 2000, 2001, 2002 San Le
+                    Copyright (C) 1999-2008 San Le
 
                     email:     slffea@yahoo.com
                     homepage:  http://slffea.sourceforge.net/
@@ -14,44 +14,49 @@ After a successful make, you will have created the following executables:
 
        directory                         executable       purpose
  
-    slffea-1.4/beam/beam/                bm               beam FEA
-    slffea-1.4/beam/beam/                bmp              generates beam patch test data *
-    slffea-1.4/beam/beam_gr/             bmpost           beam gui
+    slffea-1.5/beam/beam/                bm               beam FEA
+    slffea-1.5/beam/beam/                bmp              generates beam patch test data *
+    slffea-1.5/beam/beam_gr/             bmpost           beam gui
 
-    slffea-1.4/brick/brick/              br               brick FEA
-    slffea-1.4/brick/brick/              brp              helps generates brick patch test data *
-    slffea-1.4/brick/brick_nl/           nbr              non-linear brick FEA
-    slffea-1.4/brick/brick_gr/           brpost           brick gui
-    slffea-1.4/brick/brick_gr/           pvbr             prepares OpenInventor brick data
-    slffea-1.4/brick/brick2/             br2              thermal brick with orthotropy FEA
-    slffea-1.4/brick/brick2gr/           br2post          thermal brick with orthotropy gui
+    slffea-1.5/brick/brick/              br               brick FEA
+    slffea-1.5/brick/brick/              brp              helps generates brick patch test data *
+    slffea-1.5/brick/brick_nl/           nbr              non-linear brick FEA
+    slffea-1.5/brick/brick_gr/           brpost           brick gui
+    slffea-1.5/brick/brick_gr/           pvbr             prepares OpenInventor brick data
+    slffea-1.5/brick/brick2/             br2              thermal brick with orthotropy FEA
+    slffea-1.5/brick/brick2gr/           br2post          thermal brick with orthotropy gui
 
-    slffea-1.4/plate/plate/              pl               plate FEA
-    slffea-1.4/plate/plate/              plp              helps generates plate patch test data *
-    slffea-1.4/plate/plate_gr/           plpost           plate gui
+    slffea-1.5/plate/plate/              pl               plate FEA
+    slffea-1.5/plate/plate/              plp              helps generates plate patch test data *
+    slffea-1.5/plate/plate_gr/           plpost           plate gui
 
-    slffea-1.4/quad/quad/                qd               quad FEA
-    slffea-1.4/quad/quad/                qdp              helps generates quad patch test data *
-    slffea-1.4/quad/quad_gr/             qdpost           quad gui
+    slffea-1.5/quad/quad/                qd               quad FEA
+    slffea-1.5/quad/quad/                qdp              helps generates quad patch test data *
+    slffea-1.5/quad/quad_nl/             nqd              non-linear quad FEA
+    slffea-1.5/quad/quad_gr/             qdpost           quad gui
 
-    slffea-1.4/shell/shell/              shl              shell FEA
-    slffea-1.4/shell/shell/              shp              helps generates shell patch test data *
-    slffea-1.4/shell/shell_gr/           shpost           shell gui
-    slffea-1.4/shell/shell_gr/           pvs              prepares OpenInventor shell data
+    slffea-1.5/shell/shell/              shl              shell FEA
+    slffea-1.5/shell/shell/              shp              helps generates shell patch test data *
+    slffea-1.5/shell/shell_gr/           shpost           shell gui
+    slffea-1.5/shell/shell_gr/           pvs              prepares OpenInventor shell data
 
-    slffea-1.4/tri/tri/                  tri              triangle FEA
-    slffea-1.4/tri/tri_gr/               trpost           triangle gui
+    slffea-1.5/tri/tri/                  tri              triangle FEA
+    slffea-1.5/tri/tri_nl/               ntr              non-linear triangle FEA
+    slffea-1.5/tri/tri_gr/               trpost           triangle gui
 
-    slffea-1.4/tetra/tetra/              te               tetrahedron FEA
-    slffea-1.4/tetra/tetra/              tep              helps generates tetrahedron patch test data *
-    slffea-1.4/tetra/tetra_gr/           tepost           tetrahedron gui
+    slffea-1.5/tetra/tetra/              te               tetrahedron FEA
+    slffea-1.5/tetra/tetra/              tep              helps generates tetrahedron patch test data *
+    slffea-1.5/tetra/tetra_nl/           nte              non-linear tetrahedron FEA
+    slffea-1.5/tetra/tetra_gr/           tepost           tetrahedron gui
 
-    slffea-1.4/truss/truss/              ts               truss FEA
-    slffea-1.4/truss/truss_gr/           tspost           truss gui
+    slffea-1.5/truss/truss/              ts               truss FEA
+    slffea-1.5/truss/truss_nl/           nts              non-linear truss FEA
+    slffea-1.5/truss/truss_gr/           tspost           truss gui
 
-    slffea-1.4/wedge/wedge/              we               wedge FEA
-    slffea-1.4/wedge/wedge/              wep              helps generates wedge patch test data *
-    slffea-1.4/wedge/wedge_gr/           wepost           wedge gui
+    slffea-1.5/wedge/wedge/              we               wedge FEA
+    slffea-1.5/wedge/wedge/              wep              helps generates wedge patch test data *
+    slffea-1.5/wedge/wedge_nl/           nwe              non-linear wedge FEA
+    slffea-1.5/wedge/wedge_gr/           wepost           wedge gui
 
 * You don't have to worry about the patch test executables, since the various
   data sets for patch tests have already been prepared.
@@ -62,42 +67,42 @@ them yourself though.  For example, do a:
     cc meshball.c -lm
 
     For beam:
-       ~/slffea-1.4/beam/beam/meshbuild.c                 generates the building mesh 
+       ~/slffea-1.5/beam/beam/meshbuild.c                 generates the building mesh 
 
     For brick:
-       slffea-1.4/brick/brick/meshball.c                  generates ball mesh 
-       slffea-1.4/brick/brick/meshring.c                  generates ring mesh 
-       slffea-1.4/brick/brick/meshwedge.c                 generates wedge mesh 
+       slffea-1.5/brick/brick/meshball.c                  generates ball mesh 
+       slffea-1.5/brick/brick/meshring.c                  generates ring mesh 
+       slffea-1.5/brick/brick/meshwedge.c                 generates wedge mesh 
 
     For brick and brick 2:
-       slffea-1.4/brick/brick/meshfin.c                   generates fin mesh 
+       slffea-1.5/brick/brick/meshfin.c                   generates fin mesh 
 
     For shell and brick:
-       slffea-1.4/brick/brick/meshcyl.c                   generates roof mesh 
+       slffea-1.5/brick/brick/meshcyl.c                   generates roof mesh 
 
     For quad:
-       slffea-1.4/quad/quad/meshinc.c                     generates cavity mesh 
+       slffea-1.5/quad/quad/meshinc.c                     generates cavity mesh 
 
     For wedge:
-       slffea-1.4/wedge/wedge/meshbullet.c                generates bullet mesh 
+       slffea-1.5/wedge/wedge/meshbullet.c                generates bullet mesh 
 Data:
 ----
 
-Sample data sets are contained in the directory slffea-1.4/data/.  There are 10
+Sample data sets are contained in the directory slffea-1.5/data/.  There are 10
 directories corresponding to the 10 element types:
 
         directory                    data type
 
-     slffea-1.4/data/bm/              beam
-     slffea-1.4/data/br/              brick
-     slffea-1.4/data/br2/             thermal brick with orthotropy 
-     slffea-1.4/data/pl/              plate
-     slffea-1.4/data/qd/              quad
-     slffea-1.4/data/sh/              shell
-     slffea-1.4/data/te/              tetrahedron
-     slffea-1.4/data/tr/              triangle
-     slffea-1.4/data/ts/              truss
-     slffea-1.4/data/we/              wedge
+     slffea-1.5/data/bm/              beam
+     slffea-1.5/data/br/              brick
+     slffea-1.5/data/br2/             thermal brick with orthotropy 
+     slffea-1.5/data/pl/              plate
+     slffea-1.5/data/qd/              quad
+     slffea-1.5/data/sh/              shell
+     slffea-1.5/data/te/              tetrahedron
+     slffea-1.5/data/tr/              triangle
+     slffea-1.5/data/ts/              truss
+     slffea-1.5/data/we/              wedge
 
 Using the Code:
 --------------
@@ -109,7 +114,7 @@ ask you for the input file.  Then it generates an output file which has
 an extension corresponding to the element type.  For instance, running
 the brick would look like the following:
 
-    %cd ~/slffea-1.4/data/br
+    %cd ~/slffea-1.5/data/br
     %br
     What is the name of the file containing the 
     brick structural data?
@@ -237,7 +242,7 @@ usually use consistent masses when solving for
 eigenmodes. To use lumped masses, you can use nmode
 = 5(This is not recommended. You can read more about
 this in the file MODAL.ANALYSIS found in the directory
-~/slffea-1.4. 
+~/slffea-1.5. 
 Because data files were getting too big, I now do nodal
 averaging of quantities such as stress and strain. The
 impetus came from solving a problem with 4200 elements

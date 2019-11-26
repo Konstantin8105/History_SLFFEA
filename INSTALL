@@ -1,9 +1,9 @@
 
-                             SLFFEA 1.4  INSTALL
+                             SLFFEA 1.5  INSTALL
 
                     Copyright (C) 1999 San Le
 
-                    email:    slffea@yahoo.com
+                    email:     slffea@yahoo.com
                     homepage:  http://slffea.sourceforge.net/
 
 
@@ -17,35 +17,35 @@ Simply typing:
 will give you all the install options.  You have the option of making everything
 including both the science part and the GUI part or each individually.  You can
 also build one element at a time by going to its directory and typing "make".
-Just be sure you build the contents of the slffea-1.4/common/ and slffea-1.4/common_gr/
+Just be sure you build the contents of the slffea-1.5/common/ and slffea-1.5/common_gr/
 directories which contain all the common utilities of the science and graphics parts.
 If you build the graphics part, you have to have Mesa-3.0 or higher installed in
 your /usr/local/ directory.
 
 I have added text executables within each data directory which will run the
 correct scientific or graphics binary in the corresponding program directory.  For
-instance, if you are in the /slffea-1.4/data/bm directory, you can run
+instance, if you are in the /slffea-1.5/data/bm directory, you can run
 the beam codes by just typing bm and bmpost.  
 
 Alternatively, if you want to run the codes from any location, then you could add the
 paths to each binary in your ~/.profile file.  A third option is to make a bunch of
 aliases and put this in your ~/.profile file.  For example, my ~/.profile has the lines:
 
-    alias bm='/home/sanle/slffea-1.4/beam/beam/bm'
-    alias bmpost='/home/sanle/slffea-1.4/beam/beam_gr/bmpost'
-    alias br='/home/sanle/slffea-1.4/brick/brick/br'
-    alias brpost='/home/sanle/slffea-1.4/brick/brick_gr/brpost'
-    alias pvbr='/home/sanle/slffea-1.4/brick/brick_gr/pvbr'
-    alias nbr='/home/sanle/slffea-1.4/brick/brick_nl/nbr'
-    alias pl='/home/sanle/slffea-1.4/plate/plate/pl'
-    alias plpost='/home/sanle/slffea-1.4/plate/plate_gr/plpost'
-    alias qd='/home/sanle/slffea-1.4/quad/quad/qd'
-    alias qdpost='/home/sanle/slffea-1.4/quad/quad_gr/qdpost'
-    alias shl='/home/sanle/slffea-1.4/shell/shell/shl'
-    alias shpost='/home/sanle/slffea-1.4/shell/shell_gr/shpost'
-    alias pvs='/home/sanle/slffea-1.4/shell/shell_gr/pvs'
-    alias ts='/home/sanle/slffea-1.4/truss/truss/ts'
-    alias tspost='/home/sanle/slffea-1.4/truss/truss_gr/tspost'
+    alias bm='/home/sanle/slffea-1.5/beam/beam/bm'
+    alias bmpost='/home/sanle/slffea-1.5/beam/beam_gr/bmpost'
+    alias br='/home/sanle/slffea-1.5/brick/brick/br'
+    alias brpost='/home/sanle/slffea-1.5/brick/brick_gr/brpost'
+    alias pvbr='/home/sanle/slffea-1.5/brick/brick_gr/pvbr'
+    alias nbr='/home/sanle/slffea-1.5/brick/brick_nl/nbr'
+    alias pl='/home/sanle/slffea-1.5/plate/plate/pl'
+    alias plpost='/home/sanle/slffea-1.5/plate/plate_gr/plpost'
+    alias qd='/home/sanle/slffea-1.5/quad/quad/qd'
+    alias qdpost='/home/sanle/slffea-1.5/quad/quad_gr/qdpost'
+    alias shl='/home/sanle/slffea-1.5/shell/shell/shl'
+    alias shpost='/home/sanle/slffea-1.5/shell/shell_gr/shpost'
+    alias pvs='/home/sanle/slffea-1.5/shell/shell_gr/pvs'
+    alias ts='/home/sanle/slffea-1.5/truss/truss/ts'
+    alias tspost='/home/sanle/slffea-1.5/truss/truss_gr/tspost'
 
 Finally, you may want to copy all the executables to the /usr/local/bin directory.
 A good reason to keep the executables in the same directory as their sources is for

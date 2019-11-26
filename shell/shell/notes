@@ -45,6 +45,64 @@ anthing I can do about it except find a new way of finding the
 eigenvalues of tridiagonal T.
 
 
+-----------------------
+Eigenvalue Calculations
+-----------------------
+
+Unlike the 4 node element, for the 3 node triangle shells, there is a difference
+in results when I do modal analysis depending on whether the there is full
+storage of all the element masses or if they are all calculated with each itteration.
+This is true for both using the conjugate gradient method and with LU decomposition.
+For the 4 node element, it is always the same.  I tried to track the problem
+down by seeing if the element stiffnesses were affected by the storage of mass,
+but this was not the case.  The code used was:
+
+
+        dum = neqel15*neqel15;
+        /*for( k = 0; k < numel_K; ++k )
+        {
+            for( i = 0; i < neqel15; ++i )
+            {
+                for( j = 0; j < neqel15; ++j )
+                {
+                    printf( "%16.8e ", *(K + dum*k + neqel15*i +j));
+                }
+                printf(" \n");
+            }
+            printf(" \n");
+        }*/
+
+on line 91 of "shlanczos.c".
+
+Then I wrote out the values based on line 406 of "shconj.c":
+
+    if( counter > 14 && counter < 18 )
+    printf( "%4d %18.10e  %16.8e  %16.8e  %16.8e  %18.10e %16.8e\n",j,alpha,
+        beta,*(U+j),*(r+j),*(P_global_CG+j),*(p+j));
+
+and the input file "rooftr16".  When I look carefully at the numbers for storage
+and non-storage of the masses, I get:
+
+  27   1.7960375792e+00    1.68762873e+00    1.83303096e-05   -7.77977445e-01   -3.2778197670e+00   3.81064466e-07
+
+  27   1.7960375792e+00    1.68762873e+00    1.83303096e-05   -7.77977445e-01   -3.2778197669e+00   3.81064466e-07
+
+which shows there is a slight change in the value of *(P_global_CG+27):
+
+
+-3.2778197670e+00 vs. -3.2778197669e+00
+
+This eventually becomes big enough to cause the disparity I see in the results. 
+My current conclusion is that this is a problem with the math co-processor rather
+than my code.  So I will accept this as the case for now and maybe revisit this
+in the future in case the discrepency is larger, and easier to track down.  Incidentally,
+I focus on the element mass storage rather than the element stiffnesses because
+stiffnesses or stored first, then mass.  So basically, the problem exists even
+with all the element stiffnesses stored. 
+
+
+
+
 
 
 

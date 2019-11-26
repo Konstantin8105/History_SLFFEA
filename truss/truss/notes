@@ -1,0 +1,113 @@
+===========================================================================
+
+===========================================================================
+
+Because trusses, unlike beams, have no bending component, there usually needs
+to be cross elements to support loads which occur in directions perpendicular
+to any element.  For instance, a problem such as:
+
+                    | P
+                    |
+        /|          V
+        /|-----* ----
+
+         * = center node
+
+where there are 2 elements and a load P at the end, similar to a cantilever
+beam, cannot be solved because the truss would have to be able to support
+bending at the wall and center node.  This is well known in statics.  
+
+To understand this mathematically, we need to think about the matrices which
+arise from similar set ups.  In the above, the element stiffnesses have no
+non-zero component for the vertical DOF, and this will be true for the  global
+stiffness as well.  Such matrices, with an entire row of zeros, are singular.
+
+But now consider a set up like the one below.  I have 7 elements total,
+four in the horizontal direction and 3 vertical.  This system still needs
+cross elements despite the fact that there are now non-zero vertical components
+in the vertical direction.  Again, simple static analysis reveals the reason
+why when you draw a cross section line through 2 of the horizontal element
+and attempt to solve the loads they support. 
+
+
+                     |
+                     | P
+        /|           V
+        /|-----| ----|
+        /|     |     |
+        /|-----| ----|
+        /|
+
+
+       y ^
+         |  
+         |  
+         |-----> x
+
+
+The mathematical reason why the above does not work is because the resulting
+matrix is singular due to having rows which are identical.  I did a test of
+the above problem using "t7" and the resulting global stiffness looks like:
+
+     3   2.0e+08   0.0e+00   0.0e+00   0.0e+00   0.0e+00   0.0e+00   0.0e+00   0.0e+00   
+     4   0.0e+00   1.0e+08   0.0e+00   0.0e+00   0.0e+00  -1.0e+08   0.0e+00   0.0e+00   
+     9   0.0e+00   0.0e+00   1.0e+08   0.0e+00  -1.0e+08   0.0e+00   0.0e+00   0.0e+00   
+    10   0.0e+00   0.0e+00   0.0e+00   1.0e+08   0.0e+00   0.0e+00   0.0e+00   0.0e+00   
+    12   0.0e+00   0.0e+00  -1.0e+08   0.0e+00   2.0e+08   0.0e+00  -1.0e+08   0.0e+00  
+    13   0.0e+00  -1.0e+08   0.0e+00   0.0e+00   0.0e+00   1.0e+08   0.0e+00   0.0e+00   
+    15   0.0e+00   0.0e+00   0.0e+00   0.0e+00  -1.0e+08   0.0e+00   1.0e+08   0.0e+00   
+    16   0.0e+00   0.0e+00   0.0e+00   0.0e+00   0.0e+00   0.0e+00   0.0e+00   1.0e+08   
+
+I have removed the fixed displacements for nodes attached to the wall on the
+left, as well as the z DOF.  As you can see, row 4 and 13 are the same except
+for a negative sign.
+
+
+
+======================
+Additional information
+======================
+
+To get these results, I added to "tskasmbl.c" the lines:
+
+        K_G=(double *)calloc(2000,sizeof(double));
+
+at the top, and:
+
+                for( i1 = 0; i1 < neqel; ++i1 )
+                {
+                  printf("\n  %4d", i1);
+                  for( i2 = 0; i2 < neqel; ++i2 )
+                  {
+                    *(K_G + *(dof_el + i1)*dof + *(dof_el + i2)) += *(K_el + i1*neqel + i2);
+                  }
+                }
+
+after K_el is calculated.   At the bottom, I added:
+
+        for( i1 = 0; i1 < dof; ++i1 )
+        {
+          printf("\n  %4d", i1);
+          for( i2 = 0; i2 < dof; ++i2 )
+          {
+            printf("  %8.1e", *(K_G + i1*dof + i2)); 
+          }
+        }
+
+The matrix above with only the z DOF removed, looks like:
+
+     0   1.0e+08   0.0e+00  -1.0e+08   0.0e+00   0.0e+00   0.0e+00   0.0e+00   0.0e+00   0.0e+00   0.0e+00   0.0e+00   0.0e+00
+     1   0.0e+00   1.0e+08   0.0e+00   0.0e+00   0.0e+00   0.0e+00   0.0e+00  -1.0e+08   0.0e+00   0.0e+00   0.0e+00   0.0e+00
+     3  -1.0e+08   0.0e+00   2.0e+08   0.0e+00  -1.0e+08   0.0e+00   0.0e+00   0.0e+00   0.0e+00   0.0e+00   0.0e+00   0.0e+00
+     4   0.0e+00   0.0e+00   0.0e+00   1.0e+08   0.0e+00   0.0e+00   0.0e+00   0.0e+00   0.0e+00  -1.0e+08   0.0e+00   0.0e+00
+     6   0.0e+00   0.0e+00  -1.0e+08   0.0e+00   1.0e+08   0.0e+00   0.0e+00   0.0e+00   0.0e+00   0.0e+00   0.0e+00   0.0e+00
+     7   0.0e+00   0.0e+00   0.0e+00   0.0e+00   0.0e+00   1.0e+08   0.0e+00   0.0e+00   0.0e+00   0.0e+00   0.0e+00  -1.0e+08
+     9   0.0e+00   0.0e+00   0.0e+00   0.0e+00   0.0e+00   0.0e+00   1.0e+08   0.0e+00  -1.0e+08   0.0e+00   0.0e+00   0.0e+00
+    10   0.0e+00  -1.0e+08   0.0e+00   0.0e+00   0.0e+00   0.0e+00   0.0e+00   1.0e+08   0.0e+00   0.0e+00   0.0e+00   0.0e+00
+    12   0.0e+00   0.0e+00   0.0e+00   0.0e+00   0.0e+00   0.0e+00  -1.0e+08   0.0e+00   2.0e+08   0.0e+00  -1.0e+08   0.0e+00
+    13   0.0e+00   0.0e+00   0.0e+00  -1.0e+08   0.0e+00   0.0e+00   0.0e+00   0.0e+00   0.0e+00   1.0e+08   0.0e+00   0.0e+00
+    15   0.0e+00   0.0e+00   0.0e+00   0.0e+00   0.0e+00   0.0e+00   0.0e+00   0.0e+00  -1.0e+08   0.0e+00   1.0e+08   0.0e+00
+    16   0.0e+00   0.0e+00   0.0e+00   0.0e+00   0.0e+00  -1.0e+08   0.0e+00   0.0e+00   0.0e+00   0.0e+00   0.0e+00   1.0e+08
+
+
+

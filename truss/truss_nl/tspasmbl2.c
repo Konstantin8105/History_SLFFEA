@@ -7,7 +7,7 @@
         Updated 3/15/06
 
     SLFFEA source file
-    Version:  1.4
+    Version:  1.5
     Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
 
     The source code contained in this file is released under the
@@ -26,34 +26,29 @@
 extern int numel, numnp, dof, sof;
 extern int Passemble_flag, Passemble_CG_flag;
 
-int globalConjKassemble(double *, int *, int , double *,
-	double *, int , int , int );
-
-int globalKassemble(double *, int *, double *, int *, int );
-
 int matX(double *, double *, double *, int, int, int);
 
 int matXT(double *, double *, double *, int, int, int);
 
 int ts2Passemble(int *connect, double *coord, double *coordh, int *el_matl,
-        MATL *matl, double *P_global, SDIM *stress, double *dU,
-        double *P_global_CG, double *U)
+	MATL *matl, double *P_global, SDIM *stress, double *dU,
+	double *P_global_CG, double *U)
 {
-        int i, i1, i2, j, k, dof_el[neqel];
+	int i, i1, i2, j, k, dof_el[neqel];
 	int check, node0, node1;
-        int matl_num;
-        double Emod, area, EmodXarea, wXjacobXarea;
-        double L, Lx, Ly, Lz, Lsq, Lh, Lxh, Lyh, Lzh, Lhsq;
-        double B[soB], Bh[soB], DB[soB], jacob, jacobh;
+	int matl_num;
+	double Emod, area, EmodXarea, wXjacobXarea;
+	double L, Lx, Ly, Lz, Lsq, Lh, Lxh, Lyh, Lzh, Lhsq;
+	double B[soB], Bh[soB], DB[soB], jacob, jacobh;
 	double P_el[neqel], P_temp[neqel], P_local[npel];
 	double K_temp[npel*neqel], K_el[neqlsq], K_local[npelsq], rotate[npel*neqel];
 	double dU_el[neqel], U_el[neqel], dU_ax[npel];
-        double stress_el[sdim], dstress_el[sdim], dstrain_el[sdim];
+	double stress_el[sdim], dstress_el[sdim], dstrain_el[sdim];
 	double x[num_int], w[num_int];
 	int i4,i5,i5m1,i5m2;
 
-        *(x)=0.0;
-        *(w)=2.0;
+	*(x)=0.0;
+	*(w)=2.0;
 
 	memset(P_global,0,dof*sof);
 	memset(P_global_CG,0,dof*sof);
@@ -63,7 +58,7 @@ int ts2Passemble(int *connect, double *coord, double *coordh, int *el_matl,
 		matl_num = *(el_matl+k);
 		Emod = matl[matl_num].E;
 		area = matl[matl_num].area;
-        	EmodXarea = Emod*area;
+		EmodXarea = Emod*area;
 
 		node0 = *(connect+k*npel);
 		node1 = *(connect+k*npel+1);
@@ -139,13 +134,13 @@ int ts2Passemble(int *connect, double *coord, double *coordh, int *el_matl,
 
 /* Assembly of the Bh matrix at 1/2 time */
 
-                   *(Bh) = - 1.0/Lh;
-                   *(Bh+1) = 1.0/Lh;
+		   *(Bh) = - 1.0/Lh;
+		   *(Bh+1) = 1.0/Lh;
 
 /* Assembly of the B matrix at full time */
 
-                   *(B) = - 1.0/L;
-                   *(B+1) = 1.0/L;
+		   *(B) = - 1.0/L;
+		   *(B+1) = 1.0/L;
 
 #if 0
 
@@ -203,6 +198,13 @@ int ts2Passemble(int *connect, double *coord, double *coordh, int *el_matl,
 		if(Passemble_CG_flag)
 		{
 /* Assembly of the local stiffness matrix */
+
+/*
+    Note that I do not use Lh for K_local when the conjugate gradient
+    method is used.  This is because I want to keep things consistent with
+    tsConjPassemble.
+*/
+
 
 		    *(K_local) = EmodXarea/L/L;
 		    *(K_local+1) = - EmodXarea/L/L;

@@ -1,5 +1,5 @@
 # SLFFEA Makefile
-# Version:  1.4
+# Version:  1.5
 # Copyright (C) 1999, 2000  San Le (slffea@yahoo.com)
 # http://slffea.com/
 #
@@ -126,7 +126,7 @@ bc_vec.o: $(COMMON_GR)/bc_vec.c
 	$(CC) -c $(COMMON_GR)/bc_vec.c -DBRICK1
 
 brnorm_vec.o: brnorm_vec.c 
-	$(CC) -c brnorm_vec.c 
+	$(CC) -c brnorm_vec.c -DBRICK1
 
 set.o: $(COMMON_GR)/set.c 
 	$(CC) -c $(COMMON_GR)/set.c -DBRICK1

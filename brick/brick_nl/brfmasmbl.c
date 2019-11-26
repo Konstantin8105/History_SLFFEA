@@ -1,13 +1,31 @@
 /*
     This utility function assembles the Mass and force matrix for a finite 
     element program which does analysis on a brick which can behave
-    nonlinearly.  The equations are solved using dynamic relaxation.   
+    nonlinearly.  The mass is used both in the dynamic relaxation
+    method as well as the conjugate gradient method.   It is not really
+    needed in the conjugate gradient method except to act as a
+    preconditioner.
 
-		Updated 8/22/06
+    Note that the mass matrix is made up of the diagonal of the stiffness
+    matrix.
+
+    Currently, there are quantities at 1/2 time used to calculate
+    the stiffness.  Because coordh and coord are the same at the beginning
+    of the calculation, there is no difference in which is used.  But
+    because there is a possibility that I will recalculate the mass
+    during the main calculation loop which has coordinate updating,
+    I will leave the code as it is.  If this does happen, then I will
+    need to comment out the lines dealing with force.
+
+    Note that I do not use Bh for DB in br2Passemble when the conjugate
+    gradient method is used.  This is because I want to keep things consistent
+    with weConjPassemble.
+
+		Updated 11/25/08
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
+    Version:  1.5
+    Copyright (C) 1999-2008  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -43,11 +61,12 @@ int brFMassemble(int *connect, double *coord, double *coordh, int *el_matl,
 	double B[soB], Bh[soB], DB[soB];
 	double K_temp[neqlsq], K_el[neqlsq];
 	double force_el[neqel], U_el[neqel];
+	double coord_el[neqel], coordh_el[neqel];
 	double coord_el_trans[neqel], coordh_el_trans[neqel];
 	double det[num_int], deth[num_int], volume_el, wXdet;
 	double mass_el[neqel];
 
-/*      initialize all variables  */
+/* initialize all variables  */
 	memset(mass,0,dof*sof);
 
 	for( k = 0; k < numel; ++k )
@@ -72,38 +91,48 @@ int brFMassemble(int *connect, double *coord, double *coordh, int *el_matl,
 			*(sdof_el+nsd*j+1) = nsd*node+1;
 			*(sdof_el+nsd*j+2) = nsd*node+2;
 
-/* Create the coord vector and coordh_trans for one element */
+			*(dof_el+ndof*j) = ndof*node;
+			*(dof_el+ndof*j+1) = ndof*node+1;
+			*(dof_el+ndof*j+2) = ndof*node+2;
 
-			*(coord_el_trans+j)=*(coord+*(sdof_el+nsd*j));
+/* Create the coord and coord_trans vector for one element */
+
+                        *(coord_el+nsd*j) = *(coord+*(sdof_el+nsd*j));
+                        *(coord_el+nsd*j+1) = *(coord+*(sdof_el+nsd*j+1));
+                        *(coord_el+nsd*j+2) = *(coord+*(sdof_el+nsd*j+2));
+			*(coord_el_trans+j) = *(coord+*(sdof_el+nsd*j));
 			*(coord_el_trans+npel*1+j)=*(coord+*(sdof_el+nsd*j+1));
 			*(coord_el_trans+npel*2+j)=*(coord+*(sdof_el+nsd*j+2));
 
 /* Create the coordh and coordh_trans vector for one element */
 
+                        *(coordh_el+nsd*j) = *(coordh+*(sdof_el+nsd*j));
+                        *(coordh_el+nsd*j+1) = *(coordh+*(sdof_el+nsd*j+1));
+                        *(coordh_el+nsd*j+2) = *(coordh+*(sdof_el+nsd*j+2));
 			*(coordh_el_trans+j) = *(coordh+nsd*node);
 			*(coordh_el_trans+npel*1+j) = *(coordh+nsd*node+1);
 			*(coordh_el_trans+npel*2+j) = *(coordh+nsd*node+2);
-
-			*(dof_el+ndof*j) = ndof*node;
-			*(dof_el+ndof*j+1) = ndof*node+1;
-			*(dof_el+ndof*j+2) = ndof*node+2;
 		}
 
 /* Assembly of the shg matrix for each integration point at 1/2 time */
 
-		brshg(deth, k, shl, shgh, coordh_el_trans);
+		check = brshg(deth, k, shl, shgh, coordh_el_trans);
+		if(!check) printf( "Problems with brshg \n");
 
 /* Assembly of the shgh matrix for each integration point at full time */
 
-		brshg(det, k, shl, shg, coord_el_trans);
+		check = brshg(det, k, shl, shg, coord_el_trans);
+		if(!check) printf( "Problems with brshg \n");
 
 /* The loop over j below calculates the 8 points of the gaussian integration
    for several quantities */
 
 /* Zero out the Element stiffness and mass matrices */
 
+		memset(U_el,0,neqel*sof);
 		memset(K_el,0,neqlsq*sof);
 		memset(mass_el,0,neqel*sof);
+		memset(force_el,0,neqel*sof);
 
 		for( j = 0; j < num_int; ++j )
 		{
@@ -166,7 +195,7 @@ int brFMassemble(int *connect, double *coord, double *coordh, int *el_matl,
 /* Creating the mass Matrix */
 		for( i3 = 0; i3 < neqel; ++i3 )
 		{
-		   *(mass_el+i3) = 100.0*(*(K_el+neqel*i3+i3));
+		    *(mass_el+i3) = 100.0*(*(K_el+neqel*i3+i3));
 		}
 		for( j = 0; j < npel; ++j )
 		{

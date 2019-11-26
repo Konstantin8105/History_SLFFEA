@@ -1,0 +1,53 @@
+dynamic relaxation(DR) or conjugate gradient(CG) method ( 0 = CG, 1 = DR )
+1
+number of iterations for DR or CG
+10000
+time step for DR
+0.25
+damping constant for DR
+.02088
+stress calculation for CG (Lagrangian = 0, stress updating = 1)
+0
+
+
+0.25
+.02088
+10000
+This is for tscomb-flat 
+
+
+
+13.0
+.002088
+1000
+This is for es3 
+
+
+10.0
+.002088
+10000
+This is for tower 
+
+
+
+
+3.5
+.08088
+404
+This is for tensile
+
+
+3.5
+.08088
+404
+This is for patch
+
+
+
+
+
+
+
+
+
+

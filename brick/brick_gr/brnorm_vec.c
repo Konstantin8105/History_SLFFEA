@@ -1,12 +1,12 @@
 /*
     This program Calculates the normal vectors of a mesh
-    for brick elements.
+    for brick or shell elements.
   
-  		Last Update 6/25/01
+  		Last Update 9/25/08
 
     SLFFEA source file
-    Version:  1.4
-    Copyright (C) 1999, 2000, 2001, 2002  San Le 
+    Version:  1.5
+    Copyright (C) 1999-2008  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -16,28 +16,35 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#if BRICK1
 #include "../brick/brconst.h"
 #include "brstrcgr.h"
+#endif
+#if SHELL1
+#include "../../shell/shell/shconst.h"
+#include "../../shell/shell_gr/shstrcgr.h"
+#endif
 
-extern int numel;
+extern int numel, numnp;
 
 int normcrossX(double *, double *, double *);
 
 int brnormal_vectors(int *connecter, double *coord, NORM *norm )
 {
-	int i, i2, j, k, sdof_el[npel*nsd], ii, check, counter, node;
+	int i, i2, j, k, sdof_el[npel8*nsd], ii, check, counter, node;
 	int l,m,n;
-	double coord_el[npel*3];
+	double coord_el[npel8*3];
 	double d1[3], d2[3], norm_temp[3];
 
 	for( k = 0; k < numel; ++k )
 	{
-		for( j = 0; j < npel; ++j )
+#if BRICK1
+		for( j = 0; j < npel8; ++j )
 		{
 
 /* Calculate element degrees of freedom */
 
-			node = *(connecter+npel*k+j);
+			node = *(connecter+npel8*k+j);
 			*(sdof_el+nsd*j) = nsd*node;
 			*(sdof_el+nsd*j+1) = nsd*node+1;
 			*(sdof_el+nsd*j+2) = nsd*node+2;
@@ -48,9 +55,42 @@ int brnormal_vectors(int *connecter, double *coord, NORM *norm )
 			*(coord_el+3*j+1)=*(coord+*(sdof_el+nsd*j+1));
 			*(coord_el+3*j+2)=*(coord+*(sdof_el+nsd*j+2));
 
+		}
+#endif
+
+#if SHELL1
+		for( j = 0; j < npell4; ++j )
+		{
+
+/* Calculate element degrees of freedom */
+
+			node = *(connecter+npell4*k+j);
+
+			*(sdof_el+nsd*j) = nsd*node;
+			*(sdof_el+nsd*j+1) = nsd*node+1;
+			*(sdof_el+nsd*j+2) = nsd*node+2;
+
+			*(sdof_el+nsd*npell4+nsd*j)=nsd*(node+numnp);
+			*(sdof_el+nsd*npell4+nsd*j+1)=nsd*(node+numnp)+1;
+			*(sdof_el+nsd*npell4+nsd*j+2)=nsd*(node+numnp)+2;
+
+/* Calculate local coordinates */
+
+			*(coord_el+3*j)=*(coord+*(sdof_el+nsd*j));
+			*(coord_el+3*j+1)=*(coord+*(sdof_el+nsd*j+1));
+			*(coord_el+3*j+2)=*(coord+*(sdof_el+nsd*j+2));
+
+			*(coord_el+3*npell4+3*j)=
+				*(coord+*(sdof_el+nsd*npell4+nsd*j));
+			*(coord_el+3*npell4+3*j+1)=
+				*(coord+*(sdof_el+nsd*npell4+nsd*j+1));
+			*(coord_el+3*npell4+3*j+2)=
+				*(coord+*(sdof_el+nsd*npell4+nsd*j+2));
+
 			/*printf( "%9.5f %9.5f %9.5f \n",*(coord_el+3*j),
 				*(coord_el+3*j+1),*(coord_el+3*j+2));*/
 		}
+#endif
 
 /* Calculate normal vectors */
 

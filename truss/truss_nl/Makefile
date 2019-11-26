@@ -1,7 +1,7 @@
 # SLFFEA Makefile
 # Version:  1.3
 # Copyright (C) 1999, 2000  San Le (slffea@yahoo.com)
-# http://www.geocities.com/slffea/slffea.html
+# http://slffea.com/
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Library General Public
@@ -30,9 +30,10 @@ LIBS = -lm
 COMMON = ../../common
 TRUSS = ../truss
 OBJECTS = $(COMMON)/matxt.o $(COMMON)/matx.o $(COMMON)/dotx.o \
-	$(COMMON)/rotate.o
+	$(COMMON)/rotate.o $(COMMON)/kasmbl.o $(COMMON)/gnuplotwrite2.o
 OBJECTS_TS = $(TRUSS)/tsmemory.o $(TRUSS)/tsreader.o $(TRUSS)/id.o \
-	$(TRUSS)/bound.o $(TRUSS)/tswriter.o $(TRUSS)/tslength.o
+	$(TRUSS)/bound.o $(TRUSS)/tswriter.o $(TRUSS)/tslength.o \
+	$(TRUSS)/tsconj.o
 
 PROGS = nts 
 

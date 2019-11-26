@@ -11,7 +11,7 @@
                 Updated 9/10/99 
 
     SLFFEA source file
-    Version:  1.4
+    Version:  1.5
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.

@@ -2,11 +2,11 @@
     This program sets viewing and analysis values based on the parameters 
     determined in shparameters for the FEM GUI for shell elements.
   
-   			Last Update 9/22/06
+   			Last Update 10/3/08
 
     SLFFEA source file
-    Version:  1.4
-    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le
+    Version:  1.5
+    Copyright (C) 1999-2008  San Le
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -26,7 +26,7 @@
 
 #define init_far0      -2.0
 
-extern int nmat, numnp, numel, dof;
+extern int nmat, numnp, numel, dof, flag_quad_element;
 extern double step_sizex, step_sizey, step_sizez;
 extern double left, right, top, bottom, near, far, fscale;
 extern int control_height, control_width, mesh_height, mesh_width;
@@ -58,7 +58,7 @@ int shset( BOUND bc, int *connecter, double *force, XYZPhiF *force_vec0,
 {
 	int i, i4, i5, j, check;
 	double force_vec_length, moment_vec_length;
-	int node;
+	int node, npell_, num_intb_;
 
 /* Determine displacement and angle color scheme */
 
@@ -334,15 +334,23 @@ int shset( BOUND bc, int *connecter, double *force, XYZPhiF *force_vec0,
 
 /* Assign colors to strains and stresses */
 
+	num_intb_ = num_intb4;
+	npell_ = npell4;
+	if(!flag_quad_element)
+	{
+		npell_ = npell3;
+		num_intb_ = num_intb3;
+	}
+
 	for( i = 0; i < numel; ++i )
 	{
 	   for( i4 = 0; i4 < num_ints; ++i4 )
 	   {
-	     for( j = 0; j < num_intb; ++j )
+	     for( j = 0; j < num_intb_; ++j )
 	     {
 
-	       node = *(connecter+npell*i+j) + i4*numnp;
-	       i5 = num_intb*i4+j;
+	       node = *(connecter+npell_*i+j) + i4*numnp;
+	       i5 = num_intb_*i4+j;
 
 /* Assign colors for strain xx */
 	       strain_color[i].pt[i5].xx = 0;

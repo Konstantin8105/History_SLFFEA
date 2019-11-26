@@ -7,7 +7,7 @@
 		Updated 10/19/06
 
     SLFFEA source file
-    Version:  1.4
+    Version:  1.5
     Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
 
     The source code contained in this file is released under the
@@ -34,7 +34,7 @@ int matXT(double *, double *, double *, int, int, int);
 
 int shlocal_vectors( double *coord, double *lamina_ref, double *fiber_xyz ) 
 {
-	int i, i1, i2, i3, i4, i5, j, k, dof_el[neqel], sdof_el[npel*nsd];
+	int i, i1, i2, i3, i4, i5, j, k, dof_el[neqel20], sdof_el[npel8*nsd];
 	int check, counter, node;
 	double fdum1, fdum2, fdum3, fdum4;
 	double local_x[nsd], local_y[nsd], local_z[nsd], vec_dum[nsd];

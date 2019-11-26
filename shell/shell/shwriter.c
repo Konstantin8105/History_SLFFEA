@@ -2,11 +2,11 @@
    This library function writes the resulting data for a finite element
    program which does analysis on a shell element 
 
-		Updated 10/17/06
+		Updated 9/27/08
 
     SLFFEA source file
-    Version:  1.4
-    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
+    Version:  1.5
+    Copyright (C) 1999-2008  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -23,7 +23,7 @@
 #define      OLD_COMPARE    0
 
 extern int dof, integ_flag, doubly_curved_flag, nmat, nmode, numel, numnp;
-extern int static_flag, element_stress_print_flag, gauss_stress_flag;
+extern int static_flag, element_stress_print_flag, gauss_stress_flag, flag_quad_element;
 
 int shwriter ( BOUND bc, int *connect, double *coord, int *el_matl, double *force,
 	int *id, double *fiber_xyz, MATL *matl, char *name, STRAIN *strain,
@@ -70,14 +70,31 @@ int shwriter ( BOUND bc, int *connect, double *coord, int *el_matl, double *forc
 	}
 
 	fprintf( o3, "el no., connectivity, matl no. \n");
-	for( i = 0; i < numel; ++i )
+
+	if( !flag_quad_element )
 	{
-	   fprintf( o3, "%6d ",i);
-	   for( j = 0; j < npell; ++j )
-	   {
-		fprintf( o3, "%6d ",*(connect+npell*i+j));
-	   }
-	   fprintf( o3, "   %3d\n",*(el_matl+i));
+/* Triangle elements */
+	    for( i = 0; i < numel; ++i )
+	    {
+	       fprintf( o3, "%6d ",i);
+	       for( j = 0; j < npell3; ++j )
+	       {
+		    fprintf( o3, "%6d ",*(connect+npell3*i+j));
+	       }
+	       fprintf( o3, "   %3d\n",*(el_matl+i));
+	    }
+	}
+	else
+	{
+	    for( i = 0; i < numel; ++i )
+	    {
+	       fprintf( o3, "%6d ",i);
+	       for( j = 0; j < npell4; ++j )
+	       {
+		    fprintf( o3, "%6d ",*(connect+npell4*i+j));
+	       }
+	       fprintf( o3, "   %3d\n",*(el_matl+i));
+	    }
 	}
 
 	fprintf( o3, "node no., coordinates \n");
@@ -365,7 +382,7 @@ int shwriter ( BOUND bc, int *connect, double *coord, int *el_matl, double *forc
 		fprintf( o4, "and stress vector in lamina xx,yy,xy,zx,yz \n");
 		for( i = 0; i < numel; ++i )
 		{
-		   for( j = 0; j < num_int; ++j )
+		   for( j = 0; j < num_int8; ++j )
 		   {
 			fprintf( o4,"%4d %4d  ",i,j);
 			fprintf( o4,"%14.6e ",stress[i].pt[j].xx);
@@ -381,7 +398,7 @@ int shwriter ( BOUND bc, int *connect, double *coord, int *el_matl, double *forc
 		fprintf( o4, "and principal stress I,II,III \n");
 		for( i = 0; i < numel; ++i )
 		{
-		   for( j = 0; j < num_int; ++j )
+		   for( j = 0; j < num_int8; ++j )
 		   {
 			fprintf( o4,"%4d %4d  ",i,j);
 			fprintf( o4,"%14.6e ",stress[i].pt[j].I);
@@ -395,7 +412,7 @@ int shwriter ( BOUND bc, int *connect, double *coord, int *el_matl, double *forc
 		fprintf( o4, "and strain vector in lamina xx,yy,xy,zx,yz \n");
 		for( i = 0; i < numel; ++i )
 		{
-		   for( j = 0; j < num_int; ++j )
+		   for( j = 0; j < num_int8; ++j )
 		   {
 			fprintf( o4,"%4d %4d  ",i,j);
 			fprintf( o4,"%14.6e ",strain[i].pt[j].xx);
@@ -411,7 +428,7 @@ int shwriter ( BOUND bc, int *connect, double *coord, int *el_matl, double *forc
 		fprintf( o4, "and principal strain I,II,III \n");
 		for( i = 0; i < numel; ++i )
 		{
-		   for( j = 0; j < num_int; ++j )
+		   for( j = 0; j < num_int8; ++j )
 		   {
 			fprintf( o4,"%4d %4d  ",i,j);
 			fprintf( o4,"%14.6e ",strain[i].pt[j].I);

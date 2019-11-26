@@ -4,11 +4,11 @@
     nonlinearly.  The equations are solved using dynamic
     relaxation.   
 
-		Updated 1/7/03
+		Updated 11/25/08
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001, 2002  San Le 
+    Version:  1.5
+    Copyright (C) 1999-2008  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -39,7 +39,7 @@ int brPassemble(int *connect, double *coord, double *coordh, int *el_matl,
 	MATL *matl, double *P_global, STRESS *stress, double *dU)
 
 {
-	int i,i1,i2,j,k,dof_el[npel*ndof],sdof_el[npel*nsd];
+	int i,i1,j,k,dof_el[npel*ndof],sdof_el[npel*nsd];
 	int check, node;
 	int matl_num;
 	double Emod, G, K, Pois;
@@ -51,7 +51,7 @@ int brPassemble(int *connect, double *coord, double *coordh, int *el_matl,
 		coord_el_trans[npel*nsd], coordh_el_trans[npel*nsd];
 	double stress_el[sdim],  dstress_el[sdim], dstrain_el[sdim];
 	double det[num_int], deth[num_int], wXdet;
-	int i4,i5,i5m1,i5m2;
+	int i2,i2m1,i2m2;
 
 	memset(P_global,0,dof*sof);
 
@@ -117,11 +117,13 @@ int brPassemble(int *connect, double *coord, double *coordh, int *el_matl,
 
 /* Assembly of the shgh matrix for each integration point at 1/2 time */
 
-		brshg(deth, k, shl, shgh, coordh_el_trans);
+		check = brshg(deth, k, shl, shgh, coordh_el_trans);
+		if(!check) printf( "Problems with brshg \n");
 
 /* Assembly of the shg matrix for each integration point at full time */
 
-		brshg(det, k, shl, shg, coord_el_trans);
+		check = brshg(det, k, shl, shg, coord_el_trans);
+		if(!check) printf( "Problems with brshg \n");
 
 /* The loop over j below calculates the 8 points of the gaussian integration 
    for several quantities */
@@ -163,18 +165,18 @@ int brPassemble(int *connect, double *coord, double *coordh, int *el_matl,
 
 /* First, Bh is modified slightly before the calculaiton is performed */
 
-		    for( i4 = 1; i4 < 9; ++i4 )
+		    for( i = 0; i < npel; ++i )
 		    {
-			i5      = ndof*i4-1;
-			i5m1    = i5-1;
-			i5m2    = i5-2;
+			i2      = ndof*i+2;
+			i2m1    = i2-1;
+			i2m2    = i2-2;
 
-			*(Bh+neqel*3+i5m1) *= -1.0;
-			*(Bh+neqel*4+i5m2) *= -1.0;
-			*(Bh+neqel*5+i5) *= -1.0;
+			*(Bh+neqel*3+i2m1) *= -1.0;
+			*(Bh+neqel*4+i2m2) *= -1.0;
+			*(Bh+neqel*5+i2) *= -1.0;
 		    }
 
-		    check=matX((domega_el),(Bh+72), dU_el, 3, 1, neqel);
+		    check=matX((domega_el),(Bh+3*neqel), dU_el, 3, 1, neqel);
 		    if(!check) printf( "Problems with matX \n");
 
 /* Calculation of the incremental Yaumann constitutive rate change */

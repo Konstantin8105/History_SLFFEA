@@ -5,7 +5,7 @@
         Updated 6/10/00 
 
     SLFFEA source file
-    Version:  1.4
+    Version:  1.5
     Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
@@ -23,7 +23,7 @@
 
 int analysis_flag, sdof, dof, integ_flag, doubly_curved_flag, neqn, nmat, nmode,
 	numel, numnp, sof;
-int element_stress_read_flag, stress_read_flag;
+int element_stress_read_flag, stress_read_flag, flag_quad_element;;
 
 int shreader( BOUND , int *, double *, int *, double *, MATL *, char *, FILE *,
 	STRESS *, SDIM *, double *);
@@ -97,9 +97,9 @@ int writer (int *connect, double *coord)
 	for( j = 0; j < numel; ++j )
 	{
 
-		*(tri)=*(connect+npell*j);
-		*(tri+1)=*(connect+npell*j+1);
-		*(tri+2)=*(connect+npell*j+2);
+		*(tri)=*(connect+npell4*j);
+		*(tri+1)=*(connect+npell4*j+1);
+		*(tri+2)=*(connect+npell4*j+2);
 		check = crossX(coord, tri, o3);
 
 		if( j == 0 )
@@ -113,9 +113,9 @@ int writer (int *connect, double *coord)
 			*(tri),*(tri+1),*(tri+2));
 		}
 
-		*(tri)=*(connect+npell*j);
-		*(tri+1)=*(connect+npell*j+2);
-		*(tri+2)=*(connect+npell*j+3);
+		*(tri)=*(connect+npell4*j);
+		*(tri+1)=*(connect+npell4*j+2);
+		*(tri+2)=*(connect+npell4*j+3);
 		check = crossX(coord, tri, o3);
 		if( j == numel -1 )
 		{
@@ -242,7 +242,7 @@ int main(int argc, char** argv)
 	}
 
 /* For the integers */
-	sofmi= numel*npell+2*dof+numel*npell*ndof+numel+numnp+1;
+	sofmi= numel*npell4+2*dof+numel*npell4*ndof+numel+numnp+1;
 	mem_int=(int *)calloc(sofmi,sizeof(int));
 	if(!mem_int )
 	{
@@ -250,10 +250,10 @@ int main(int argc, char** argv)
 		exit(1);
 	}
 	                                        ptr_inc = 0; 
-	connect=(mem_int+ptr_inc);              ptr_inc += numel*npell; 
+	connect=(mem_int+ptr_inc);              ptr_inc += numel*npell4; 
 	id=(mem_int+ptr_inc);                   ptr_inc += dof;
 	idiag=(mem_int+ptr_inc);                ptr_inc += dof;
-	lm=(mem_int+ptr_inc);                   ptr_inc += numel*npell*ndof;
+	lm=(mem_int+ptr_inc);                   ptr_inc += numel*npell4*ndof;
 	el_matl=(mem_int+ptr_inc);              ptr_inc += numel;
 	bc.force =(mem_int+ptr_inc);            ptr_inc += numnp;
 	bc.num_force=(mem_int+ptr_inc);         ptr_inc += 1;

@@ -1,5 +1,5 @@
 
-                             SLFFEA 1.4
+                             SLFFEA 1.5
 
                     Copyright (C) 1999 San Le
 
@@ -16,8 +16,8 @@
 (2) Beer, Ferdinand P. and E. Russell Johnston Jr., Vector Mechanics for Engineers
         5th Ed., McGraw-Hill Publishing Company, New York, 1988.
 
-(3) Belytschko, Ted, et. al., Nonlinear Finite Element for Continua and Structures,
-        John Wiley & Sons, New York, 1997.
+(3) Belytschko, Ted, Wing Kam Liu, and Brian Moran, Nonlinear Finite Element for
+        Continua and Structures, John Wiley & Sons, New York, 1997.
         TA 347.F5 2000 B64
 
 (4) Benson, David, AMES 232 A Course Notes: Fall Quarter 1997, UCSD Soft Reserves,
@@ -182,6 +182,27 @@
 
 (55) Washizu, Kyuichiro, Variational Methods in Elasticity and Plasticity, 
         Pergamon Press, 1968.
+
+Dynamic Relaxation Papers:
+
+(1) Alwar, R. S., and N. Ramachandra Rao, and M. Subba Rao, An Alternative Procedure in
+        Dynamic Relaxation, Computers & Structures, 5, 271-274, 1975. 
+
+(2) Day, A. S., An Introduction to Dynamic Relaxation, Engineer, London, 219,
+        January 1965, 218-221. 
+
+(3) Wunderlich, W., E. Stein, and K.-J. Bathe, Nonlinear Finite Element Analysis in Structural
+        Mechanics: Proceedings of the Europe-U.S. Workshop Ruhr-Universitat Bochum, Germany,
+        July 28-31, 1980, Springer, Verlag Berlin Heidelberg, 1981.
+
+    Key, S. W. C. M. Stone, and R. D. Krieg, Dynamic Relaxation Applied to the Quasi-Static,
+        Large Deformation, Inelastic Response of Axisymmetric Solids.
+
+(4) Wood, Winifred L., Comparison of Dynamic Relaxation with Three Other Iterative Methods,
+        Engineer, London, 224, November 1967, 683-687.
+
+(5) Wood, Winifred L., Note on Dynamic Relaxation, International Journal for Numerical Methods in
+        Engineering, New York, 3, November 1971, 145-147.
 
 * ANSYS is a registered trademark of Swanson Analysis Systems, Inc.
 

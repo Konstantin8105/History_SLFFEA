@@ -2,11 +2,11 @@
     This program shows the 3 dimensional model of the finite
     element mesh for shell elements.
   
-	          Last Update 12/4/06
+	          Last Update 12/4/08
 
     SLFFEA source file
-    Version:  1.4
-    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le
+    Version:  1.5
+    Copyright (C) 1999-2008  San Le
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -89,7 +89,9 @@ int dotX(double *,double *, double *, int );
 
 int shlocal_vectors( double *, double *, double * );
 
-int shnormal_vectors (int *, double *, NORM * );
+int brnormal_vectors (int *, double *, NORM * );
+
+int wenormal_vectors (int *, double *, NORM * );
 
 int shTopCoordinates(int *, double *, int *, double *, MATL *, double *);
 
@@ -153,7 +155,7 @@ void agvHandleMotion(int , int );
 
 /****** FEA globals ******/
 int dof, sdof, nmat, nmode, numel, numnp, integ_flag, doubly_curved_flag;
-int stress_read_flag, element_stress_read_flag;
+int stress_read_flag, element_stress_read_flag, flag_quad_element;
 XYZPhiI *mem_XYZPhiI;
 XYZPhiF *mem_XYZPhiF;
 int *mem_int;
@@ -392,7 +394,7 @@ int main(int argc, char** argv)
 	sofmf=4*sdof+2*dof+numnp+2*numnp+sdof+numnp*nsdsq+numnp*nsd;
 
 /* For the integers */
-	sofmi= numel*npell+numel+numnp+1+1+dof;
+	sofmi= numel*npell4+numel+numnp+1+1+dof;
 
 /* For the XYZPhiI integers */
 	sofmXYZPhiI=numnp+1+1;
@@ -437,7 +439,7 @@ int main(int argc, char** argv)
 
 /* For the integers */
 	                                        ptr_inc = 0;
-	connecter=(mem_int+ptr_inc);            ptr_inc += numel*npell;
+	connecter=(mem_int+ptr_inc);            ptr_inc += numel*npell4;
 	el_matl=(mem_int+ptr_inc);              ptr_inc += numel;
 	bc.force =(mem_int+ptr_inc);            ptr_inc += numnp+1;
 	bc.num_force=(mem_int+ptr_inc);         ptr_inc += 1;
@@ -534,8 +536,16 @@ int main(int argc, char** argv)
 
 	if( post_flag )
 	{
-		check = shnormal_vectors(connecter, coord, norm );
-		if(!check) printf( " Problems with shnormal_vectors \n");
+		if(flag_quad_element)
+		{
+		    check = brnormal_vectors(connecter, coord, norm );
+		    if(!check) printf( " Problems with brnormal_vectors \n");
+		}
+		else
+		{
+		    check = wenormal_vectors(connecter, coord, norm );
+		    if(!check) printf( " Problems with wenormal_vectors \n");
+		}
 
 		if( !input_flag )
 		{
@@ -546,8 +556,16 @@ int main(int argc, char** argv)
 
 	if( input_flag )
 	{
-		check = shnormal_vectors(connecter, coord0, norm0 );
-		if(!check) printf( " Problems with shnormal_vectors \n");
+		if(flag_quad_element)
+		{
+		    check = brnormal_vectors(connecter, coord0, norm0 );
+		    if(!check) printf( " Problems with brnormal_vectors \n");
+		}
+		else
+		{
+		    check = wenormal_vectors(connecter, coord0, norm0 );
+		    if(!check) printf( " Problems with wenormal_vectors \n");
+		}
 
 		check = shlocal_vectors( coord0, lamina_ref, fiber_xyz );
 		if(!check) printf( " Problems with shlocal_vectors\n");

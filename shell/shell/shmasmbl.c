@@ -4,11 +4,11 @@
     the element mass matrices.  This is for a finite element program
     which does analysis on a shell.  It is for modal analysis.
 
-		Updated 10/10/06
+		Updated 10/10/08
 
     SLFFEA source file
-    Version:  1.4
-    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
+    Version:  1.5
+    Copyright (C) 1999-2008  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -23,10 +23,10 @@
 #include "shconst.h"
 #include "shstruct.h"
 
-extern int dof, numel, numnp, sof;
-extern SH shg, shl;
+extern int dof, numel, numnp, sof, flag_quad_element;
+extern SH shg, shl, shl_tri;
 extern ROTATE rotate, rotate_node;
-extern double w[num_int], *Vol0;
+extern double w[num_int8], w_tri[num_int6], *Vol0;
 extern int consistent_mass_flag, consistent_mass_store, lumped_mass_flag;
 
 int matXT(double *, double *, double *, int, int, int);
@@ -39,18 +39,42 @@ int shshg_mass( double *, int , SH , XL , double *, double *, double *,
 int shMassemble(int *connect, double *coord, int *el_matl, int *id,
 	double *lamina_ref, double *fiber_xyz, double *mass, MATL *matl) 
 {
-	int i, i1, i2, i3, i4, j, k, k2, dof_el[neqel], sdof_el[npel*nsd];
+	int i, i1, i2, i3, i4, j, k, k2, dof_el[neqel20], sdof_el[npel8*nsd];
 	int check, node, counter;
 	int matl_num;
-	double rho, fdum, fdum1, fdum2, fdum3, fdum4, alpha[npell], alpha_rot,
+	double rho, fdum, fdum1, fdum2, fdum3, fdum4, alpha[npell4], alpha_rot,
 		thickness_ave, Area_scale;
-	double B_mass[MsoB], B2_mass[MsoB];
-	double M_temp[neqlsq], M_el[neqlsq];
-	double coord_el_trans[npel*nsd], zm1[npell], zp1[npell],
-		znode[npell*num_ints], dzdt_node[npell];
-	double det[num_int], volume_el, volume_mass_el, wXdet;
+	double B_mass[MsoB60], B2_mass[MsoB60];
+	double M_temp[neqlsq400], M_el[neqlsq400];
+	double coord_el_trans[npel8*nsd], zm1[npell4], zp1[npell4],
+		znode[npell4*num_ints], dzdt_node[npell4];
+	double det[num_int8], volume_el, volume_mass_el, wXdet;
 	XL xl;
-	double mass_el[neqel], mass_el_disp, mass_el_rot;
+	double mass_el[neqel20], mass_el_disp, mass_el_rot;
+	int npell_, neqel_, num_intb_, neqlsq_, soB_, npel_, MsoB_;
+	SH *shl_;
+	
+
+	npell_ = npell4;
+	neqel_ = neqel20;
+	num_intb_ = num_intb4;
+	neqlsq_ = neqlsq400;
+	soB_ = soB100;
+	npel_ = npel8;
+	MsoB_ = MsoB60;
+	shl_ = &shl;
+
+	if(!flag_quad_element)
+	{
+		npell_ = npell3;
+		neqel_ = neqel15;
+		num_intb_ = num_intb3;
+		neqlsq_ = neqlsq225;
+		soB_ = soB75;
+		npel_ = npel6;
+		MsoB_ = MsoB45;
+		shl_ = &shl_tri;
+	}
 
 /*      initialize all variables  */
 
@@ -58,12 +82,12 @@ int shMassemble(int *connect, double *coord, int *el_matl, int *id,
 
 	for( k2 = 0; k2 < num_ints; ++k2 )
 	{
-	   for( k = 0; k < num_intb; ++k )
+	   for( k = 0; k < num_intb_; ++k )
 	   {
-		for( i = 0; i < npell; ++i )
+		for( i = 0; i < npell_; ++i )
 		{
-		   shg.bend[npell*(nsd+1)*num_intb*k2+npell*(nsd+1)*k+npell*3+i]=
-		      shl.bend[npell*(nsd)*k+npell*2+i];
+		   shg.bend[npell_*(nsd+1)*num_intb_*k2+npell_*(nsd+1)*k+npell_*3+i]=
+		      shl_[0].bend[npell_*(nsd)*k+npell_*2+i];
 		}
 	   }
 	}
@@ -76,17 +100,17 @@ int shMassemble(int *connect, double *coord, int *el_matl, int *id,
 
 /* Create the coord_el transpose vector and other variables for one element */
 
-		for( j = 0; j < npell; ++j )
+		for( j = 0; j < npell_; ++j )
 		{
-			node = *(connect+npell*k+j);
+			node = *(connect+npell_*k+j);
 
 			*(sdof_el+nsd*j)=nsd*node;
 			*(sdof_el+nsd*j+1)=nsd*node+1;
 			*(sdof_el+nsd*j+2)=nsd*node+2;
 
-			*(sdof_el+nsd*npell+nsd*j)=nsd*(node+numnp);
-			*(sdof_el+nsd*npell+nsd*j+1)=nsd*(node+numnp)+1;
-			*(sdof_el+nsd*npell+nsd*j+2)=nsd*(node+numnp)+2;
+			*(sdof_el+nsd*npell_+nsd*j)=nsd*(node+numnp);
+			*(sdof_el+nsd*npell_+nsd*j+1)=nsd*(node+numnp)+1;
+			*(sdof_el+nsd*npell_+nsd*j+2)=nsd*(node+numnp)+2;
 
 			*(dof_el+ndof*j) = ndof*node;
 			*(dof_el+ndof*j+1) = ndof*node+1;
@@ -98,35 +122,35 @@ int shMassemble(int *connect, double *coord, int *el_matl, int *id,
 
 			*(coord_el_trans+j) =
 				*(coord+*(sdof_el+nsd*j));
-			*(coord_el_trans+npel*1+j) =
+			*(coord_el_trans+npel_*1+j) =
 				*(coord+*(sdof_el+nsd*j+1));
-			*(coord_el_trans+npel*2+j) =
+			*(coord_el_trans+npel_*2+j) =
 				*(coord+*(sdof_el+nsd*j+2));
 
-			*(coord_el_trans+npell+j) =
-				*(coord+*(sdof_el+nsd*npell+nsd*j));
-			*(coord_el_trans+npel*1+npell+j) =
-				*(coord+*(sdof_el+nsd*npell+nsd*j+1));
-			*(coord_el_trans+npel*2+npell+j) =
-				*(coord+*(sdof_el+nsd*npell+nsd*j+2));
+			*(coord_el_trans+npell_+j) =
+				*(coord+*(sdof_el+nsd*npell_+nsd*j));
+			*(coord_el_trans+npel_*1+npell_+j) =
+				*(coord+*(sdof_el+nsd*npell_+nsd*j+1));
+			*(coord_el_trans+npel_*2+npell_+j) =
+				*(coord+*(sdof_el+nsd*npell_+nsd*j+2));
 
 /* Create the coord_bar and coord_hat vector for one element */
 
 			xl.bar[j] = *(lamina_ref + nsd*node);
-			xl.bar[npell*1+j] = *(lamina_ref + nsd*node + 1);
-			xl.bar[npell*2+j] = *(lamina_ref + nsd*node + 2);
+			xl.bar[npell_*1+j] = *(lamina_ref + nsd*node + 1);
+			xl.bar[npell_*2+j] = *(lamina_ref + nsd*node + 2);
 
-			fdum1=*(coord_el_trans+npell+j)-*(coord_el_trans+j);
-			fdum2=*(coord_el_trans+npel*1+npell+j)-*(coord_el_trans+npel*1+j);
-			fdum3=*(coord_el_trans+npel*2+npell+j)-*(coord_el_trans+npel*2+j);
+			fdum1=*(coord_el_trans+npell_+j)-*(coord_el_trans+j);
+			fdum2=*(coord_el_trans+npel_*1+npell_+j)-*(coord_el_trans+npel_*1+j);
+			fdum3=*(coord_el_trans+npel_*2+npell_+j)-*(coord_el_trans+npel_*2+j);
 			fdum4=sqrt(fdum1*fdum1+fdum2*fdum2+fdum3*fdum3);
 
 			*(zp1+j)=.5*(1.0-zeta)*fdum4;
 			*(zm1+j)=-.5*(1.0+zeta)*fdum4;
 
 			xl.hat[j] = *(fiber_xyz + nsdsq*node + 2*nsd);
-			xl.hat[npell*1+j] = *(fiber_xyz + nsdsq*node + 2*nsd + 1);
-			xl.hat[npell*2+j] = *(fiber_xyz + nsdsq*node + 2*nsd + 2);
+			xl.hat[npell_*1+j] = *(fiber_xyz + nsdsq*node + 2*nsd + 1);
+			xl.hat[npell_*2+j] = *(fiber_xyz + nsdsq*node + 2*nsd + 2);
 
 
 /* Create the rotation matrix */
@@ -144,15 +168,15 @@ int shMassemble(int *connect, double *coord, int *el_matl, int *id,
 
 /* The call to shshg_mass is only for calculating the determinent */
 
-		check = shshg_mass( det, k, shl, xl, zp1, zm1, znode, dzdt_node);
+		check = shshg_mass( det, k, *shl_, xl, zp1, zm1, znode, dzdt_node);
 		if(!check) printf( "Problems with shshg_mass \n");
 
 #if 0
-		for( i1 = 0; i1 < num_intb; ++i1 )
+		for( i1 = 0; i1 < num_intb_; ++i1 )
 		{
-		    for( i2 = 0; i2 < npell; ++i2 )
+		    for( i2 = 0; i2 < npell_; ++i2 )
 		    {
-			printf("%10.6f ",*(shl+npell*(nsd+1)*i1 + npell*(nsd) + i2));
+			printf("%10.6f ",*(shl+npell_*(nsd+1)*i1 + npell_*(nsd) + i2));
 		    }
 		    printf(" \n");
 		}
@@ -163,8 +187,8 @@ int shMassemble(int *connect, double *coord, int *el_matl, int *id,
 
 /* Zero out the Element mass matrices */
 
-		memset(M_el,0,neqlsq*sof);
-		memset(mass_el,0,neqel*sof);
+		memset(M_el,0,neqlsq_*sof);
+		memset(mass_el,0,neqel_*sof);
 
 /* The loop over i4 below calculates the 2 fiber points of the gaussian integration */
 
@@ -174,21 +198,23 @@ int shMassemble(int *connect, double *coord, int *el_matl, int *id,
 /* The loop over j below calculates the 2X2 points of the gaussian integration
    over the lamina for several quantities */
 
-		   for( j = 0; j < num_intb; ++j )
+		   for( j = 0; j < num_intb_; ++j )
 		   {
 
-			memset(B_mass,0,MsoB*sof);
-			memset(B2_mass,0,MsoB*sof);
-			memset(M_temp,0,neqlsq*sof);
+			memset(B_mass,0,MsoB_*sof);
+			memset(B2_mass,0,MsoB_*sof);
+			memset(M_temp,0,neqlsq_*sof);
 
 /* Assembly of the B matrix for mass */
 
 			check =
-			    shellB_mass((shg.bend+npell*(nsd+1)*num_intb*i4+npell*(nsd+1)*j+npell*(nsd)),
+			    shellB_mass((shg.bend+npell_*(nsd+1)*num_intb_*i4+npell_*(nsd+1)*j+npell_*(nsd)),
 			    znode, B_mass, rotate.f_shear);
 			if(!check) printf( "Problems with shellB_mass \n");
 
-			wXdet = *(w+num_intb*i4+j)*(*(det+num_intb*i4+j));
+			wXdet = *(w+num_intb_*i4+j)*(*(det+num_intb_*i4+j));
+			if(!flag_quad_element)
+				wXdet = 0.5*(*(w_tri+num_intb_*i4+j))*(*(det+num_intb_*i4+j));
 
 /* Calculate the Volume from determinant of the Jacobian */
 
@@ -205,7 +231,7 @@ are used.  This is necessary because standard row sum results in some componenet
 being negative.  The code below is optimized by eliminating all off diagonal
 multiplications of B_mass.
 */
-			    for( i2 = 0; i2 < npell; ++i2 )
+			    for( i2 = 0; i2 < npell_; ++i2 )
 			    {
 				*(M_temp+ndof*i2) =
 					*(B_mass + ndof*i2)*(*(B_mass + ndof*i2));
@@ -216,15 +242,15 @@ multiplications of B_mass.
 
 				*(M_temp+ndof*i2+3) =
 					*(B_mass+ndof*i2+3)*(*(B_mass+ndof*i2+3))+
-					*(B_mass+neqel*1+ndof*i2+3)*(*(B_mass+neqel*1+ndof*i2+3))+
-					*(B_mass+neqel*2+ndof*i2+3)*(*(B_mass+neqel*2+ndof*i2+3));
+					*(B_mass+neqel_*1+ndof*i2+3)*(*(B_mass+neqel_*1+ndof*i2+3))+
+					*(B_mass+neqel_*2+ndof*i2+3)*(*(B_mass+neqel_*2+ndof*i2+3));
 				*(M_temp+ndof*i2+4) =
 					*(B_mass+ndof*i2+4)*(*(B_mass+ndof*i2+4))+
-					*(B_mass+neqel*1+ndof*i2+4)*(*(B_mass+neqel*1+ndof*i2+4))+
-					*(B_mass+neqel*2+ndof*i2+4)*(*(B_mass+neqel*2+ndof*i2+4));
+					*(B_mass+neqel_*1+ndof*i2+4)*(*(B_mass+neqel_*1+ndof*i2+4))+
+					*(B_mass+neqel_*2+ndof*i2+4)*(*(B_mass+neqel_*2+ndof*i2+4));
 			    }
 
-			    for( i2 = 0; i2 < neqel; ++i2 )
+			    for( i2 = 0; i2 < neqel_; ++i2 )
 			    {
 				*(M_el + i2) += *(M_temp + i2)*fdum;
 			    }
@@ -234,12 +260,12 @@ multiplications of B_mass.
 
 			if(consistent_mass_flag)
 			{
-			    memcpy(B2_mass,B_mass,MsoB*sizeof(double));
+			    memcpy(B2_mass,B_mass,MsoB_*sizeof(double));
 
-			    check=matXT(M_temp, B_mass, B2_mass, neqel, neqel, nsd);
+			    check=matXT(M_temp, B_mass, B2_mass, neqel_, neqel_, nsd);
 			    if(!check) printf( "Problems with matXT \n");
 
-			    for( i2 = 0; i2 < neqlsq; ++i2 )
+			    for( i2 = 0; i2 < neqlsq_; ++i2 )
 			    {
 				*(M_el+i2) += *(M_temp+i2)*fdum;
 			    }
@@ -247,6 +273,17 @@ multiplications of B_mass.
 
 		   }
 		}
+
+                /*printf("\n %4d \n", k);
+                for( i2 = 0; i2 < neqel_; ++i2 )
+                {
+                        for( i4 = neqel_-5; i4 < neqel_; ++i4 )
+                        {
+                                printf(" %16.8e", *(M_el+i2));
+                        }
+                        printf("\n");
+                }*/
+
 
 		/* printf("This is 3 X Volume %10.6f for element %4d\n",3.0*volume_el,k);*/
 
@@ -260,7 +297,7 @@ multiplications of B_mass.
 		    mass_el_disp = 0.0;
 		    mass_el_rot = 0.0;
 		    thickness_ave = 0.0;
-		    for( j = 0; j < npell; ++j )
+		    for( j = 0; j < npell_; ++j )
 		    {   
 			mass_el_disp += *(M_el + ndof*j)+
 			    *(M_el + ndof*j + 1)+
@@ -275,14 +312,14 @@ multiplications of B_mass.
 			thickness_ave += fdum2;
 		    }
 
-		    Area_scale = volume_el/(thickness_ave*8.0*((double)npell));
+		    Area_scale = volume_el/(thickness_ave*8.0*((double)npell_));
 
 		    /* printf("This is Volume2 for element %4d %9.6f %9.6f\n\n",
 			k,mass_el_disp, mass_el_rot);*/
 
 		    fdum3 = 0.0;
 
-		    for( j = 0; j < npell; ++j )
+		    for( j = 0; j < npell_; ++j )
 		    {   
 			fdum = volume_mass_el/mass_el_disp;
 			fdum2 = volume_mass_el/mass_el_rot;
@@ -308,9 +345,9 @@ multiplications of B_mass.
 
 /* Storing all the element mass matrices */
 
-		    for( j = 0; j < neqlsq; ++j )
+		    for( j = 0; j < neqlsq_; ++j )
 		    {   
-			*(mass + neqlsq*k + j) = *(M_el + j);
+			*(mass + neqlsq_*k + j) = *(M_el + j);
 		    }
 		}
 	}

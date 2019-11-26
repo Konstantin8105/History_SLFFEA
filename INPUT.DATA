@@ -1,5 +1,5 @@
 
-                             SLFFEA 1.4 DATA 
+                             SLFFEA 1.5 DATA 
 
                     Copyright (C) 1999, 2000, 2001 San Le
 
@@ -70,7 +70,7 @@ Here are the few things which are not obvious:
     input file is needed only if you require pre-stressed elements, and the output is
     needed only if you require stress data on an element basis before nodal averaging. 
     To tell SLFFEA to read from the input file, turn on the "element stress read flag"
-    in the "brinput" file located in the data directory ~/slffea-1.4/data/br.  To create
+    in the "brinput" file located in the data directory ~/slffea-1.5/data/br.  To create
     the output file, turn on the "element stress print flag".  This is true for every
     element, all of which have their own "*input" file(more on this below).  The format
     of an input file looks like:

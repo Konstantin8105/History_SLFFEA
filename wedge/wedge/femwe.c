@@ -4,11 +4,11 @@
     then solving the linear system for a 6 node wedge
     element.
 
-	        Updated 11/2/09
+	        Updated 10/27/09
 
     SLFFEA source file
-    Version:  1.4
-    Copyright (C) 1999-2009  San Le 
+    Version:  1.5
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -733,6 +733,14 @@ int main(int argc, char** argv)
 
 	check = weVolume( connect, coord, Voln);
 	if(!check) printf( " Problems with weVolume \n");
+
+/*
+	printf("\nThis is the Volume\n");
+	for( i = 0; i < numel; ++i )
+	{
+		printf("%4i %12.4e\n",i, *(Voln + i));
+	}
+*/
 
 #if 0
 	printf("\nThis is the Volume for Brick comparison\n");

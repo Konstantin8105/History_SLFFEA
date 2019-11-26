@@ -6,11 +6,11 @@
     which allocates the memory and goes through the steps of the algorithm.
     These go with the calculation of displacement.
 
-	        Updated 10/20/06
+	        Updated 11/25/08
 
     SLFFEA source file
-    Version:  1.4
-    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
+    Version:  1.5
+    Copyright (C) 1999-2008  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -56,7 +56,7 @@ int trConjPassemble(double *A, int *connect, double *coord, int *el_matl,
 /* This function assembles the P_global_CG matrix for the displacement calculation by
    taking the product [K_el]*[U_el].  Some of the [K_el] is stored in [A].
 
-                        Updated 9/20/06
+                        Updated 11/25/08
 */
 	int i, i1, i2, j, k, dof_el[neqel], sdof_el[npel*nsd];
 	int check, node, dum;
@@ -70,9 +70,7 @@ int trConjPassemble(double *A, int *connect, double *coord, int *el_matl,
 	double U_el[neqel];
 	double coord_el[npel*nsd], coord_el_trans[npel*nsd],
 		coord_el_local[npel*nsd2], coord_el_local_trans[npel*nsd2];
-	double X1, X2, X3, Y1, Y2, Y3, Z1, Z2, Z3, X12, X13, Y12, Y13, Z12, Z13;
-	double Xp, Xr, Xq, Yp, Yr, Yq, Zp, Zr, Zq, Xpr, Xpq, Ypr, Ypq, Zpr, Zpq;
-	double Lpq, Ltr, Mpq, Mtr, Npq, Ntr, Dpq, Dpt, Dtr;
+	double X1, X2, X3, Y1, Y2, Y3;
 	double det[num_int];
 	double P_el[neqel];
 

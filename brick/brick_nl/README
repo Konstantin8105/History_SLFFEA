@@ -7,7 +7,7 @@
                     homepage:  http://www.geocities.com/Athens/2099/slffea.html
 
 
-In the slffea-1.0/data/br/ directory, there is the file brdynam.dat.  This is where
+In the slffea-1.0/data/br/ directory, there is the file "nbrinput".  This is where
 you enter in values for dt, cc, and iteration_max in that order.  I have a few
 examples prepared for the data files "ball", "rubber", "torsion" and "tensile" in
 this same directory.  The purpose of these variables is explained below.
@@ -20,14 +20,16 @@ The method of iteration I have chosen is called Updated Lagrange where the mesh
 is updated between time steps along with the internal stress which is updated
 using the Jaumann Stress Rate.  Once the internal stress times the B matrix added
 together for each element achieves equilibrium with the external forces, the
-calculation is finished.  This is expressed as:
+calculation may be considered finished.  This is expressed as:
 
           P_global = P_global + ( [B transpose] [stress] for each element)
 
           if P_global = force, stop iterations
 
 P_global is never exactly equal to the force so you will have to decide on the
-tolerance acceptable for your needs. 
+tolerance acceptable for your needs.  Note that because of the inexactness of
+the endpoint, this is NOT automated in the code which simply runs through
+the total number of iterations.
 
 The numerical integration method I have chosen is dynamic relaxation.  This
 involves formulating the problem as a pseudo dynamic 2nd order ordinary differential

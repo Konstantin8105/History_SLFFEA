@@ -14,7 +14,7 @@
 		Updated 9/26/01
 
     SLFFEA source file
-    Version:  1.4
+    Version:  1.5
     Copyright (C) 1999, 2000  San Le 
 
     The source code contained in this file is released under the
@@ -194,6 +194,7 @@ int brCassemble(double *A, int *connect, int *connect_film, double *coord, int *
    of the ANSYS manual.  Note that the ANSYS manual doesn't break down
    the heat as I have done.
 */
+
 			for( i2 = 0; i2 < Tneqel; ++i2 )
 			{
 			  *(Q_el+i2) +=
@@ -309,6 +310,7 @@ int brCassemble(double *A, int *connect, int *connect_film, double *coord, int *
 /* Compute the heat based on convection.  Look at the second term
    on the right hand side of equation 6.2-7 on page 6-6 of the ANSYS manual.
 */
+
 		   for( i2 = 0; i2 < TBneqel; ++i2 )
 		   {
 		       *(Q_el_film+i2) +=

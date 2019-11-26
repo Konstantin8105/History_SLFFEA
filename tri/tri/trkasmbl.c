@@ -5,7 +5,7 @@
 		Updated 10/20/06
 
     SLFFEA source file
-    Version:  1.4
+    Version:  1.5
     Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
 
     The source code contained in this file is released under the
@@ -64,9 +64,7 @@ int trKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
 	double force_el[neqel], U_el[neqel], U_el_local[npel*(ndof-1)];
 	double coord_el[npel*nsd], coord_el_trans[npel*nsd],
 		coord_el_local[npel*nsd2], coord_el_local_trans[npel*nsd2];
-	double X1, X2, X3, Y1, Y2, Y3, Z1, Z2, Z3, X12, X13, Y12, Y13, Z12, Z13;
-	double Xp, Xr, Xq, Yp, Yr, Yq, Zp, Zr, Zq, Xpr, Xpq, Ypr, Ypq, Zpr, Zpq;
-	double Lpq, Ltr, Mpq, Mtr, Npq, Ntr, Dpq, Dpt, Dtr;
+	double X1, X2, X3, Y1, Y2, Y3;
 	double stress_el[sdim], strain_el[sdim], xxaddyy, xxsubyy, xysq;
 	double det[1], wXdet;
 	double fdum;

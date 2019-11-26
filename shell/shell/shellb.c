@@ -6,8 +6,8 @@
      "The Finite Element Method" by Thomas Hughes, page 780.
 
      SLFFEA source file
-     Version:  1.4
-     Copyright (C) 1999, 2000, 2001, 2002  San Le
+     Version:  1.5
+     Copyright (C) 1999-2008  San Le
 
      The source code contained in this file is released under the
      terms of the GNU Library General Public License.
@@ -19,9 +19,11 @@
 #include <math.h>
 #include "shconst.h"
 
+extern int flag_quad_element;
+
 int dotX(double *, double *, double *, int );
 
-int shellB4pt(double *shg, double *shg_z, double *znode, double *B, 
+int shellBNpt(double *shg, double *shg_z, double *znode, double *B, 
 	double *rotate_l, double *rotate_f)
 {
 /*
@@ -29,12 +31,22 @@ int shellB4pt(double *shg, double *shg_z, double *znode, double *B,
        TWO-DIMENSIONAL CONTINUUM ELEMENTS
        FOR THE D MATRIX FOR 2X2 INTEGRATION IN LAMINA
 
-		Updated 5/12/99
+		Updated 10/5/08
 */
 	int i,i2,i2m1,i2m2,i2m3,i2m4,check;
 	double vec_dum[nsd],w1[ndof-3],w2[ndof-3],w3[ndof-3];
 	double dNdxl1,dNdxl2,dNdxl3,dNzdxl1,dNzdxl2,dNzdxl3;
-	for( i = 0; i < npell; ++i )
+	int npell_, neqel_;
+
+	npell_ = npell4;
+	neqel_ = neqel20;
+	if(!flag_quad_element)
+	{
+	    npell_ = npell3;
+	    neqel_ = neqel15;
+	}
+
+	for( i = 0; i < npell_; ++i )
 	{
 		i2      =ndof*i+4;
 		i2m1    =i2-1;
@@ -45,17 +57,17 @@ int shellB4pt(double *shg, double *shg_z, double *znode, double *B,
 /* calculate derivatives in local x,y,z */
 
 		*(vec_dum)   = *(shg+i);
-		*(vec_dum+1) = *(shg+npell*1+i);
-		*(vec_dum+2) = *(shg+npell*2+i);
+		*(vec_dum+1) = *(shg+npell_*1+i);
+		*(vec_dum+2) = *(shg+npell_*2+i);
 		check = dotX(&dNdxl1,rotate_l,vec_dum,nsd);
 		check = dotX(&dNdxl2,(rotate_l+nsd*1),vec_dum,nsd);
 		check = dotX(&dNdxl3,(rotate_l+nsd*2),vec_dum,nsd);
 		*(vec_dum)   = *(znode+i)*(*(shg+i))+
-			*(shg_z+i)*(*(shg+npell*3+i));
-		*(vec_dum+1) = *(znode+i)*(*(shg+npell*1+i))+
-			*(shg_z+npell*1+i)*(*(shg+npell*3+i));
-		*(vec_dum+2) = *(znode+i)*(*(shg+npell*2+i))+
-			*(shg_z+npell*2+i)*(*(shg+npell*3+i));
+			*(shg_z+i)*(*(shg+npell_*3+i));
+		*(vec_dum+1) = *(znode+i)*(*(shg+npell_*1+i))+
+			*(shg_z+npell_*1+i)*(*(shg+npell_*3+i));
+		*(vec_dum+2) = *(znode+i)*(*(shg+npell_*2+i))+
+			*(shg_z+npell_*2+i)*(*(shg+npell_*3+i));
 		check = dotX(&dNzdxl1,(rotate_l),vec_dum,nsd);
 		check = dotX(&dNzdxl2,(rotate_l+nsd*1),vec_dum,nsd);
 		check = dotX(&dNzdxl3,(rotate_l+nsd*2),vec_dum,nsd);
@@ -78,38 +90,38 @@ int shellB4pt(double *shg, double *shg_z, double *znode, double *B,
 		*(B+i2m1) = *(w1)*dNzdxl1;
 		*(B+i2)   = *(w1+1)*dNzdxl1;
 
-		*(B+neqel*1+i2m4) = *(rotate_l+nsd*1)*dNdxl2;
-		*(B+neqel*1+i2m3) = *(rotate_l+nsd*1+1)*dNdxl2;
-		*(B+neqel*1+i2m2) = *(rotate_l+nsd*1+2)*dNdxl2;
-		*(B+neqel*1+i2m1) = *(w2)*dNzdxl2;
-		*(B+neqel*1+i2)   = *(w2+1)*dNzdxl2; 
+		*(B+neqel_*1+i2m4) = *(rotate_l+nsd*1)*dNdxl2;
+		*(B+neqel_*1+i2m3) = *(rotate_l+nsd*1+1)*dNdxl2;
+		*(B+neqel_*1+i2m2) = *(rotate_l+nsd*1+2)*dNdxl2;
+		*(B+neqel_*1+i2m1) = *(w2)*dNzdxl2;
+		*(B+neqel_*1+i2)   = *(w2+1)*dNzdxl2; 
 
-		*(B+neqel*2+i2m4) = *(rotate_l)*dNdxl2+
+		*(B+neqel_*2+i2m4) = *(rotate_l)*dNdxl2+
 			*(rotate_l+nsd*1)*dNdxl1;
-		*(B+neqel*2+i2m3) = *(rotate_l+1)*dNdxl2+
+		*(B+neqel_*2+i2m3) = *(rotate_l+1)*dNdxl2+
 			*(rotate_l+nsd*1+1)*dNdxl1;
-		*(B+neqel*2+i2m2) = *(rotate_l+2)*dNdxl2+
+		*(B+neqel_*2+i2m2) = *(rotate_l+2)*dNdxl2+
 			*(rotate_l+nsd*1+2)*dNdxl1;
-		*(B+neqel*2+i2m1) = *(w1)*dNzdxl2+*(w2)*dNzdxl1;
-		*(B+neqel*2+i2)   = *(w1+1)*dNzdxl2+*(w2+1)*dNzdxl1; 
+		*(B+neqel_*2+i2m1) = *(w1)*dNzdxl2+*(w2)*dNzdxl1;
+		*(B+neqel_*2+i2)   = *(w1+1)*dNzdxl2+*(w2+1)*dNzdxl1; 
 
-		*(B+neqel*3+i2m4) = *(rotate_l+nsd*2)*dNdxl1+
+		*(B+neqel_*3+i2m4) = *(rotate_l+nsd*2)*dNdxl1+
 			*(rotate_l)*dNdxl3;
-		*(B+neqel*3+i2m3) = *(rotate_l+nsd*2+1)*dNdxl1+
+		*(B+neqel_*3+i2m3) = *(rotate_l+nsd*2+1)*dNdxl1+
 			*(rotate_l+1)*dNdxl3;
-		*(B+neqel*3+i2m2) = *(rotate_l+nsd*2+2)*dNdxl1+
+		*(B+neqel_*3+i2m2) = *(rotate_l+nsd*2+2)*dNdxl1+
 			*(rotate_l+2)*dNdxl3;
-		*(B+neqel*3+i2m1) = *(w3)*dNzdxl1+*(w1)*dNzdxl3;
-		*(B+neqel*3+i2)   = *(w3+1)*dNzdxl1+*(w1+1)*dNzdxl3; 
+		*(B+neqel_*3+i2m1) = *(w3)*dNzdxl1+*(w1)*dNzdxl3;
+		*(B+neqel_*3+i2)   = *(w3+1)*dNzdxl1+*(w1+1)*dNzdxl3; 
 
-		*(B+neqel*4+i2m4) = *(rotate_l+nsd*1)*dNdxl3+
+		*(B+neqel_*4+i2m4) = *(rotate_l+nsd*1)*dNdxl3+
 			*(rotate_l+nsd*2)*dNdxl2;
-		*(B+neqel*4+i2m3) = *(rotate_l+nsd*1+1)*dNdxl3+
+		*(B+neqel_*4+i2m3) = *(rotate_l+nsd*1+1)*dNdxl3+
 			*(rotate_l+nsd*2+1)*dNdxl2;
-		*(B+neqel*4+i2m2) = *(rotate_l+nsd*1+2)*dNdxl3+
+		*(B+neqel_*4+i2m2) = *(rotate_l+nsd*1+2)*dNdxl3+
 			*(rotate_l+nsd*2+2)*dNdxl2;
-		*(B+neqel*4+i2m1) = *(w2)*dNzdxl3+*(w3)*dNzdxl2;
-		*(B+neqel*4+i2)   = *(w2+1)*dNzdxl3+*(w3+1)*dNzdxl2;
+		*(B+neqel_*4+i2m1) = *(w2)*dNzdxl3+*(w3)*dNzdxl2;
+		*(B+neqel_*4+i2)   = *(w2+1)*dNzdxl3+*(w3+1)*dNzdxl2;
 	}
 	return 1;
 }
@@ -122,11 +134,21 @@ int shellB1ptM(double *shg, double *B, double *rotate_l, double *rotate_f)
        FOR THE D MATRIX FOR 1X1 POINT INTEGRATION OVER THE
        LAMINA FOR THE MEMBRANE SHEAR TERM
 
-		Updated 2/9/99
+		Updated 10/5/08
 */
 	int i,i2,i2m1,i2m2,i2m3,i2m4,check;
 	double vec_dum[nsd],dNdxl1,dNdxl2,dNdxl3;
-	for( i = 0; i < npell; ++i )
+	int npell_, neqel_;
+
+	npell_ = npell4;
+	neqel_ = neqel20;
+	if(!flag_quad_element)
+	{
+	    npell_ = npell3;
+	    neqel_ = neqel15;
+	}
+
+	for( i = 0; i < npell_; ++i )
 	{
 		i2      =ndof*i+4;
 		i2m1    =i2-1;
@@ -137,8 +159,8 @@ int shellB1ptM(double *shg, double *B, double *rotate_l, double *rotate_f)
 /* calculate derivatives in local x,y,z */
 
 		*(vec_dum)   = *(shg+i);
-		*(vec_dum+1) = *(shg+npell*1+i);
-		*(vec_dum+2) = *(shg+npell*2+i);
+		*(vec_dum+1) = *(shg+npell_*1+i);
+		*(vec_dum+2) = *(shg+npell_*2+i);
 		check = dotX(&dNdxl1,(rotate_l),vec_dum,nsd);
 		check = dotX(&dNdxl2,(rotate_l+nsd*1),vec_dum,nsd);
 		check = dotX(&dNdxl3,(rotate_l+nsd*2),vec_dum,nsd);
@@ -162,12 +184,22 @@ int shellB1ptT(double *shg, double *shg_z, double *znode, double *B, double *rot
        FOR THE D MATRIX FOR 1X1 POINT INTEGRATION OVER THE
        LAMINA FOR THE MEMBRANE SHEAR TERM
 
-		Updated 5/12/99
+		Updated 10/5/08
 */
 	int i,i2,i2m1,i2m2,i2m3,i2m4,check;
 	double vec_dum[nsd],w1[ndof-3],w2[ndof-3],w3[ndof-3];
 	double dNdxl1,dNdxl2,dNdxl3,dNzdxl1,dNzdxl2,dNzdxl3;
-	for( i = 0; i < npell; ++i )
+	int npell_, neqel_;
+
+	npell_ = npell4;
+	neqel_ = neqel20;
+	if(!flag_quad_element)
+	{
+	    npell_ = npell3;
+	    neqel_ = neqel15;
+	}
+
+	for( i = 0; i < npell_; ++i )
 	{
 		i2      =ndof*i+4;
 		i2m1    =i2-1;
@@ -178,17 +210,17 @@ int shellB1ptT(double *shg, double *shg_z, double *znode, double *B, double *rot
 /* calculate derivatives in local x,y,z */
 
 		*(vec_dum)   = *(shg+i);
-		*(vec_dum+1) = *(shg+npell*1+i);
-		*(vec_dum+2) = *(shg+npell*2+i);
+		*(vec_dum+1) = *(shg+npell_*1+i);
+		*(vec_dum+2) = *(shg+npell_*2+i);
 		check = dotX(&dNdxl1,rotate_l,vec_dum,nsd);
 		check = dotX(&dNdxl2,(rotate_l+nsd*1),vec_dum,nsd);
 		check = dotX(&dNdxl3,(rotate_l+nsd*2),vec_dum,nsd);
 		*(vec_dum)   = *(znode+i)*(*(shg+i))+
-			*(shg_z+i)*(*(shg+npell*3+i));
-		*(vec_dum+1) = *(znode+i)*(*(shg+npell*1+i))+
-			*(shg_z+npell*1+i)*(*(shg+npell*3+i));
-		*(vec_dum+2) = *(znode+i)*(*(shg+npell*2+i))+
-			*(shg_z+npell*2+i)*(*(shg+npell*3+i));
+			*(shg_z+i)*(*(shg+npell_*3+i));
+		*(vec_dum+1) = *(znode+i)*(*(shg+npell_*1+i))+
+			*(shg_z+npell_*1+i)*(*(shg+npell_*3+i));
+		*(vec_dum+2) = *(znode+i)*(*(shg+npell_*2+i))+
+			*(shg_z+npell_*2+i)*(*(shg+npell_*3+i));
 		check = dotX(&dNzdxl1,rotate_l,vec_dum,nsd);
 		check = dotX(&dNzdxl2,(rotate_l+nsd*1),vec_dum,nsd);
 		check = dotX(&dNzdxl3,(rotate_l+nsd*2),vec_dum,nsd);
@@ -205,23 +237,23 @@ int shellB1ptT(double *shg, double *shg_z, double *znode, double *B, double *rot
 		*(w3)*= -1;
 		check = dotX((w3+1),(rotate_l+nsd*2),(rotate_f+nsdsq*i),nsd);
 
-		*(B+neqel*0+i2m4) = *(rotate_l+nsd*2)*dNdxl1+
+		*(B+neqel_*0+i2m4) = *(rotate_l+nsd*2)*dNdxl1+
 			*(rotate_l)*dNdxl3;
-		*(B+neqel*0+i2m3) = *(rotate_l+nsd*2+1)*dNdxl1+
+		*(B+neqel_*0+i2m3) = *(rotate_l+nsd*2+1)*dNdxl1+
 			*(rotate_l+1)*dNdxl3;
-		*(B+neqel*0+i2m2) = *(rotate_l+nsd*2+2)*dNdxl1+
+		*(B+neqel_*0+i2m2) = *(rotate_l+nsd*2+2)*dNdxl1+
 			*(rotate_l+2)*dNdxl3;
-		*(B+neqel*0+i2m1) = *(w3)*dNzdxl1+*(w1)*dNzdxl3;
-		*(B+neqel*0+i2)   = *(w3+1)*dNzdxl1+*(w1+1)*dNzdxl3;
+		*(B+neqel_*0+i2m1) = *(w3)*dNzdxl1+*(w1)*dNzdxl3;
+		*(B+neqel_*0+i2)   = *(w3+1)*dNzdxl1+*(w1+1)*dNzdxl3;
 
-		*(B+neqel*1+i2m4) = *(rotate_l+nsd*1)*dNdxl3+
+		*(B+neqel_*1+i2m4) = *(rotate_l+nsd*1)*dNdxl3+
 			*(rotate_l+nsd*2)*dNdxl2;
-		*(B+neqel*1+i2m3) = *(rotate_l+nsd*1+1)*dNdxl3+
+		*(B+neqel_*1+i2m3) = *(rotate_l+nsd*1+1)*dNdxl3+
 			*(rotate_l+nsd*2+1)*dNdxl2;
-		*(B+neqel*1+i2m2) = *(rotate_l+nsd*1+2)*dNdxl3+
+		*(B+neqel_*1+i2m2) = *(rotate_l+nsd*1+2)*dNdxl3+
 			*(rotate_l+nsd*2+2)*dNdxl2;
-		*(B+neqel*1+i2m1) = *(w2)*dNzdxl3+*(w3)*dNzdxl2;
-		*(B+neqel*1+i2)   = *(w2+1)*dNzdxl3+*(w3+1)*dNzdxl2;
+		*(B+neqel_*1+i2m1) = *(w2)*dNzdxl3+*(w3)*dNzdxl2;
+		*(B+neqel_*1+i2)   = *(w2+1)*dNzdxl3+*(w3+1)*dNzdxl2;
 
 	}
 	return 1;
@@ -234,11 +266,21 @@ int shellB_mass(double *shg, double *znode, double *B, double *rotate_f)
      This library function assembles the B_mass matrix in
      [B_mass trans][B_mass] for shell elements.
 
-		Updated 9/5/00
+		Updated 10/5/08
 */
 	int i,i2,i2m1,i2m2,i2m3,i2m4;
 	double N,Nz;
-	for( i = 0; i < npell; ++i )
+	int npell_, neqel_;
+
+	npell_ = npell4;
+	neqel_ = neqel20;
+	if(!flag_quad_element)
+	{
+	    npell_ = npell3;
+	    neqel_ = neqel15;
+	}
+
+	for( i = 0; i < npell_; ++i )
 	{
 		i2      =ndof*i+4;
 		i2m1    =i2-1;
@@ -255,17 +297,17 @@ int shellB_mass(double *shg, double *znode, double *B, double *rotate_f)
 		*(B+i2m1) = - *(rotate_f+nsdsq*i+nsd*1)*Nz;
 		*(B+i2)   = *(rotate_f+nsdsq*i)*Nz;
 
-		*(B+neqel*1+i2m4) = 0.0;
-		*(B+neqel*1+i2m3) = N;
-		*(B+neqel*1+i2m2) = 0.0;
-		*(B+neqel*1+i2m1) = - *(rotate_f+nsdsq*i+nsd*1+1)*Nz;
-		*(B+neqel*1+i2)   = *(rotate_f+nsdsq*i+1)*Nz; 
+		*(B+neqel_*1+i2m4) = 0.0;
+		*(B+neqel_*1+i2m3) = N;
+		*(B+neqel_*1+i2m2) = 0.0;
+		*(B+neqel_*1+i2m1) = - *(rotate_f+nsdsq*i+nsd*1+1)*Nz;
+		*(B+neqel_*1+i2)   = *(rotate_f+nsdsq*i+1)*Nz; 
 
-		*(B+neqel*2+i2m4) = 0.0;
-		*(B+neqel*2+i2m3) = 0.0;
-		*(B+neqel*2+i2m2) = N;
-		*(B+neqel*2+i2m1) = - *(rotate_f+nsdsq*i+nsd*1+2)*Nz;
-		*(B+neqel*2+i2)   = *(rotate_f+nsdsq*i+2)*Nz; 
+		*(B+neqel_*2+i2m4) = 0.0;
+		*(B+neqel_*2+i2m3) = 0.0;
+		*(B+neqel_*2+i2m2) = N;
+		*(B+neqel_*2+i2m1) = - *(rotate_f+nsdsq*i+nsd*1+2)*Nz;
+		*(B+neqel_*2+i2)   = *(rotate_f+nsdsq*i+2)*Nz; 
 	}
 	return 1;
 }

@@ -6,7 +6,7 @@
 	        Updated 11/4/09
 
     SLFFEA source file
-    Version:  1.4
+    Version:  1.5
     Copyright (C) 1999-2009  San Le 
 
     The source code contained in this file is released under the
@@ -177,8 +177,6 @@ int main(int argc, char** argv)
 
 	check = trshl( 0, shltr_node, wtr );
 	if(!check) printf( " Problems with trshl \n");
-
-	printf("%d %d %d\n", npel, neqlsq576, nsd);
 
 	memset(name,0,30*sizeof(char));
 	

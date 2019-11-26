@@ -1,6 +1,6 @@
 # SLFFEA Makefile
-# Version:  1.4
-# Copyright (C) 1999, 2000, 2001, 2002  San Le (slffea@yahoo.com)
+# Version:  1.5
+# Copyright (C) 1999-2008  San Le (slffea@yahoo.com)
 # http://slffea.sourceforge.net/
 #
 # This library is free software; you can redistribute it and/or
@@ -40,12 +40,16 @@ everything:
 	cd brick/brick_nl ;  make 
 	cd plate/plate ; make 
 	cd quad/quad ;  make
+	cd quad/quad_nl ;  make
 	cd shell/shell ; make
 	cd truss/truss ;  make 
 	cd truss/truss_nl ;  make 
 	cd tetra/tetra ;  make 
+	cd tetra/tetra_nl ;  make 
 	cd tri/tri ;  make 
+	cd tri/tri_nl ;  make 
 	cd wedge/wedge ;  make 
+	cd wedge/wedge_nl ;  make 
 #	cd truss/fortran ;  make
 #	cd truss/geotruss ;  make
 	cd common_gr ;  make
@@ -70,12 +74,16 @@ science:
 	cd brick/brick_nl ;  make 
 	cd plate/plate ; make 
 	cd quad/quad ;  make
+	cd quad/quad_nl ;  make
 	cd shell/shell ; make
 	cd truss/truss ;  make 
 	cd truss/truss_nl ;  make 
 	cd tetra/tetra ;  make 
+	cd tetra/tetra_nl ;  make 
 	cd tri/tri ;  make 
+	cd tri/tri_nl ;  make 
 	cd wedge/wedge ;  make 
+	cd wedge/wedge_nl ;  make 
 
 # This makes the graphics FEM executables only, but
 # the science must have been made already.
@@ -101,12 +109,16 @@ clean:
 	cd brick/brick_nl ;  make clean
 	cd plate/plate ; make clean
 	cd quad/quad ;  make clean
+	cd quad/quad_nl ;  make clean
 	cd shell/shell ; make clean
 	cd truss/truss ;  make clean
 	cd truss/truss_nl ;  make clean
 	cd tetra/tetra ;  make clean
+	cd tetra/tetra_nl ;  make clean
 	cd tri/tri ;  make clean
+	cd tri/tri_nl ;  make clean
 	cd wedge/wedge ;  make clean
+	cd wedge/wedge_nl ;  make clean
 #	cd truss/fortran ;  make clean
 #	cd truss/geotruss ;  make clean
 	cd common_gr ;  make clean
@@ -132,12 +144,16 @@ clean_science:
 	cd brick/brick_nl ; make clean
 	cd plate/plate ; make clean
 	cd quad/quad ; make clean
+	cd quad/quad_nl ; make clean
 	cd shell/shell ; make clean
 	cd truss/truss ; make clean
 	cd truss/truss_nl ; make clean
 	cd tetra/tetra ; make clean
+	cd tetra/tetra_nl ; make clean
 	cd tri/tri ; make clean
+	cd tri/tri_nl ; make clean
 	cd wedge/wedge ; make clean
+	cd wedge/wedge_nl ; make clean
 
 clean_gui:
 	cd common_gr ; make clean

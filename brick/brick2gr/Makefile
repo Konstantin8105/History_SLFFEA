@@ -1,5 +1,5 @@
 # SLFFEA Makefile
-# Version:  1.1
+# Version:  1.5
 # Copyright (C) 1999, 2000  San Le (slffea@yahoo.com)
 # http://slffea.com/
 #
@@ -26,7 +26,7 @@ LIB1 = -I/usr/local/include -O2 -funroll-loops -ansi -pedantic \
 LIB2 = -L/usr/local/lib -lglut -lGLU -lGL -lm -L/usr/X11/lib \
 	-L/usr/X11R6/lib -lX11 -lXext -lXmu -lXt -lXi -lSM -lICE
 
-OBJECTS_BR = ../brick2/brmemory.o ../brick2/br2reader.o 
+OBJECTS_BR = ../brick2/memory.o ../brick2/br2reader.o 
 
 OBJECTS_BRG = ../brick_gr/brnorm_vec.o 
 
@@ -39,11 +39,14 @@ COMMON_GR = ../../common_gr
 OBJECTS_GR = $(COMMON_GR)/pwinston.o $(COMMON_GR)/axes.o \
 	$(COMMON_GR)/mshcommon.o $(COMMON_GR)/crtlcommon.o \
 	$(COMMON_GR)/printext.o $(COMMON_GR)/screenshot.o \
-	$(COMMON_GR)/filecheck.o 
+	$(COMMON_GR)/filecheck.o $(COMMON_GR)/pointlocate.o \
+	$(COMMON_GR)/axeslabel.o $(COMMON_GR)/quat.o \
+	$(COMMON_GR)/crossplane.o 
+
 
 OBJECTS_GRH = $(COMMON_GR)/color_gr.h $(COMMON_GR)/control.h 
 
-OBJECTS2 = $(COMMON)/crossx.o 
+OBJECTS2 = $(COMMON)/crossx.o $(COMMON)/matx.o 
 
 PROGS = br2post 
 
@@ -51,86 +54,86 @@ CC = /usr/bin/gcc
 LIBS = -lm
 
 br2post: br2post.o \
-		brmemgr.o \
-		brreadgr.o \
-		brreadgr2.o \
-		br2param.o \
-		br2param2.o \
-		br2set.o \
-		brbc_vec.o \
-		brmshdsp.o \
+		memgr.o \
+		readgr.o \
+		con_surf_read.o \
+		param.o \
+		regetparam.o \
+		set.o \
+		bc_vec.o \
+		mshdsp.o \
 		brmesh.o \
-		br2mshkey.o \
-		br2menu.o \
+		mshkey.o \
+		menu.o \
 		br2getnew.o \
-		brcrtldsp.o \
-		br2crtlmse.o \
+		crtldsp.o \
+		crtlmse.o \
 		brrender.o \
 		$(OBJECTS_BRH) \
 		$(OBJECTS_GRH) \
 		br2gui.h 
 	$(CC) -o br2post $(LIB1) br2post.o \
-		brmemgr.o \
-		brreadgr.o \
-		brreadgr2.o \
-		br2param.o \
-		br2param2.o \
-		br2set.o \
-		brbc_vec.o \
-		brmshdsp.o \
+		memgr.o \
+		readgr.o \
+		con_surf_read.o \
+		param.o \
+		regetparam.o \
+		set.o \
+		bc_vec.o \
+		mshdsp.o \
 		brmesh.o \
-		br2mshkey.o \
-		br2menu.o \
+		mshkey.o \
+		menu.o \
 		br2getnew.o \
-		brcrtldsp.o \
-		br2crtlmse.o \
+		crtldsp.o \
+		crtlmse.o \
 		brrender.o \
 		$(OBJECTS_BR) $(OBJECTS_BRG) $(OBJECTS_GR) $(OBJECTS2) $(LIB2) 
 
 brrender.o: ../brick_gr/brrender.c 
 	$(CC) -c ../brick_gr/brrender.c -DBRICK2
 
-br2crtlmse.o: br2crtlmse.c 
-	$(CC) -c br2crtlmse.c 
+crtlmse.o: $(COMMON_GR)/crtlmse.c 
+	$(CC) -c $(COMMON_GR)/crtlmse.c -DBRICK2
 
-brcrtldsp.o: ../brick_gr/brcrtldsp.c 
-	$(CC) -c ../brick_gr/brcrtldsp.c -DBRICK2
+crtldsp.o: $(COMMON_GR)/crtldsp.c 
+	$(CC) -c $(COMMON_GR)/crtldsp.c -DBRICK2
 
 br2getnew.o: br2getnew.c 
 	$(CC) -c br2getnew.c 
 
-br2menu.o: br2menu.c 
-	$(CC) -c br2menu.c 
+menu.o: $(COMMON_GR)/menu.c 
+	$(CC) -c $(COMMON_GR)/menu.c -DBRICK2
 
-br2mshkey.o: br2mshkey.c 
-	$(CC) -c br2mshkey.c 
+mshkey.o: $(COMMON_GR)/mshkey.c 
+	$(CC) -c $(COMMON_GR)/mshkey.c -DBRICK2
 
 brmesh.o: ../brick_gr/brmesh.c 
 	$(CC) -c ../brick_gr/brmesh.c -DBRICK2
 
-brmshdsp.o: ../brick_gr/brmshdsp.c 
-	$(CC) -c ../brick_gr/brmshdsp.c -DBRICK2
+mshdsp.o: $(COMMON_GR)/mshdsp.c 
+	$(CC) -c $(COMMON_GR)/mshdsp.c -DBRICK2
 
-brbc_vec.o: ../brick_gr/brbc_vec.c 
-	$(CC) -c ../brick_gr/brbc_vec.c -DBRICK2
+bc_vec.o: $(COMMON_GR)/bc_vec.c 
+	$(CC) -c $(COMMON_GR)/bc_vec.c -DBRICK2
 
-br2set.o: br2set.c 
-	$(CC) -c br2set.c 
+set.o: $(COMMON_GR)/set.c
+	$(CC) -c $(COMMON_GR)/set.c -DBRICK2
 
-br2param2.o: br2param2.c 
-	$(CC) -c br2param2.c 
+regetparam.o: $(COMMON_GR)/regetparam.c
+	$(CC) -c $(COMMON_GR)/regetparam.c -DBRICK2
 
-br2param.o: br2param.c 
-	$(CC) -c br2param.c 
+param.o: $(COMMON_GR)/param.c
+	$(CC) -c $(COMMON_GR)/param.c -DBRICK2
 
-brreadgr2.o: ../brick_gr/brreadgr2.c 
-	$(CC) -c ../brick_gr/brreadgr2.c -DBRICK2
+con_surf_read.o: $(COMMON_GR)/con_surf_read.c 
+	$(CC) -c $(COMMON_GR)/con_surf_read.c -DBRICK2
 
-brreadgr.o: ../brick_gr/brreadgr.c 
-	$(CC) -c ../brick_gr/brreadgr.c -DBRICK2
+readgr.o: $(COMMON_GR)/readgr.c 
+	$(CC) -c $(COMMON_GR)/readgr.c -DBRICK2
 
-brmemgr.o: ../brick_gr/brmemgr.c 
-	$(CC) -c ../brick_gr/brmemgr.c -DBRICK2
+memgr.o: $(COMMON_GR)/memgr.c 
+	$(CC) -c $(COMMON_GR)/memgr.c -DBRICK2
 
 br2post.o: br2post.c 
 	$(CC) -c br2post.c
