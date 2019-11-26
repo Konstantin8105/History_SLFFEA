@@ -1,0 +1,123 @@
+
+                             SLFFEA 1.1 Brick 2 README
+
+                    Copyright (C) 1999 San Le
+
+                    email:     slffea@juno.com
+                    homepage:  http://www.geocities.com/Athens/2099/slffea.html
+
+
+This directory contains the second linear brick code I have written.
+It can handle thermal loads as well as orthotropy.  The data for it is
+in the directory slffea-1.0/data/br2/.  It has a lot of features not
+present in the other codes but they will be incorporated eventually.
+
+Here are some of the additional features of the thermal brick:
+
+1)Can prescribe heat generation loads at nodes(through the quantity
+  heat_node) as well as distributed evenly over the entire
+  element(through the quantity heat_el) 
+
+2)Can prescribe equivalent heat Q which is analogous to nodal
+  force
+
+3)Can prescribe convection surfaces along with the film coefficient
+
+4)The above will create a temperature distribution over the body
+  which will effect the material according to its thermal expansion
+  properties.
+
+5)Almost all of the material properties can be prescribed according to
+  the global coordinate system direction, so the material can have
+  orthotropic behavior.
+
+6)This brick can also behave as the standard linear brick found in
+  ~/slffea-1.1/brick/brick/ by excluding the thermal loading and
+  using the same quantities for all directions.  I have included the
+  meshes "ball" and "rubber" which are basically the same problems found
+  in ~/slffea-1.1/data/br/ except that their data is specified for
+  this new brick.
+
+7)There are 2 elements in this directory which are examples of a fin
+  mesh where heat is dissipated by convection from fin surfaces, fin2
+  and fin4.  I had hoped fin4 would illustrate the advantage of
+  the Conjugate Gradient Method over LU decomposition in terms of
+  speed for meshes having more than 750 nodes, but unfortunately,
+  the global stiffness of this mesh may have a bad condition
+  ratio, i.e. (largest eigenvalue)/(smallest eigenvalue) = very big
+  (See Golub, Gene H., Matrix Computations, page 521)
+  I think that meshes which have a big area/volume ratio are
+  ill-conditioned in general since I had debugged the problem on
+  a bulky solid mesh, and Conjugate Gradient greatly out-performed
+  LU decomposition(See below).  Unfortunately, due to circumstances
+  beyond my control, I am unable to include these meshes.
+
+	7a) There is a mesh generator for these fin meshes called
+            meshfin.c located in ~/slffea-1.1/brick/brick2.
+        7b) There also is a file called fin.in which contains
+            the parameters needed by the meshfin.c to create a
+            particular fin mesh.
+	7c) meshfin.c generates a file called fins or fins.th
+            depending on whether you want a brick mesh or a
+            brick 2 mesh respectively.
+
+This brick also has many features which will be incorporated into
+the other elements:
+
+1)For very large problems, the Conjugate Gradient method is used.
+  Because it is an iterative method, the storage requirements
+  go down by a significant amount.  With 64MB, you could probably
+  only solve a 2000 node brick problem(6000 DOF) using LU decomp.. 
+  But with the Conjugate Gradient Method, it should be possible to solve
+  an 80,000 node, 240,000 DOF, brick problem (It should be noted that
+  for an 80,000 node brick mesh, it would be advisable to have more
+  than 64MB of RAM.  I make optimizations which greatly speed up
+  the calculation, but they do require memory).  Conj. Grad. also has
+  the advantage that it is faster than LU decomposition with skyline.
+  For example, it took 30 minutes on a 350 MHz Pentium II for a 5,000 node
+  brick problem using LU decomposition, but only 4 minutes on a 233 MHz
+  Pentium II for this same problem using the Conjugate Gradient solver.
+  And the RAM usage was only 26 MB, whereas the skyline took 190 MB.
+  
+2)Stresses and strains are extrapolated to the nodes and then averaged
+  over the nodes.  Stress and strain data are the largest part of the
+  output results file.  I had to make this change when the problems I
+  was solving had results that were 10MB in size.  The only way to
+  cut it down was to store stresses and strains only at the nodes.
+
+3)There is a file called "brinput" which allows you to control some
+  parameters such as the amount of RAM you have on your machine,
+  the error tolerance, and whether you want to print the stresses/strains
+  at node points per element before averaging into a file *.str.obr.
+  You also can have pre-stress elements by setting the "Gauss point
+  stress read flag" to 1.
+
+4)A file called *.con is generated which contain only the surface
+  elements of the mesh.  "br2post" uses this file to speed up the
+  graphics by excluding the drawing of internal elements.  Without
+  this file, all elements whether external or internal will be
+  drawn.
+ 
+
+This element was debugged against ANSYS.  The results for displacement
+and temperature compared favorably, but the stress and stain data were
+sometimes very different.  I have made a critical examination of the
+discrepancies and feel that the problem exist in ANSYS, but i cannot
+be sure.  It's too bad they don't open up their sources.  But I did
+use their technical documentation to implement this element, and I
+congratulate them on writing some of the best I have ever seen.
+
+
+This README is contained both in ~/slffea-1.1/brick/brick2
+and ~/slffea-1.1/data/br2.
+
+                             References
+                             ----------
+
+Golub, Gene H., Matrix Computations, 3rd. Ed., The John Hopkins University
+        Press, Baltimore, 1996.
+
+Kohneke, Peter, *ANSYS User's Manual for Revision 5.0, Vol IV Theory, Swanson
+        Analysis Systems Inc., 1992.
+
+* ANSYS is a registered trademark of Swanson Analysis Systems, Inc.

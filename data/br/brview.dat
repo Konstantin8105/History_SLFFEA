@@ -1,0 +1,36 @@
+                            node
+                          min  max       min            max
+displacement Ux           42    43    -6.813977e-04   6.813965e-04
+displacement Uy           67    66    -5.846316e-04   5.846312e-04
+displacement Uz           42    66    -5.705613e-03   6.339061e-03
+
+                            node
+                        min       max         min           max
+stress xx               27        58    -7.304113e+01   7.304070e+01
+stress yy               81         0    -1.665836e+02   1.665832e+02
+stress zz               81         0    -6.123178e+01   6.123163e+01
+stress xy                4        76    -2.772904e+01   2.772888e+01
+stress zx               28        68    -2.861100e+01   1.908146e+01
+stress yz               81         0    -1.687013e+02   1.687011e+02
+stress I                81         0    -2.919997e+02   2.919993e+02
+stress II               80         1    -6.459321e+01   6.459285e+01
+stress III              81        80    -6.060946e+01   6.060930e+01
+
+strain xx               28        29    -7.993576e-05   7.993533e-05
+strain yy               81         0    -1.337967e-04   1.337964e-04
+strain zz               30        72    -5.149269e-10   4.500835e-10
+strain xy                4        76    -7.043176e-05   7.043135e-05
+strain zx               28        68    -7.267194e-05   4.846691e-05
+strain yz               81         0    -4.285012e-04   4.285009e-04
+strain I                81         0    -5.041120e-04   5.041115e-04
+strain II               80        81    -3.713173e-04   3.713170e-04
+strain III               7        78    -4.350641e-05   4.350576e-05
+
+Orthographic viewport parameters(right, left, top, bootom, near, far)
+   6.016652e+00  -6.016749e+00   6.016701e+00  -6.016701e+00   7.569729e-01   1.000000e+03
+Perspective viewport parameters( mesh width and height)
+    320    320
+Step sizes in x, y, z
+   5.016409e-01   5.016701e-01   6.015214e-01
+Amplification size
+   4.732562e+01

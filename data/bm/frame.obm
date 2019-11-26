@@ -1,0 +1,78 @@
+   numel numnp nmat nmode  (This is for a beam                          frame) 
+        3    4    1    0 
+ matl no., E mod, Poiss. Ratio, density, Area, Iy, Iz 
+     0   30000000.0000    0.0000 2320.0000    2.0000    1.0000    1.0000
+el no., connectivity, matl no, element type
+     0      0      1      0     2
+     1      0      2      0     2
+     2      0      3      0     2
+node no., coordinates 
+   0       0.004142      -0.015855       0.000000
+   1       0.000000     120.000000       0.000000
+   2     120.000000     120.000000       0.000000
+   3     120.000000       0.000000       0.000000
+element with specified local z axis: x, y, z component 
+   0     0.000000    -0.000000     1.000000
+   1     0.000000    -0.000000     1.000000
+   2     0.000000     0.000000     1.000000
+ -10 
+prescribed displacement x: node  disp value 
+   0   4.142155e-03
+   1   0.000000e+00
+   2   0.000000e+00
+   3   0.000000e+00
+ -10 
+prescribed displacement y: node  disp value 
+   0  -1.585503e-02
+   1   0.000000e+00
+   2   0.000000e+00
+   3   0.000000e+00
+ -10 
+prescribed displacement z: node  disp value 
+   0   0.000000e+00
+   1   0.000000e+00
+   2   0.000000e+00
+   3   0.000000e+00
+ -10 
+prescribed angle phi x: node angle value 
+   0   0.000000e+00
+   1   0.000000e+00
+   2   0.000000e+00
+   3   0.000000e+00
+ -10 
+prescribed angle phi y: node angle value 
+   0   0.000000e+00
+   1   0.000000e+00
+   2   0.000000e+00
+   3   0.000000e+00
+ -10 
+prescribed angle phi z: node angle value 
+   0   1.249824e-04
+   1   0.000000e+00
+   2   0.000000e+00
+   3   0.000000e+00
+ -10 
+node with point load x, y, z and 3 moments phi x, phi y, phi z 
+   0  -4.547474e-13   -1.000000e+04    0.000000e+00    0.000000e+00    0.000000e+00    8.526513e-14 
+   1   6.993307e-01    7.927513e+03    0.000000e+00    0.000000e+00    0.000000e+00    1.071425e+01 
+   2   2.070378e+03    2.070747e+03    0.000000e+00    0.000000e+00    0.000000e+00   -4.418794e+01 
+   3  -2.071078e+03    1.740851e+00    0.000000e+00    0.000000e+00    0.000000e+00   -1.356966e+02 
+ -10
+element with distributed load in local beam y and z coordinates 
+ -10
+element no. and nodal pt. no. with local stress vector xx and moment xx,yy,zz
+   0    0    3.963756e+03   0.000000e+00   0.000000e+00  -7.320544e+01 
+   0    1    3.963756e+03   0.000000e+00   0.000000e+00   1.071425e+01 
+   1    0    1.464109e+03   0.000000e+00   0.000000e+00   1.099876e-08 
+   1    1    1.464109e+03   0.000000e+00   0.000000e+00  -4.418794e+01 
+   2    0   -1.035539e+03   0.000000e+00   0.000000e+00   7.320544e+01 
+   2    1   -1.035539e+03   0.000000e+00   0.000000e+00  -1.356966e+02 
+ -10 
+element no. and nodal pt. no. with local strain vector xx and curvature xx,yy,zz
+   0    0    1.321252e-04   0.000000e+00   0.000000e+00  -2.440181e-06 
+   0    1    1.321252e-04   0.000000e+00   0.000000e+00   3.571416e-07 
+   1    0    4.880362e-05   0.000000e+00   0.000000e+00   3.666253e-16 
+   1    1    4.880362e-05   0.000000e+00   0.000000e+00  -1.472931e-06 
+   2    0   -3.451796e-05   0.000000e+00   0.000000e+00   2.440181e-06 
+   2    1   -3.451796e-05   0.000000e+00   0.000000e+00  -4.523221e-06 
+ -10 

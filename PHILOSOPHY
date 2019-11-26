@@ -1,0 +1,66 @@
+
+                             SLFFEA 1.1
+
+                    Copyright (C) 1999 San Le
+
+                    email:     slffea@yahoo.com
+                    homepage:  http://slffea.sourceforge.net/
+
+
+                             Philosophy
+                             ----------
+
+Having written several FEA codes, including both the scientific and graphics
+parts, and worked with and taught a class using a large commercial code,
+there were several things I wanted to accomplish when designing SLFFEA:
+
+1) Write it so that other engineers and scientists could develop, modify,
+   and learn from it.  Also provide users as much information and development
+   tools as possible.
+
+2) Optimize it for speed, efficiency, memory requirement, and robustness
+    except where such optimization would conflict with the first law.
+
+3) Come up with an FEA software paradigm which will easily accommodate
+   every type of element, especially non-linear large deformation elements.
+
+  3a) A paradigm for structures which group like variables, but isn't so
+      bloated that it passes quantities which aren't needed to a subroutine. 
+
+  3b) A paradigm for variable names, file names, and array storage which
+      would enable a user's understanding of one element code to transfer
+      to another.
+
+  3c) A paradigm for subroutines and program structure which would enable
+      a user's understanding of one element code to transfer to another.
+
+  3d) Use the word "paradigm" in a way which is appropriate to the sentence
+      and not just as a meaningless buzz word.
+
+4) Come up with a data file format which would minimize the amount of data
+   needed for analyses and graphics.
+
+  4a) This format would be such that input and output data were almost identical
+      so that the post-processor could also act as the pre-processor.
+
+  4b) Have no redundant data.  Scientific and graphics data would be the
+      same.
+
+5) Write a GUI which could be used for both scientific visualization of the
+   mathematical data as well as for examining an input mesh before analysis
+   was done.
+
+6) Build everything on GNU software development tools so that SLFFEA itself
+   will have maximum freedom in terms of acquiring it and sharing it.
+
+7) Follow the Unix Philosophy of having several different commands do one
+   individual task rather than one giant program which handles several tasks. 
+   This means that there is one scientific executable for each element and one
+   GUI for each element.  The code is then not weighted down by what to the
+   user may be superfluous features and will probably run much faster than the
+   large commercial codes.
+
+ 7a) Break up SLFFEA into individual modules so that understanding the code and
+     modifying it only has to be done for one element.
+
+8) Take advantage of C's dynamic memory allocation.

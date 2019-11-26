@@ -1,0 +1,50 @@
+3 X Volume will not equal the value of lumped summed mass if I
+set rho = 1.0 because the terms in lumped sum( although based on the [B] matrix
+which results from interpolating Ux, Uy, Uz) have rotation terms which when lumped
+with the translation in x, y, z, do not produce 3 X Volume.  What I can do is 
+comment out the rows of the [B] matrix which correspond to Nz, which will
+result in only summing over translation x,y,z.
+
+You can compare the Volumes of the input file "quad" with the Area
+of the input file "qdinc" in the qd data directory.  Remember that
+I print out 3 X Volume for "quad", and 2 X Area for "qdinc".
+
+----------------------------------------------------------------
+
+I tried examing the eigenvalues of the mass matrix of the plate to
+see if it is truely positive definite.  The program eigen indicated
+that this was true, but the programs lanczos produced some negative
+eigenvalues.  I think the eigen program is correct since it is set
+up to solve for only the lowest and highest eigenvalues using the power
+method and inverse iteration.  Lanczos does pick up the lowest, but
+unfortunately, it captures some negative values as well.  Interestingly,
+I tried seeing what the lanczos implementation being used in the FEM programs
+will produce, but the skyline routines of both Benson and Hughes fail to
+do a proper decomposition of the A matrix.  Actually, both codes
+are the same and produce the same decompositions, but you have to get
+rid of line 130 in "sky_hughes.c" which is "if(a[ii] != 0.)".  This
+line prevents division by zero in by a[ii].   The program lanczos.c and
+eigen.c use a different LU decomposition routine, which doesn't involve
+skyline, so this may be why they remain stable.  The reason lanczos
+fails is probably due to the smallness of the lowest eigenvalue:
+
+    3.12154509e-11
+
+The largest is:
+
+    6.45643014e+02 
+
+making the condition ratio very big.  I did some experiements with
+diagonal matrices(the diagonals are the eigenvalues) and this fact
+bore itself out. 
+
+You can look at the resulting T matrix and see that the off diagonals
+have not converged to zero, but remain their particular value
+even if more iterations are used in qr.c.  There doesn't seem 
+anthing I can do about it except find a new way of finding the
+eigenvalues of tridiagonal T.
+
+
+
+
+

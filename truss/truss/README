@@ -1,0 +1,49 @@
+
+                             SLFFEA 1.1 Truss README
+
+                    Copyright (C) 1999 San Le
+
+                    email:     slffea@juno.com
+                    homepage:  http://www.geocities.com/Athens/2099/slffea.html
+
+
+Like the beam, the patch test is done for a mesh consisting of 2 elements(3 nodes
+total) co-linear in space(they both lie on one line).
+
+The best way to determine whether a member is in tension or compression is to
+look at the stresses in the *.str.ots files.  If the value of the stress is
+positive, then the member is in tension.
+
+Modal(Eigenvalue) analysis
+
+Unlike the stiffness matrix which is formulated from the axial displacement
+of the beam, the mass matrix is derived using all three spatial directions
+"u", "v", and "w".   Because this integration is also done along the
+length of the truss, we must rotate it to global coordinates.
+
+I do not do nodal averaging of stresses and strains because these quantities
+are highly localized per element.  For instance a truss node which looks
+like:
+
+       y ^
+         |  
+         |  
+         |-----> x
+
+       node 1
+
+            element 1
+         _______________  ---->disp. x
+         |\  
+         | \
+         |  \
+         |   \ element 3
+         |    \
+         |     \
+         |
+         | element 2
+         |
+         |
+
+for a displacement in the x direction, element 1 and 3 will experience
+tensile stress while element 2 will have no load.

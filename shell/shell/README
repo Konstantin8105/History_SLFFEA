@@ -1,0 +1,123 @@
+
+                             SLFFEA 1.1 Shell README
+
+                    Copyright (C) 1999 San Le
+
+                    email:     slffea@juno.com
+                    homepage:  http://www.geocities.com/Athens/2099/slffea.html
+
+
+Of all the elements, this is the one I am most unsure with in terms of accuracy.
+While the results compare well to the benchmark plate problem, when I try doing
+the roof problem as given in:
+
+Zienkiewicz, O. C., R. L. Taylor, and J. M. Too, Analysis of Thick and Thin Shell
+        Structures by Curved Finite Elements, International Journal for Numerical
+        Methods in Engineering, 3 (1971), 275-290.
+
+my results are somewhat unsatisfactory.  The problem involves a roof deforming
+under its own weight.  Because the weight is given per unit
+surface area, a best guess had to be made for how it would translate into nodal
+forces.  The results I got were that the element's vertical displacement on center
+nodes, although qualitatively correct, are about half as much as Zienkiewicz's
+results when 16 elements define the mesh.   Even when the number of elements was
+increased to 64, there was no significant difference in the calculated deflection
+of the center.  The cause of the inaccuracy may be from an incorrect reduction of
+the distributed weight to equivalent nodal forces, or that the element is exhibiting
+overly stiff behavior.  It is important to note that Zienkiewicz used parabolic and
+cubic elements which will probably give better results. 
+
+Shell elements are definitely the hardest to implement, even harder than the
+non-linear brick.  I have also heard that there has been changes in the theory
+from the 1987 version given by Hughes in [7] which I have used.  So you may
+want to do some benchmark test for yourself to determine whether it meets
+your standards of accuracy.  My main issue with the theory as given in Hughes
+is that the local axes are treated as constants.  For instance, in equation
+6.2.45 on page 393, the partial derivatives are taken only over the shape 
+functions Na and za, but not q and e(the local axes of the lamina and fiber
+respectively) which are treated as constants.  This may have been done to
+simplify the resulting equations as well as maintain the 2X2 Gauss integration
+rule, but it does seem incorrect that these local axes aren't being interpolated
+between nodes like other quantities.  If there is someone who wants to discuss
+this more, just email me.  I'm currently too lazy to implement a more correct
+version of the element by making the local axes a function of x,y,z.
+
+Also you should note that stresses and strains are given relative to the
+local lamina coordinate system.  The significance of this comes across
+in the input file "quad" which is the same as the "qdinc" problem for the
+quadrilateral elements.  Note that Stress and Strain YY for this shell element
+seem to be switched with that of Stress and Strain XX, in terms of the solution
+using quadrilateral elements.  I suspect this is due to a switch of axes
+which occurs in the lamina coordinate system when the calculations are made.
+After a careful examination of the rotation matrices, I see that for element
+66, the rotation matrices for bending in the lamina(rotate.l_bend.) look like:
+
+  0.046447   0.998921   0.000000  
+ -0.998921   0.046447  -0.000000  
+ -0.000000   0.000000   1.000000  
+ 
+  0.046530   0.998917  -0.000000  
+ -0.998917   0.046530   0.000000  
+  0.000000  -0.000000   1.000000  
+ 
+  0.084252   0.996444  -0.000000  
+ -0.996444   0.084252  -0.000000  
+ -0.000000   0.000000   1.000000  
+ 
+  0.084169   0.996451  -0.000000  
+ -0.996451   0.084169  -0.000000  
+ -0.000000   0.000000   1.000000  
+ 
+  0.046447   0.998921   0.000000  
+ -0.998921   0.046447  -0.000000  
+ -0.000000   0.000000   1.000000 
+
+for the first 4 integration points(The second four are identical).  Since each
+row represents a lamina basis vector, it is clear that the x and y lamina basis
+vectors are almost exactly perpendicular with that of the global basis given by:
+
+  1.000000   0.000000   0.000000  
+  0.000000   1.000000   0.000000  
+  0.000000   0.000000   1.000000 
+
+For instance, for the first integration point, lamina basis x vector is given by:
+
+  0.046447   0.998921   0.000000  
+
+showing that it points in positive global y, while lamina basis y vector
+
+ -0.998921   0.046447  -0.000000  
+
+points in negative global x.  This is expected.  As you follow the lamina axes
+beginning with the first element, which are almost identical with the global
+axes, and you proceed to element 66, you will notice that the lamina axes x
+and y are gradually rotating 90 degrees counter-clockwise, until lamina x points
+in global y and lamina y points in negative global x.  Finally, another source of
+discrepancy may come from the effect of under-integrating in the shell.
+
+Except for the above, further proof that the results are consistent is the fact
+that the displacements and the principal stresses are the same(principal strains
+are also very similar). 
+
+Again, the patch test is divided into one for angles and one for displacement.  The
+patch test I did was the same as that of the plate except that the mesh is out of 
+the x-y plane, but all 4 elements still share the same plane.  My shell element passed
+this test.  At first, I tried to do the test with each of the 4 elements in a
+different plane.  I do not think this is a valid test though, since depending on
+how the element is oriented, the load on it will be either supported by shear or
+bending, so you get results inconsistent with the patch test predictions.  This is
+what I experienced.
+
+It is interesting to note that when you calculate stresses based on node points
+rather than gauss points, the shear terms for the roof problem are qualitatively
+correct for XX, YY, XY, I, and II but for ZX and YZ, they are very different.  Node
+stress and strain ZX and YZ are orders of magnitude larger than when 
+under integration is used.  This is expected, since as you know, the purpose
+of under integrating is to prevent shear locking.
+
+Nodal averaging is done for this element even though stresses and strains are highly
+localized.  I feel this is justified because the local coordinate systems
+should ideally be continuous across element boundaries, and therefore their local
+stresses and strains should be continuous as well.  If someone has more insight into
+this, please email me to discuss it.
+

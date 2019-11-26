@@ -1,0 +1,71 @@
+
+                             SLFFEA 1.1 Non-Linear Brick README
+
+                    Copyright (C) 1999 San Le
+
+                    email:     slffea@juno.com
+                    homepage:  http://www.geocities.com/Athens/2099/slffea.html
+
+
+In the slffea-1.0/data/br/ directory, there is the file brdynam.dat.  This is where
+you enter in values for dt, cc, and iteration_max in that order.  I have a few
+examples prepared for the data files "ball", "rubber", "torsion" and "tensile" in
+this same directory.  The purpose of these variables is explained below.
+
+As with most non-linear FEA software, running the non-linear brick requires
+a little art in the selection of parameters which will keep the program stable
+as it iterates toward the solution.
+
+The method of iteration I have chosen is called Updated Lagrange where the mesh
+is updated between time steps along with the internal stress which is updated
+using the Jaumann Stress Rate.  Once the internal stress times the B matrix added
+together for each element achieves equilibrium with the external forces, the
+calculation is finished.  This is expressed as:
+
+          P_global = P_global + ( [B transpose] [stress] for each element)
+
+          if P_global = force, stop iterations
+
+P_global is never exactly equal to the force so you will have to decide on the
+tolerance acceptable for your needs. 
+
+The numerical integration method I have chosen is dynamic relaxation.  This
+involves formulating the problem as a pseudo dynamic 2nd order ordinary differential
+equation with damping, i.e.,
+
+         [m] * [d^2x/dt^2] + [c] * [dx/dt] + [K]*[x] = [Force]
+
+which becomes(after decoupling):
+
+         d^2y/dt^2 + cc * dy/dt + w^2 * y = force
+
+where "cc" is the damping and "w" is the angular frequency.  There are as many
+frequencies and modes as there are degrees of freedom in a mesh.  We are concerned
+only with the largest and smallest.  The rule for stability is that:
+
+                              dt*(w max) < 2.0
+
+and for best performance:
+
+                              cc = 2*(w min)
+
+which makes the system critically damped and produces the fastest convergence.  This makes
+up the three quantities you have to input; time step, dt; damping, cc; and the number of
+iterations.  Normally, you would also have to choose a pseudo mass.  I currently have
+the program use the diagonal of the global stiffness times 100.
+
+When I run the code, I usually have to experiment with all three quantities since
+calculating (w max) and (w min) requires a bit of computation in itself.  It is 
+possible using techniques such as the power method and inverse iteration to get (w max)
+and (w min), and I may add this feature someday.  For now, you'll just have to try
+different values for dt, cc, and iteration_max. 
+
+I recommend doing only a few iterations at first, like 3 or 4 to see if your time
+step is good.  If it becomes unstable-and this will usually happen within the first
+few steps-you can slightly decrease the time step.  For the value of cc, any mesh
+having more than 10 elements usually has a very low (w min) so you may just want to pick
+something small for cc.  Underdamping is almost always better than overdamping.  It
+should also be noted that depending on the problem, especially how large a load you
+want to use, the above criteria may not be sufficient to ensure stability.  Again, the
+best thing to do is experiment with all the input parameters.
+

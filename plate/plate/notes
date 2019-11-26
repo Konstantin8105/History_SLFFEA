@@ -1,0 +1,39 @@
+3 X Area will not equal the value of lumped summed mass if I
+set rho = 1.0 because the terms in lumped sum( although based on the [B] matrix
+which results from interpolating Ux, Uy, Uz) have rotation terms which when lumped
+with the translation in z, do not produce 3 X Area.  What I can do is print just
+the value of Area, and comment out the first 2 rows of the [B] matrix, which will
+result in only summing over translation z.  Also remember to change the thickness
+to 1.0.
+
+
+
+
+First analysis
+--------------
+
+The file p1 does not work for eigenvalue analysis when you do conjugate gradient.
+The reason is that it is not converging due to what I suspect is the behavior
+of the r vector, which acts like the force vector.  Everything seems to be working
+correctly since a standard linear analysis works fine with the force vector.  But
+something about the r vector that's getting passed isn't working.  But for the
+much more complex mesh quad, it does work.  Just stick with the parameters 
+given in plinput for p1, but know that it won't converge.
+
+
+Second analysis
+--------------
+
+It turns out that the problem is really due to the accumulation of some type of
+numerical error.  But there's more to it than that.  If I calculate 3 eigenvalues
+or less, there is convergence between the linear method as well as the conjugate
+gradient method.  Anymore, and the numerical error accumulates to a great extent
+from CG resulting in a great disparity in results.  One thing to note is that
+while the 3 eigenvalues match the first 3 from the problem for when 5 are calculated
+using linear analysis, only the first eigenmode matches.   This is hard to
+explain.  In fact if you calculate 1 eigenmode, the 1 eigenvalue still almost
+matches, but the eigenmode is different with the first eigenmode from the 5 eigenmode
+calculation.  If you calculate 2, the first mode will again match,
+but the second won't.  The 2 eigenvalues will match though.
+
+

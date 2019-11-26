@@ -1,0 +1,146 @@
+
+                             SLFFEA 1.1
+
+                    Copyright (C) 1999 San Le
+
+                    email:     slffea@yahoo.com
+                    homepage:  http://slffea.sourceforge.net/
+
+
+SLFFEA stands for San Le's Free Finite Element Analysis.  It is a package
+of scientific software and graphical user interfaces for use in finite element
+analysis.  It is written in ANSI C by San Le and distributed under the terms of
+the GNU license.  
+
+What's Inside:
+-------------
+
+6 of the basic finite elements types:
+
+1. beam    3-D 2 node beam
+2. brick       8 node brick
+3. plate       4 node plate
+4. quad        4 node quad - plane stress and plane strain
+5. shell       4 node doubly curved shell (individual element defined by 8 nodes)
+6. truss   3-D 2 node truss
+
+1 non-linear large deformation element:
+
+1. brick       8 node brick - Updated Lagrange formulation with Jaumann Stress Rate
+
+And 1 thermal element(added on 5/6/00):
+
+1. brick       8 node brick - allows for thermal loads and orthotropy
+
+7 Graphical User Interfaces for each element type.
+
+In the spirit of Unix, I keep the code as specific as possible which means that each
+element has its own binary rather than having one big executable handling
+all the elements.  This makes the code run much faster and is easier for developers
+to add their own elements.
+
+
+What You'll need:
+----------------
+
+1.0   Linux or some form of Unix.
+
+ 1.1  Extraction tool, like tar xzvfp.
+
+ 1.2  C compiler(you should know where your cc or gcc is located so you can define
+      the CC macro in the makefiles.  Just do a:
+
+      which gcc
+
+         or
+
+      which acc
+
+      and then put the path in the Makefile.  For instance, when I do a "which gcc", I get:
+
+            /usr/bin/gcc
+
+      which is how my CC is currently defined.
+
+2.0   Mesa-3.0 (OpenGL for the PC) or higher or Open GL.  You also should install it
+      in your /usr/local/ directory. 
+
+3.0   Perl if you would like to use the gui.pl script which is very helpful for GUI
+      development.
+
+Installation:
+------------
+
+Read the file INSTALL found in this directory.
+
+
+Wish for the Future:
+-------------------
+
+1. Add more elements, especially those of the non-linear large deformation variety.
+
+2. Write Users Guide.
+
+3. Add GUI mesh generators.  
+
+4. Write SLFCFD, San Le's Free Computational Fluid Dynamics.
+
+
+Contributions:
+-------------
+
+All submissions for incorporation into SLFFEA must be GNU.  This includes source
+codes, scientific theory, and data files.
+
+Bug reports:
+-----------
+
+Check the Update Page at:
+
+    http://slffea.sourceforge.net/update.html
+
+to see if the bug has been reported.  If not, you can send it to me at: slffea@yahoo.com
+
+Acknowledgments:
+---------------
+
+I would like to thank the following individuals for their contributions to SLFFEA:
+
+For Inspiration:
+
+    Richard Stallman - Granddaddy of the Free Software Movement
+    Linus Torvalds - The the Free Software Movement's prodigal son
+    comp.os.linux.setup - One of the most altruistic gatherings in the world.
+
+For Code development:
+
+    Brian Paul - Writer of Mesa upon which SLFFEA's GUI is built.  Thanks for
+        making my PC as good as the SGI I used to have at work.
+    Philip Winston - Writer of the P-Winston Motion Engine which controls all mouse
+        movements.  This is probably the best thing about my GUI.
+    Dr. Thomas Hughes - Writer of the classic FEA text "The Finite Element Method".
+        SLFFEA's variable naming conventions as well as a few subroutines are
+        based on his book.  
+
+General:
+
+    Vinh Le - My brother, for lots of programming advice.
+    Mark Preston - Made several requests for added features to my truss code, and
+            gave me the first sense that SLFFEA would be a worthwhile project.
+    Dr. Drew and Adam Carolla - Good company during late night programming sessions.
+    Antony Searle - Posted the subroutine ScreenShot which acts as my screendump.
+    Brendan J. Green -  Posted the subroutine printText which draws the control
+        panel text.
+
+Web Pages which thought my early simple truss code was worth linking to:
+
+    The INTERNET FINITE ELEMENT RESOURCES page -
+            http://www.engr.usask.ca/~macphed/finite/ fe_resources/fe_resources.html
+    SAL - Scientific Applications on Linux -
+            http://SAL.KachinaTech.COM/ 
+    FEMur - Finite Element Method universal resource -
+            http://me.wpi.edu/FEMurMirror/Resources-On-WWW/FEM-Codes/
+
+
+San Le
+slffea@yahoo.com

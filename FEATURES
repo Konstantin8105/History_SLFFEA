@@ -1,0 +1,109 @@
+
+                             SLFFEA 1.1
+
+                    Copyright (C) 1999 San Le
+
+                    email:     slffea@yahoo.com
+                    homepage:  http://slffea.sourceforge.net/
+
+
+P-Winston Motion Engine:
+-----------------------
+
+One of the best features of the GUI is the P-Winston Motion Engine.  Activate
+the Mesh Window and move the mouse around.  You will notice that you
+have the entire range of motion including zooming in and out, moving up and
+down and left and right, and rotation on every axis.  The P-Winston
+Motion Engine was written by Philip Winston who graciously allowed its
+inclusion into SLFFEA.
+
+WARNING !!
+_______________________________________
+
+Pressing the hotkeys 'e', 'm', 'n' will make the command line prompt
+you for the desired element, material, and node to identify respectively.
+Everything will freeze until you give an input number.  And pressing 'g'
+will prompt you for a new data file.
+
+Hotkeys(the mesh window must be active):
+---------------------------------------
+
+There are also several Hot Keys which have features not shown on the control Panel.
+Among these are render, screen dump, and switching from perspective to orthographic
+viewing.  A complete list is given below:
+
+ i - move in 
+ o - move out 
+ e - Element ID (use command line input to ID desired element)
+
+             1 - strain or curvature xx
+             2 - strain or curvature yy
+             3 - strain zz
+             4 - strain or curvature xy
+             5 - strain zx
+             6 - strain yz
+             7 - strain or curvature I
+             8 - strain or curvature II
+             9 - strain III
+  <shift>1 = ! - stress or moment xx
+  <shift>2 = @ - stress or moment yy
+  <shift>3 = # - stress zz
+  <shift>4 = $ - stress or moment xy
+  <shift>5 = % - stress zx
+  <shift>6 = ^ - stress yz
+  <shift>7 = & - stress or moment I
+  <shift>8 = * - stress or moment II
+  <shift>9 = ( - stress III
+
+ 0 - displacement Ux
+ - - displacement Uy
+ = - displacement Uz
+ [ - Rotation Phi x or temperature
+ ] - Rotation Phi y or heat
+ \ - Rotation Phi z
+ m - material ID (use command line input to ID desired material)
+ n - node ID (use command line input to ID desired node)
+ > - increase deformed mesh amplification  *
+ < - decrease deformed mesh amplification
+ a - turns on and off the deformed mesh 
+ b - turns on and off the undeformed mesh 
+ d - turns on and off the applied displacement or angle vectors 
+ c - Reset the rotation 
+ v - Reset the translation 
+ h - Display statistical information about mesh.  Reread in *view.dat file
+     which can be modified to narrow or expand range of maximum and
+     minimum values.
+ p - switches between perspective and orthographic viewing
+ f - turns on and off the applied forces or moments
+ q - quits
+ r - turns on and off rendering
+ w - turns on and off wire frame(for beam, turns on or off distributed load)
+ x - turns on or off axes
+ y - screen dump
+ arrow keys - move mesh accordingly
+
+* Amplifications are scaled based on the largest deformation and the
+  largest spatial dimension.  
+
+
+SS-GUI:
+------
+
+Because the GUI is completely built on the OpenGL emulator Mesa, I made
+the GUI self-scaling.  This means if you resize the Control Panel window,
+the text will shrink proportionally and the GUI will work exactly the same.
+
+
+Both Pre-Post Processor:
+-----------------------
+
+This GUI works as both a post-processor and a pre-processor.  You can use the
+GUI to just look at an input mesh and see if it is correct before running an
+analysis on it.
+
+
+Hotkeys Revisited:
+-----------------
+
+Let me say again that you can make a screendump with 'y', turn on rendering
+with 'r', toggle the perspective with 'p', and quit with 'q'.

@@ -1,0 +1,285 @@
+
+                             SLFFEA 1.1  MANUAL
+
+                    Copyright (C) 1999, 2000 San Le
+
+                    email:     slffea@yahoo.com
+                    homepage:  http://slffea.sourceforge.net/
+
+
+Executables:
+-----------
+
+After a successful make, you will have created the following executables:
+
+       directory                         executable       purpose
+ 
+    slffea-1.1/beam/beam/                bm               beam FEA
+    slffea-1.1/beam/beam/                bmp              generates beam patch test data *
+    slffea-1.1/beam/beam_gr/             bmpost           beam gui
+
+    slffea-1.1/brick/brick/              br               brick FEA
+    slffea-1.1/brick/brick/              brp              helps generates brick patch test data *
+    slffea-1.1/brick/brick_nl/           nbr              non-linear brick FEA
+    slffea-1.1/brick/brick_gr/           brpost           brick gui
+    slffea-1.1/brick/brick_gr/           pvbr             prepares OpenInventor brick data
+    slffea-1.1/brick/brick2/             br2              thermal brick with orthotropy FEA
+    slffea-1.1/brick/brick2gr/           br2post          thermal brick with orthotropy gui
+
+    slffea-1.1/plate/plate/              pl               plate FEA
+    slffea-1.1/plate/plate/              plp              helps generates plate patch test data *
+    slffea-1.1/plate/plate_gr/           plpost           plate gui
+
+    slffea-1.1/quad/quad/                qd               quad FEA
+    slffea-1.1/quad/quad/                qdp              helps generates quad patch test data *
+    slffea-1.1/quad/quad_gr/             qdpost           quad gui
+
+    slffea-1.1/shell/shell/              shl              shell FEA
+    slffea-1.1/shell/shell/              shp              helps generates shell patch test data *
+    slffea-1.1/shell/shell_gr/           shpost           shell gui
+    slffea-1.1/shell/shell_gr/           pvs              prepares OpenInventor shell data
+
+    slffea-1.1/truss/truss/              ts               truss FEA
+    slffea-1.1/truss/truss_gr/           tspost           truss gui
+
+* You don't have to worry about the patch test executables, since the various
+  data sets for patch tests have already been prepared.
+
+There are a few mesh generators which you may be interested in.  You have to compile
+them yourself though.  For example, do a:
+
+    cc meshball.c -lm
+
+    For beam:
+       ~/slffea-1.1/beam/beam/meshbuild.c                 generates the building mesh 
+
+    For brick:
+       slffea-1.1/brick/brick/meshball.c                  generates ball mesh 
+       slffea-1.1/brick/brick/meshring.c                  generates ring mesh 
+       slffea-1.1/brick/brick/meshwedge.c                 generates wedge mesh 
+
+    For brick and brick 2:
+       slffea-1.1/brick/brick/meshfin.c                   generates fin mesh 
+
+    For shell and brick:
+       slffea-1.1/brick/brick/meshcyl.c                   generates roof mesh 
+
+    For quad:
+       slffea-1.1/quad/quad/meshinc.c                     generates inclusion mesh 
+
+Data:
+----
+
+Sample data sets are contained in the directory slffea-1.1/data/.  There are 7
+directories corresponding to the 7 element types:
+
+        directory                    data type
+
+     slffea-1.1/data/bm/              beam
+     slffea-1.1/data/br/              brick
+     slffea-1.1/data/br2/             thermal brick with orthotropy 
+     slffea-1.1/data/pl/              plate
+     slffea-1.1/data/qd/              quad
+     slffea-1.1/data/sh/              shell
+     slffea-1.1/data/ts/              truss
+
+Using the Code:
+--------------
+
+To use the code, hopefully you have set up your ~/.profile or ~/.cshrc so that you
+can run the particular element executable from any directory.  When you run a program,
+it will ask you for the input file.  Then it generates an output file which has an
+extension corresponding to the element type.  For instance, running the brick would
+look like the following:
+
+    %cd ~/slffea-1.1/data/br
+    %br
+    What is the name of the file containing the 
+    brick structural data?
+    ball
+
+The code then reads in the file "ball".  You should see the data being printed
+out as it is read in.  I print out the data since this is the best way to see if
+and where you have errors in your file.  Usually, the program will core dump
+if you have errors.  
+
+After the program finishes, depending on the type of calculation you do and
+the options you set in "brinput", there will be the following possible
+output files:
+
+1)  "ball.obr" if you do a standard deformation problem
+
+2)  "ball.mod-x.obr" if you do an eigenvalue analysis.  "x" represents
+     the mode number.  There is also a file filename.eig which contains all the
+     eigenvalues.
+
+Finally, there may be files called "ball.str.obr" or "ball.mod-x.str.obr"
+if you happen to set the "element stress print flag" in "brinput" to 1.  These
+files contain the stress, strain, moment and curvature data before nodal averaging
+is done.
+
+You can then run the post-processor for the brick: 
+
+    %brpost
+    What is the name of the input file containing the 
+    brick structural data?
+    ball
+
+and brpost will look for "ball.obr".   If in the file "ball",
+nmode is not zero, "brpost" will ask you:
+
+    This seems to be modal analysis data. 
+    What mode would you like to see?(Choose number or 
+    choose 0 for linear algebra file)
+
+and you can either look at a specific eigenmode file like "ball.mod-3.obr"
+if you enter 3, or if you enter 0, it will look for "ball.obr".
+
+
+You should also take note of the file "brview.dat" which contains
+important information about the file you are viewing such as maximum
+and minimum stress xx, strain xx, etc.  This file is generated whenever
+you run any of the *post files.  You can even use this file to change the
+range of values over which the colors are displayed.  For instance, if
+the min and max displacement x for a brick problem are 0.0 and 5.0e-3,
+you can edit the file brview.dat and change the maximum value to 3.0e-3
+to give more detail about the displacement x in this range.  Just
+press the hotkey 'h' and this file will be read in again, using the
+new range.
+
+
+IMPORTANT NOTE: Although I have "post" in the names of the GUIs, they
+  can also be used as pre-processors.  For instance, if you just want
+  to look at your input file and have not done analysis on it, you can
+  run brpost, put in "ball" and brpost will show you the mesh.  You can
+  also only have a post file like "ball.obr" without the input file and
+  brpost will still work.  My GUIs, depending on the last four letters in
+  the file name you type in after prompting, search for either an input file
+  or a post file and works whether one or the other or both exist.
+
+
+Additional Notes:
+----------------
+
+There are a few additional READMEs in some of the scientific code directories.
+You should pay special attention to the shell and non-linear brick READMEs
+because for the shell, I'm not quite satisfied with the results of the roof benchmark
+problem which shows the element may be a bit stiff, and the non-linear brick which
+requires some experimentation so that your input parameters keep the calculations
+stable and there are enough iterations for convergence.
+
+From slffea-1.1 onward, I do nodal averaging of stress, strain, moment and
+curvature for all the elements except for truss and beam elements.  The
+impetus came from solving a problem with 4200 elements and 5027 nodes which
+produced an output data file exceeding 10MB. I was able to reduce its size
+to 2.6 MB with nodal averaging. You are still able to see stresses and strains
+written out on a per element basis at either gauss points or nodes if you
+want. But normally these quantities are not written out, and are not used in
+the graphics part of SLFFEA.  I still feel that printing them on a per element
+basis is more honest though.  The reason I do not do this for beams and
+trusses is that stresses, moments, strains and curvatures for these elements
+are highly local, so averaging is misleading.  This is also true for the shell,
+but I explain why nodal averaging is justified in the README for this element.
+You can read more about it in the READMEs located in the respective directories
+of the beam, truss, and shell.
+
+
+
+Data Changes:
+------------
+
+The most significant change to the data files in terms of
+input are that you now have to specify a number for the
+variable nmode, and also give data for the density of the
+material you are working with. The variable nmode
+represents how many eigenvalues you want to calculate. If
+you just want to solve a standard deformation problem, set
+nmode = 0. 
+
+As an example, an old brick data file looks like: 
+
+
+   numel numnp nmat   
+    224   512   1
+matl no., E modulus and Poisson Ratio
+0   100000000.0000   0.2700
+
+
+and the new one looks like: 
+
+
+   numel numnp nmat nmode 
+    224   512   1   -5
+matl no., E modulus, Poisson Ratio, density
+0   100000000.0000   0.2700     2770.0000
+
+
+Everything is clearly labeled so hopefully, there won't be too
+much confusion. The reason nmode = -5 is because I
+usually use consistent masses when solving for
+eigenmodes. To use lumped masses, you can use nmode
+= 5(This is not recommended. You can read more about
+this in the file MODAL.ANALYSIS found in the directory
+~/slffea-1.1. 
+Because data files were getting too big, I now do nodal
+averaging of quantities such as stress and strain. The
+impetus came from solving a problem with 4200 elements
+and 5027 nodes which produced an output data file
+exceeding 10MB. I was able to reduce its size to 2.6 MB
+with nodal averaging. You are still able to see stresses and
+strains written out on a per element basis at either gauss
+points or nodes, if you want. But normally these quantities
+are not written out, and are not used in the graphics part of
+SLFFEA. 
+There is now an input data file for every element called
+*input which gives parameters for calculation. For instance,
+in the brick data directory, there is a file brinput, which
+contains the data: 
+
+
+Error tolerance   
+1.e-13
+Maximum number of iterations
+2000
+Amount of RAM in megabytes
+64.0
+element stress read flag
+1
+element stress print flag
+0
+node or gauss stress ( 0 = node, 1 = gauss )
+1
+eigen print flag
+0
+
+
+   1.Error tolerance = convergence criteria if the
+      Conjugate Gradient Method is used. 
+   2.Maximum number of iterations = the maximum
+      number of iterations if the Conjugate Gradient
+      Method is used. This is good to specify to prevent
+      the problem from running forever if the error tolerance
+      never gets reached. An example of where this may
+      happen is if you don't prescribe enough boundary
+      conditions and there is rigid body motion. You should
+      be aware that a positive definite system arising from
+      a properly prescribed problem should always
+      converge. I also write out the status of convergence
+      as the problem gets solved using Conj. Grad., so you
+      can see if a solution is forthcoming. 
+   3.Amount of RAM in megabytes = Amount of RAM
+      your computer has. 
+   4.element stress read flag = If your problem has
+      pre-stressed elements, setting the flag to 1 will make
+      SLFFEA search for the file (filename).str where
+      (filename) is the name of the main input data file. I
+      don't think most people will have to deal with this. I
+      use it for when I need to break up a non-linear
+      calculation. 
+   5.element stress print flag = Print stress data on an
+      element basis rather than averaged over nodes. 
+   6.node or gauss stress = If 0, calculate stresses and
+      strains at nodes. If 1, calculate them at gauss points.
+   7.eigen print flag = print eigenvalue data such as the
+      resulting T matrix from a Lanczos tri-diagonalization,
+      Lanczos vectors, etc. 

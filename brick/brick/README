@@ -1,0 +1,16 @@
+
+                             SLFFEA 1.1 Brick README
+
+                    Copyright (C) 1999 San Le
+
+                    email:     slffea@juno.com
+                    homepage:  http://www.geocities.com/Athens/2099/slffea.html
+
+
+The data directory for the brick codes, slffea-1.0/data/br/, contain both
+linear and non-linear data files.  Although the file format for both is
+the same, the loads for the files, "b1", "nsquash", "patch", "tensile", and "torsion"
+are large enough to cause non-linear large deformation.  So you have to decrease
+the loads if you want to do linear analysis.  The files "ball" and "rubber"
+are for linear analysis.
+

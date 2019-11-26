@@ -1,0 +1,47 @@
+
+     VIEW OPTIONS
+
+ On   Off   Solid             
+ On         Node ID
+ On         Element ID
+ On         Material ID
+ On   Off   Applied Disp 
+ On   Off   Applied Force
+ On   Off   Axis
+
+            Rotate
+ -x   +x    Angle x:   44.31
+ -y   +y    Angle y:  180.72
+ -z   +z    Angle z: -240.31
+ Reset
+            Move
+ -x   +x    Posit x:   44.31
+ -y   +y    Posit y:   44.31
+ -z   +z    Posit z:   44.31
+ Reset
+
+     ANALYSIS OPTIONS
+
+ Before     Deformation
+ After
+ Both
+ +    -   Amplify  
+                stress XX
+ stress/strain             ___
+ XX   XX        1.118e7   |   |
+ YY   YY                  |___|
+ XY   XY        6.448e6   |   |
+ principal                |___|
+ stress/strain  7.447e5   |   |
+ I    I                   |___|
+ II   II        8.112e2   |   |
+                          |___|
+ displacement   4.282e-4  |   |
+ X                        |___|
+ Y             -2.458e-6  |   |
+                          |___|
+               -8.420e9   |   |
+                          |___|
+               -1.420e10  |   |
+                          |___|
+

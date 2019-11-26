@@ -1,0 +1,30 @@
+This is basically the same program as that contained
+in the slffea-1.0/truss/truss/ directory.  The main 
+difference is that it prints out more data and is not
+dependent on the slffea-1.0/common/ directory for
+certain utility files like matrix multiplication
+and skyline. 
+
+When you run "make", the executable you
+create is called "ft".  If you are working
+with a SUN, you might want to try uncommenting:
+
+#CC = /usr/lang/acc  -g
+
+and commenting out:
+
+CC = /usr/bin/gcc  -g
+
+"outp4_11.txt" has the output
+you should get if you run the data set "tsp4_11.txt".
+
+The best way to determine whether a member is in
+tension or compression is to look at the stresses in
+the *.str.ots files.  If the value of the stress is
+positive, then the member is in tension.  Additionally,
+from the output of the axial displacement, if you see
+that displacement(node 2nd - node 1st) > 0, then there is
+tension in the member. 
+
+San Le
+slffea@juno.com

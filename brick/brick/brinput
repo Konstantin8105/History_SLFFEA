@@ -1,0 +1,12 @@
+Error tolerance
+1.e-13
+Maximum number of iterations
+2000
+Amount of RAM in megabytes
+0.0
+element stress read flag
+1
+element stress print flag
+1
+node or gauss stress ( 0 = node, 1 = gauss )
+1

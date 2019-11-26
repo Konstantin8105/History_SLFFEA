@@ -1,0 +1,25 @@
+
+                             SLFFEA 1.1 Plate README
+
+                    Copyright (C) 1999 San Le
+
+                    email:     slffea@juno.com
+                    homepage:  http://www.geocities.com/Athens/2099/slffea.html
+
+
+The patch test is divided into one for angles and one for displacement.  The reason
+I think this is necessary is because of the non-linear relation between the 
+displacements and the angles in the shape functions.  The element passes if the test
+is divided in this way.
+
+The angles phi x and phi y for the rotation are based on the right hand rule. 
+Traditionally in plate theory, programs switch these angles.  I maintain the right
+hand rule so as to keep the plate consistent with the shell. 
+
+It is interesting to note that when you calculate stresses based on node points
+rather than gauss points, the shear terms for some problems are qualitatively
+correct for XX, YY, XY, I, and II but for ZX and YZ, they are very different.  Node
+stress and strain ZX and YZ are orders of magnitude larger than when
+under integration is used.  This is expected, since as you know, the purpose
+of under integrating is to prevent shear locking.
+

@@ -1,0 +1,172 @@
+
+                             SLFFEA 1.1 Beam README
+
+                    Copyright (C) 1999 San Le
+
+                    email:     slffea@juno.com
+                    homepage:  http://www.geocities.com/Athens/2099/slffea.html
+
+
+The type of beam theory I am using is Euler-Bernoulli, which means there is no
+shear deformation.  This manifests itself in the displacement assumptions.  The
+alternative theory which does allow for shear deformation is Reissner-Mindlin, and
+I hope to add such beam elements one day.
+
+This element has a feature you do not see in the other elements, the distributed
+load. 
+
+Beams usually require that you to specify the local axes as part of the input
+data because elements have to rotated from their local coordinates to the global
+coordinates.  For my beam, you can either specify the axes yourself or have the software
+do it for you based on the method given in Logan [10] in slffea-1.1/REFERENCES.  Note that
+the local x axis will always be along the length of the beam.  And because axis z and y are
+perpendicular to x and to each other, you only have to specify either y or z(I chose
+z).  In case the z axis you input is not exactly perpendicular to x, I also do a cross
+product of x and y to get an improved z axis. 
+
+These local beam axes are something you need to carefully consider before
+specifying them.  They have a significant impact on the equivalent nodal forces
+based on distributed element loads.  The reason is that the distributed load
+is given in local beam y and z coordinates, and is rotated back to the global
+coordinates based upon how you specify local z( see bmkasmbl.c).  For instance,
+if you have a beam element which lies on the x axis, if you specify the local z axis
+for that element as (0.0, 0.0, 1.0), then a distributed load
+in negative local beam y will point in negative global beam y.  But if you
+switch the local z axis for that element to (0.0, 0.0, -1.0), then the distributed
+load will point in positive global beam y and the equivalent nodal forces will
+point upward.  (This should also be remembered for the graphical display of the
+distributed load, which is still in local coordinates).  Additionally, moments,
+curvatures, strains, and stresses( which are given in local beam coordinates), will
+be switched in terms of sign for the beam described above.
+
+This code is also capable of handling both beam and truss elements.  The element
+type number specified in the input file represents a truss when set to 1 and a beam
+when set to 2.
+
+Like the shell and plate, the patch test is divided into one for angles and one
+for displacement.  Also, it is done for a mesh consisting of 2 beam elements(3 nodes
+total) co-linear in space(they both lie on one line).
+
+
+Modal(Eigenvalue) analysis
+
+There are some interesting things to note about the mass matrix as it applies
+to the beam.  First note that I'm using pre-integrated mass matrices.  You can
+read about why in the file bmmasmbl.c.  
+
+The second thing to note is that consistent element mass matrices are rotated from
+the local beam coordinates to the global beam coordinates.  This is done because
+the beam mass matrix is still formulated in the local coordinates of the beam,
+even though all three displacement directions are used( For the stiffness, it is
+formulated only in one direction because the only source of strain is in the
+axial direction of the beam Exx = dU/dx).  If you look at the displacement
+assumptions used for the beam:
+
+u = U - phiz*y + phiy*z - (d(phix)/dx)*yz
+
+v = V - phix*z
+
+w = W + phix*y
+
+(Note that the above contradicts the strain assumptions, causing non-zero
+shear strains.  I haven't worked out exactly what to do about this)
+
+you will see that "u" still represents the axial direction along the beam
+length, whereas "v" and "w" are the displacements perpendicular to the
+beam axis.  This type of formulation has to be done because the integration
+is still done along the length of the beam.
+
+I do not do nodal averaging of stresses, moments, strains and curvatures because
+these quantites are highly localized per element.  For instance a beam node
+which looks like:
+
+       y ^
+         | 
+         | 
+         |-----> x
+ 
+       node 1
+
+            element 1
+         _______________  ---->disp. x
+         | 
+         | 90 degrees
+         | 
+         | element 2
+         | 
+         | 
+
+for a displacement in the x direction, element 1 will experience pure
+tensile stress while element 2 experiences pure bending.
+
+
+Some more notes:  I was reading through my Euler-Bernoulli beam theory, and
+because I hadn't looked at if for a while, I forgot how the interpolation worked.
+I got confused by the way displacement in y, given by v below, and displacement in
+z, given by w below, were defined.  For instance:
+
+v'  = phiz
+v'' = phiz' = V'' + PHIz'
+            = V(node 0)*N0'' + PHIz(node 0)*N1'' + V(node 1)*N2'' + PHIz(node 1)*N3''
+
+I was confused because I thought the derivatives of N1 and N3 should only be first rather
+than second.  But I forgot that the nature of the interpolation is such that:
+
+v(0)  = V0
+v(0)' = PHIz0
+v(L)  = V1
+v(L)' = PHIz1
+
+and the resultant N0, N1, N2, and N3 are defined such that:
+
+v = N0*V0 + N1*PHIZ0 + N2*V1 + N3*PHIZ1
+
+These Ns are cubic, unlike the linear interpolations of the brick element, and
+their derivatives aren't directly related to the derivatives of the quantities
+they correspond to like the PHIz.  Also, note that the units of N1 and N3 are
+L while N0 and N2 are unitless.
+
+
+Even more notes:  Something interesting about the beam is that the output data for
+the external loads has moments x, y, z, but the internal streeses also has the
+components of moments x, y, and z.  This latter moment applies to the internal moment
+of the beam while the former is the resultant and applied moments.  This is in
+contrast to the brick element which gives the external loads and internal stresses.
+To understand how this works, you should look at how the beam element is derived,
+in particular how by inspection the terms, we can extract out moments and curvatures. 
+This is still confusing because, as in the case of the brick, the stresses aren't equivalent
+to the external forces and need to be itegrated over the volume of the element to get
+force.  And of course, stress has different units than force.  
+
+To overcome this confusion, I think we can view the integration of the internal moment
+as an integration which doesn't add any units.  As can be seen by the integration
+of [B transpose ][D][B][U] = [ element force ], the [D][B][U] = [ stress and moment vector],
+while and the units of the [B transpose ] matrix which integrates with the
+moments have units of 1/L.  The integration over L will therefore result in a quantity with
+the same units as moment.  For instance, in the case of the [B] matrix for the
+Euler-Bernoulli beam:
+
+[B transpose ] [ stress ] =
+
+
+| Nhat1'     0          0          0       |                         | force x   |  
+| 0          N1''       0          0       |                         | force y   |
+| 0          0          N1''       0       |                         | force z   |
+| 0          0          0          Nhat1'  |                         | moment x  | node 1
+| 0          0          N2''       0       |   | Area* stress xx |   | moment y  |
+| 0          N2''       0          0       |   | moment zz       | = | moment z  |
+| Nhat2'     0          0          0       | * | moment yy       |   | force x   |
+| 0          N3''       0          0       |   | moment xx       |   | force y   |
+| 0          0          N3''       0       |                         | force z   | node 2
+| 0          0          0          Nhat2'  |                         | moment x  |
+| 0          0          N4''       0       |                         | moment y  |
+| 0          N4''       0          0       |                         | moment z  |
+
+Nhat1' and Nhat2' has units of 1/L, which when integrated over the length and 
+multiplied by the Area* stress xx will give force.  N1'' and N3'' have units of 1/(L*L)
+which when integrated over the length and multiplied by moment, gives force.  N2'' and
+N4'' have units of 1/(L) which when integrated over the length and multiplied by moment,
+gives moment. (Note that I have shifted the numbering from 1 to 4 rather than 0 to 3).
+
+
+

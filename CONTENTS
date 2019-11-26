@@ -1,0 +1,128 @@
+
+                             SLFFEA 1.1
+
+                    Copyright (C) 1999 San Le
+
+                    email:     slffea@yahoo.com
+                    homepage:  http://slffea.sourceforge.net/
+
+
+First let me iterate that SLFFEA contains 6 of the basic element types:
+
+1. beam    3-D 2 node beam (Euler-Bernoulli Non-shear deformable)
+2. brick       8 node brick
+3. plate       4 node plate
+4. quad        4 node quad - plane stress or plane strain
+5. shell       4 node doubly curved shell (individual element defined by 8 nodes)
+6. truss   3-D 2 node truss
+
+1 non-linear large deformation element:
+
+1. brick       8 node brick - updated Lagrange formulation with Jaumann Stress Rate
+
+And 1 thermal element(added on 5/6/00):
+
+1. brick       8 node brick - allows for thermal loads and orthotropy
+
+7 Graphical User Interfaces for each element type.
+
+
+Naming Conventions:
+------------------
+
+There are 6 directories corresponding to the 6 basic element types.  Within
+each are at least 2 directories: one which contains the source for the
+basic element type and one for the GUI associated with that element.  All
+GUI directories have a "_gr" extension.  For instance, in the slffea-1.1/plate/
+directory, there is the plate and plate_gr directories. 
+
+There are 2 common directories, one for the common scientific functions and
+one for the common graphics functions.
+
+The names of the source files adhere to the following naming conventions:
+
+
+Science C Files:
+---------------
+
+*b.c            Assembles the B matrix
+*conj.c         Uses the Conjugate Gradient method to solve the system
+*fem*.c         Contains the main function
+*id.c           Assembles the id matrix
+*kasmbl.c       Assembles the stiffness matrix
+*lanczos.c      Uses the Lanczos algorithm to preform modal analysis
+*masmbl.c       Assembles the mass matrix
+mesh*.c         Mesh generator for various meshes(ball, roof, inclusion)
+*pasmbl.c       Assembles the P force matrix for non-linear analyses
+*patch.c        Prepares data set for the patch test by calculating
+                prescribed displacements
+*reader.c       Reads in input data
+*shape.c        Assembles the shape functions 
+*writer.c       Writes out output data
+
+Science Include Files:
+---------------------
+
+*const.h        Include file which defines the element constants
+*struct.h       Include file which defines the element structures
+
+
+Graphics C Files for GUI:
+------------------------
+
+*bc_vec.c       Draws boundary conditions
+*crtldsp.c      Draws Control Panel Display window
+*crtlmse.c      Control Panel mouse function
+*invent.c       Generates Open Inventor Data File(for shell and brick only) 
+*mesh.c         Draws Mesh in Mesh window
+*mshdsp.c       Calls *mesh.c
+*mshkey.c       Mesh Window hotkeys
+*norm_vec.c     Calculates the normal vectors of mesh
+*param.c        Calculates the Mesh Window parameters
+*post.c         Contains the main function 
+*readgr.c       Reads in additional mesh data
+*render.c       Draws Rendered mesh
+
+Graphics Include Files for GUI:
+------------------------------
+
+*gui.h          Shows Text for GUI 
+*strcgr.h       Contains structures for graphics codes
+
+Charts for GUI:
+--------------
+
+GUI             Contains the Layout for the GUI.  Helps you make your own.
+GUI.chart       Contains the numbering scheme for the GUI.  Also helps
+                you make your own.
+
+
+Common Files:
+-------------
+
+crossx.c        Calculates the vector cross product
+dotx.c          Calculates the vector dot product
+dyadx.c         creates the dyadic product of 2 vectors
+eigen.c         Sorts the eigenvalues in ascending order
+eigenprint.c    Prints out the eigenvalue data from the Lanczos codes
+idiag.c         Assembles the idiag matrix
+lm.c            Assembles the lm matrix
+kasmbl.c        Puts element stiffness matrices into the global stiffness or stores them
+                for the Conjugate Gradient method
+matx.c          matrix multiplication
+matxt.c         matrix multiplication transpose
+qr.c            Uses the QR algorithm to solve for the eigenvalues of a tridiagonal matrix
+rotate*.c       Optimizes various matrix rotations
+sky.c           Assembles the skyline matrix
+
+
+Common Graphics Files:
+---------------------
+
+axes.c          Generates the axes
+crtlcommon.c    Common Subroutines for Control Panel window 
+mshcommon.c     Common Subroutines for Mesh window
+printext.c      Writes Text for the GUI
+pwinston.c      P-Winston Motion Engine
+screenshot.c    Screen Dump
+

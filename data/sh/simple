@@ -1,0 +1,49 @@
+   numel numnp nmat integ_flag (This is for a shell              zz) 
+        1    4    1    1
+  matl no., E mod., Poiss. Ratio, shear fac. 
+     0    30000000.0000    0.3000    0.8333 
+ el no., connectivity, matl no 
+   0    0    2    3    1      0
+node no., coordinates 
+   0       0.000000       0.000000       0.000000
+   1       0.099996       0.300001      -0.000060
+   2       0.299999       0.100004       0.000140
+   3       0.299993       0.500004      -0.000020
+The corresponding top nodes are: 
+   0       0.000000       0.000000       0.100000
+   1       0.099996       0.300001       0.099940
+   2       0.299999       0.100004       0.100140
+   3       0.299993       0.500004       0.099980
+prescribed displacement x: node  disp value 
+   0   0.000000e+00
+   1  -4.024451e-06
+   2  -1.341484e-06
+   3  -6.707419e-06
+ -10 
+prescribed displacement y: node  disp value 
+   0   0.000000e+00
+   1   1.341484e-06
+   2   4.024451e-06
+   3   4.024451e-06
+ -10 
+prescribed displacement z: node  disp value 
+   0   0.000000e+00
+   2  -6.000000e-04
+   3  -2.000000e-05
+ -10 
+prescribed angle phi x: node angle value
+   0  -4.000000e-04
+   3  -4.000000e-04
+ -10 
+prescribed angle phi y: node angle value 
+   0  -6.000000e-04
+   2  -6.000000e-04
+   3  -6.000000e-04
+ -10 
+node with point load x, y, z and 2 moments phi x, phi y 
+   0           0.0000            0.0000            0.0000            0.0000           -0.0000 
+   2           0.0000           -0.0000            0.0000            0.0000            0.0000 
+   3           0.0000           -0.0000           -0.0000           -0.0000           -0.0000 
+ -10
+element no. and gauss pt. no. with stress and stress vector in xx,yy,xy,zx,yz 
+ -10

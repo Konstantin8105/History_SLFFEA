@@ -1,0 +1,57 @@
+   numel numnp nmat nmode  (This is for a beam frame)
+     3   4  1  0
+matl no., E mod, Poiss. Ratio, density, Area, Iy, Iz
+0    30000000  0.0 2.32e3 2. 1.0  1.0 
+el no.,connectivity, matl no, element type
+0        0    1    0     2
+1        0    2    0     2
+2        0    3    0     2
+node no., coordinates
+0     0.00000   0.00000   0.000
+1     0.00000 120.00000   0.000
+2   120.00000 120.00000   0.000
+3   120.00000   0.00000   0.000
+element with specified local z axis: x, y, z component
+    0    0.0   0.0   1.0
+    1    0.0   0.0   1.0
+    2    0.0   0.0   1.0
+-10
+prescribed displacement x: node  disp value
+    1 0.0
+    2 0.0
+    3 0.0
+    -10
+prescribed displacement y: node  disp value
+    1 0.0
+    2 0.0
+    3 0.0
+    -10
+prescribed displacement z: node  disp value
+    0 0.0
+    1 0.0
+    2 0.0
+    3 0.0
+    -10
+prescribed angle phi x: node angle value
+    1 0.0
+    2 0.0
+    3 0.0
+    -10
+ prescribed angle phi y: node angle value
+    1 0.0
+    2 0.0
+    3 0.0
+    -10
+ prescribed angle phi z: node angle value
+    1 0.0
+    2 0.0
+    3 0.0
+    -10
+node with point load x, y, z and 3 moments phi x, phi y, phi z
+    0  0.0   -10000.00   0.0    0.0  0.0   0.0
+-10 
+element with distributed load in local beam y and z coordinates
+-10
+element no. and gauss pt. no. with local stress vector xx and moment xx,yy,zz
+-10
+
