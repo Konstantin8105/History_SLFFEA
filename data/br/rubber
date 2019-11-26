@@ -1,5 +1,5 @@
    numel numnp nmat  nmode  (This is for a brick "rubber")
-20 84 1   -5
+20 84 1   0
 matl no., E modulus and Poisson Ratio, density
 0    1000000 .27     7640.0000
 el no., connectivity, matl no
@@ -139,8 +139,8 @@ prescribed displacement z: node  disp value
     83    0.0
     -10
 node with point load and load vector in x,y,z
-40     -3500.0 0.0 0.0
-41     -3500.0 0.0 0.0
+40     -350.0 0.0 0.0
+41     -350.0 0.0 0.0
    -10
 node no. with stress and stress vector in xx,yy,zz,xy,zx,yz
 -10

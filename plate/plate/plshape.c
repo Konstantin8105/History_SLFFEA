@@ -1,7 +1,7 @@
 /*
      SLFFEA source file
-     Version:  1.1
-     Copyright (C) 1999, 2000  San Le
+     Version:  1.2
+     Copyright (C) 1999, 2000, 2001, 2002  San Le
 
      The source code contained in this file is released under the
      terms of the GNU Library General Public License.
@@ -71,7 +71,35 @@ int plshl( double g, SH shl, double *w)
         return 1;
 }
 
-int plshg( double *det, int el, SH shl, SH shg, double *xl, double *Area)
+int plshl_node2(double *shl_node2)
+{
+/*
+   This subroutine is a condensed version of the shape function shl_node.  I have
+   removed all of the zero terms which made up 75% of all the values in shl_node.
+
+                        Updated 9/22/01
+*/
+
+/* For node 0 */
+        *(shl_node2) =   -0.50; *(shl_node2+1) =  0.50; *(shl_node2+2) = -0.50;
+        *(shl_node2+3) =  0.50;
+
+/* For node 1 */
+        *(shl_node2+4) = -0.50; *(shl_node2+5)  =  0.50; *(shl_node2+6)  = -0.50;
+        *(shl_node2+7) =  0.50;
+
+/* For node 2 */
+        *(shl_node2+8) =  0.50; *(shl_node2+9) = -0.50; *(shl_node2+10) = -0.50;
+        *(shl_node2+11) =  0.50;
+
+/* For node 3 */
+        *(shl_node2+12) =  0.50; *(shl_node2+13) = -0.50; *(shl_node2+14) = -0.50;
+        *(shl_node2+15) =  0.50;
+
+        return 1;
+}
+
+int plshg( double *det, int el, SH shl, SH shg, double *xl)
 {
 /*
      This subroutine calculates the global shape function derivatives for
@@ -105,19 +133,15 @@ int plshg( double *det, int el, SH shl, SH shg, double *xl, double *Area)
           i    = LOCAL NODE NUMBER OR GLOBAL COORDINATE NUMBER
           j    = GLOBAL COORDINATE NUMBER
           k    = INTEGRATION-POINT NUMBER
-       num_int    = NUMBER OF INTEGRATION POINTS, EQ. 1 
+       num_int    = NUMBER OF INTEGRATION POINTS, EQ. 4 
 		
-			Updated 2/1/00
+			Updated 9/27/01
 */
         double xs[4],temp;
 	int check,i,j,k;
 
 	memcpy(shg.shear,shl.shear,soshs*sizeof(double));
 	memcpy(shg.bend,shl.bend,soshb*sizeof(double));
-
-/* initialize the Area */
-
-	*(Area)=0.0;
 
 /* 
    calculating the dN/dx,dy matrix for 2X2 
@@ -141,11 +165,7 @@ int plshg( double *det, int el, SH shl, SH shg, double *xl, double *Area)
         	*(xs),*(xs+1),*(xs+nsd*1),*(xs+nsd*1+1));
            printf("%d %f\n", k, *(det+k)); */
 
-/* Calculate the Area from determinant of the Jacobian */
-
-	   *Area+=*(det+k);
-
-           if(*(det+k) <= 0 ) 
+           if(*(det+k) <= 0.0 ) 
 	   {
                 printf("the element (%d) is inverted; det:%f; integ pt.:%d\n",
                         el,*(det+k),k);
@@ -190,11 +210,7 @@ int plshg( double *det, int el, SH shl, SH shg, double *xl, double *Area)
         	*(xs),*(xs+1),*(xs+nsd*1),*(xs+nsd*1+1));
         printf("%d %f\n", num_int, *(det+num_int)); */
 
-/* Calculate the Area from 1X1 point Gauss using the determinant of the Jacobian */
-
-	/*   *Area+=*(det+num_int); */
-
-        if(*(det+num_int) <= 0 ) 
+        if(*(det+num_int) <= 0.0 ) 
 	{
                 printf("the element (%d) is inverted; det:%f; 1X1 integ pt.%d\n",
                         el,*(det+k));
@@ -219,7 +235,7 @@ int plshg( double *det, int el, SH shl, SH shg, double *xl, double *Area)
         return 1; 
 }
 
-int plshg_mass( double *det, int el, SH shg, double *xl, double *Area)
+int plshg_mass( double *det, int el, SH shg, double *xl)
 {
 /*
      This subroutine calculates the determinant for
@@ -247,17 +263,13 @@ int plshg_mass( double *det, int el, SH shg, double *xl, double *Area)
           i    = LOCAL NODE NUMBER OR GLOBAL COORDINATE NUMBER
           j    = GLOBAL COORDINATE NUMBER
           k    = INTEGRATION-POINT NUMBER
-       num_int    = NUMBER OF INTEGRATION POINTS, EQ. 1 
+       num_int    = NUMBER OF INTEGRATION POINTS, EQ. 4 
 
-			Updated 7/27/00
+			Updated 9/27/01
 */
 
         double xs[4],temp;
 	int check,i,j,k;
-
-/* initialize the Area */
-
-	*(Area)=0.0;
 
 /* 
    calculating the dN/dx,dy matrix for 2X2 
@@ -281,11 +293,7 @@ int plshg_mass( double *det, int el, SH shg, double *xl, double *Area)
         	*(xs),*(xs+1),*(xs+nsd*1),*(xs+nsd*1+1));
            printf("%d %f\n", k, *(det+k)); */
 
-/* Calculate the Area from determinant of the Jacobian */
-
-	   *Area+=*(det+k);
-
-           if(*(det+k) <= 0 ) 
+           if(*(det+k) <= 0.0 ) 
 	   {
                 printf("the element (%d) is inverted; det:%f; integ pt.:%d\n",
                         el,*(det+k),k);

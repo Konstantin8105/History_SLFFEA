@@ -1,11 +1,11 @@
 /*
     This program draws the drag down menus.  It works with a brick FEM code.
   
-   			Last Update 6/1/00
+   			Last Update 6/9/01
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -48,7 +48,7 @@ extern int Before_flag, After_flag,
     Both_flag, Amplify_flag;
 extern double amplify_factor, amplify_step, amplify_step0;
 
-int brset(BOUND , int *, double *, double *, XYZF *, SDIM *, ISTRAIN *,
+int brset(BOUND , int *, double *, XYZF *, SDIM *, ISTRAIN *,
 	SDIM *, ISTRESS *, double *, int *);
 
 void brReGetparameter( void);
@@ -110,7 +110,7 @@ void brMenuSelect(int value)
 	    break;
 	case 4:
 	    brReGetparameter();
-	    check = brset( bc, connecter, coord, force, force_vec0, strain_node,
+	    check = brset( bc, connecter, force, force_vec0, strain_node,
 		strain_color, stress_node, stress_color, U, U_color);
 	    if(!check) printf( " Problems with brset \n");
 	    break;

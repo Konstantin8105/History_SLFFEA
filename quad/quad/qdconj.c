@@ -9,8 +9,8 @@
 		Updated 12/11/02
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -39,7 +39,7 @@ int matXT(double *, double *, double *, int, int, int);
 
 int quadB(double *,double *);
 
-int qdshg( double *, int, double *, double *, double *, double *);
+int qdshg( double *, int, double *, double *, double *);
 
 int dotX(double *, double *, double *, int);
 
@@ -65,7 +65,7 @@ int qdConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *
 	double K_temp[neqlsq], K_el[neqlsq];
 	double U_el[neqel];
 	double coord_el_trans[npel*nsd];
-	double det[num_int];
+	double det[num_int], wXdet;
 	double P_el[neqel];
 
 
@@ -145,7 +145,7 @@ int qdConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *
 
 /* Assembly of the shg matrix for each integration point */
 
-		check = qdshg(det, k, shl, shg, coord_el_trans, &fdum);
+		check = qdshg(det, k, shl, shg, coord_el_trans);
 		if(!check) printf( "Problems with qdshg \n");
 
 /* The loop over j below calculates the 4 points of the gaussian integration 
@@ -175,11 +175,13 @@ int qdConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *
 			*(DB+neqel*2+i1) = *(B+neqel*2+i1)*G;
 		    }
 
+		    wXdet = *(w+j)*(*(det+j));
+
 		    check = matXT(K_temp, B, DB, neqel, neqel, sdim);
 		    if(!check) printf( "Problems with matXT  \n");
 		    for( i2 = 0; i2 < neqlsq; ++i2 )
 		    {
-			  *(K_el+i2) += *(K_temp+i2)*(*(w+j))*(*(det+j));
+			  *(K_el+i2) += *(K_temp+i2)*wXdet;
 		    }
 		}
 

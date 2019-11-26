@@ -6,11 +6,11 @@
     which allocates the memory and goes through the steps of the algorithm.
     These go with the calculation of displacement.
 
-		Updated 10/27/00
+		Updated 12/11/02
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -59,7 +59,7 @@ int bmConjPassemble(double *A, double *axis_z, int *connect, double *coord, int 
 
 			Updated 7/8/00
 */
-        int i, i1, i2, j, k, dof_el[neqel], sdof_el[npel*nsd];
+	int i, i1, i2, j, k, dof_el[neqel], sdof_el[npel*nsd];
 	int check, node0, node1;
 	int matl_num, type_num;
 	double area, Emod, EmodXarea, EmodXIy, EmodXIz, G, GXIp;
@@ -69,8 +69,8 @@ int bmConjPassemble(double *A, double *axis_z, int *connect, double *coord, int 
 		rotate[nsdsq], rotateT[nsdsq];
 	SHAPE sh;
 	double U_el[neqel];
-        double coord_el_trans[npel*nsd];
-        double P_el[neqel];
+	double coord_el_trans[npel*nsd];
+	double P_el[neqel];
 
 
 	memset(P_global,0,dof*sof);
@@ -114,30 +114,30 @@ int bmConjPassemble(double *A, double *axis_z, int *connect, double *coord, int 
 	{
 		matl_num = *(el_matl+k);
 		type_num = *(el_type+k);
-        	Emod = matl[matl_num].E;
-        	area = matl[matl_num].area;
-        	EmodXarea = matl[matl_num].E*matl[matl_num].area;
-        	EmodXIy = matl[matl_num].E*matl[matl_num].Iy;
-        	EmodXIz = matl[matl_num].E*matl[matl_num].Iz;
-        	G = matl[matl_num].E/(1.0 + matl[matl_num].nu)/2.0;
-        	GXIp = G*(matl[matl_num].Iy + matl[matl_num].Iz);
+		Emod = matl[matl_num].E;
+		area = matl[matl_num].area;
+		EmodXarea = matl[matl_num].E*matl[matl_num].area;
+		EmodXIy = matl[matl_num].E*matl[matl_num].Iy;
+		EmodXIz = matl[matl_num].E*matl[matl_num].Iz;
+		G = matl[matl_num].E/(1.0 + matl[matl_num].nu)/2.0;
+		GXIp = G*(matl[matl_num].Iy + matl[matl_num].Iz);
 
 		node0 = *(connect+k*npel);
 		node1 = *(connect+k*npel+1);
-                Lx = *(coord+nsd*node1) - *(coord+nsd*node0);
-                Ly = *(coord+nsd*node1+1) - *(coord+nsd*node0+1);
-                Lz = *(coord+nsd*node1+2) - *(coord+nsd*node0+2);
+		Lx = *(coord+nsd*node1) - *(coord+nsd*node0);
+		Ly = *(coord+nsd*node1+1) - *(coord+nsd*node0+1);
+		Lz = *(coord+nsd*node1+2) - *(coord+nsd*node0+2);
 
-                /*printf(" Lx, Ly, Lz %f %f %f\n ", Lx, Ly, Lz);*/
+		/*printf(" Lx, Ly, Lz %f %f %f\n ", Lx, Ly, Lz);*/
 
-                Lsq = Lx*Lx+Ly*Ly+Lz*Lz;
-                L = sqrt(Lsq);
+		Lsq = Lx*Lx+Ly*Ly+Lz*Lz;
+		L = sqrt(Lsq);
 		Lx /= L; Ly /= L; Lz /= L;
 		*(axis_x) = Lx;
 		*(axis_x+1) = Ly;
 		*(axis_x+2) = Lz;
 
-                jacob = L/2.0;
+		jacob = L/2.0;
 
 /* To find axis_y, take cross product of axis_z and axis_x */
 
@@ -174,33 +174,33 @@ int bmConjPassemble(double *A, double *axis_z, int *connect, double *coord, int 
 
 /* defining the components of an el element vector */
 
-                *(dof_el) = ndof*node0;
-                *(dof_el+1) = ndof*node0+1;
-                *(dof_el+2) = ndof*node0+2;
-                *(dof_el+3) = ndof*node0+3;
-                *(dof_el+4) = ndof*node0+4;
-                *(dof_el+5) = ndof*node0+5;
+		*(dof_el) = ndof*node0;
+		*(dof_el+1) = ndof*node0+1;
+		*(dof_el+2) = ndof*node0+2;
+		*(dof_el+3) = ndof*node0+3;
+		*(dof_el+4) = ndof*node0+4;
+		*(dof_el+5) = ndof*node0+5;
 
-                *(dof_el+6) = ndof*node1;
-                *(dof_el+7) = ndof*node1+1;
-                *(dof_el+8) = ndof*node1+2;
-                *(dof_el+9) = ndof*node1+3;
-                *(dof_el+10) = ndof*node1+4;
-                *(dof_el+11) = ndof*node1+5;
+		*(dof_el+6) = ndof*node1;
+		*(dof_el+7) = ndof*node1+1;
+		*(dof_el+8) = ndof*node1+2;
+		*(dof_el+9) = ndof*node1+3;
+		*(dof_el+10) = ndof*node1+4;
+		*(dof_el+11) = ndof*node1+5;
 
 		memset(U_el,0,neqel*sof);
-                memset(K_el,0,neqlsq*sof);
+		memset(K_el,0,neqlsq*sof);
 
 /* The loop below calculates the 2 points of the gaussian integration */
 
-                for( j = 0; j < num_int; ++j )
-                {
-                    memset(B,0,soB*sof);
-                    memset(DB,0,soB*sof);
-                    memset(K_local,0,neqlsq*sof);
+		for( j = 0; j < num_int; ++j )
+		{
+		    memset(B,0,soB*sof);
+		    memset(DB,0,soB*sof);
+		    memset(K_local,0,neqlsq*sof);
 
-                    check = bmshape(&sh, *(x+j), L, Lsq);
-                    if(!check) printf( "Problems with bmshape \n");
+		    check = bmshape(&sh, *(x+j), L, Lsq);
+		    if(!check) printf( "Problems with bmshape \n");
 
 /* Assembly of the local stiffness matrix.
    For a truss, the only non-zero components are those for
@@ -208,54 +208,54 @@ int bmConjPassemble(double *A, double *axis_z, int *connect, double *coord, int 
    *(B) and *(B+6) and *(DB) and *(DB+6) if the type_num = 1.
 */
 
-                    *(B) = sh.Nhat[0].dx1;
-                    *(B+6) = sh.Nhat[1].dx1;
+		    *(B) = sh.Nhat[0].dx1;
+		    *(B+6) = sh.Nhat[1].dx1;
 		    if(type_num > 1)
 		    {
-                    	*(B+13) = sh.N[0].dx2;
-                    	*(B+17) = sh.N[1].dx2;
-                    	*(B+19) = sh.N[2].dx2;
-                    	*(B+23) = sh.N[3].dx2;
-                    	*(B+26) = -sh.N[0].dx2;
-                    	*(B+28) = sh.N[1].dx2;
-                    	*(B+32) = -sh.N[2].dx2;
-                    	*(B+34) = sh.N[3].dx2;
-                    	*(B+39) = sh.Nhat[0].dx1;
-                    	*(B+45) = sh.Nhat[1].dx1;
+		    	*(B+13) = sh.N[0].dx2;
+		    	*(B+17) = sh.N[1].dx2;
+		    	*(B+19) = sh.N[2].dx2;
+		    	*(B+23) = sh.N[3].dx2;
+		    	*(B+26) = -sh.N[0].dx2;
+		    	*(B+28) = sh.N[1].dx2;
+		    	*(B+32) = -sh.N[2].dx2;
+		    	*(B+34) = sh.N[3].dx2;
+		    	*(B+39) = sh.Nhat[0].dx1;
+		    	*(B+45) = sh.Nhat[1].dx1;
 		    }
 
-                    *(DB) = EmodXarea*sh.Nhat[0].dx1;
-                    *(DB+6) = EmodXarea*sh.Nhat[1].dx1;
+		    *(DB) = EmodXarea*sh.Nhat[0].dx1;
+		    *(DB+6) = EmodXarea*sh.Nhat[1].dx1;
 		    if(type_num > 1)
 		    {
-                    	*(DB+13) = EmodXIz*sh.N[0].dx2;
-                    	*(DB+17) = EmodXIz*sh.N[1].dx2;
-                    	*(DB+19) = EmodXIz*sh.N[2].dx2;
-                    	*(DB+23) = EmodXIz*sh.N[3].dx2;
-                    	*(DB+26) = -EmodXIy*sh.N[0].dx2;
-                    	*(DB+28) = EmodXIy*sh.N[1].dx2;
-                    	*(DB+32) = -EmodXIy*sh.N[2].dx2;
-                    	*(DB+34) = EmodXIy*sh.N[3].dx2;
-                    	*(DB+39) = GXIp*sh.Nhat[0].dx1;
-                    	*(DB+45) = GXIp*sh.Nhat[1].dx1;
+		    	*(DB+13) = EmodXIz*sh.N[0].dx2;
+		    	*(DB+17) = EmodXIz*sh.N[1].dx2;
+		    	*(DB+19) = EmodXIz*sh.N[2].dx2;
+		    	*(DB+23) = EmodXIz*sh.N[3].dx2;
+		    	*(DB+26) = -EmodXIy*sh.N[0].dx2;
+		    	*(DB+28) = EmodXIy*sh.N[1].dx2;
+		    	*(DB+32) = -EmodXIy*sh.N[2].dx2;
+		    	*(DB+34) = EmodXIy*sh.N[3].dx2;
+		    	*(DB+39) = GXIp*sh.Nhat[0].dx1;
+		    	*(DB+45) = GXIp*sh.Nhat[1].dx1;
 		    }
 
-                    check = matXT(K_local, B, DB, neqel, neqel, sdim);
-                    if(!check) printf( "Problems with matXT \n");
+		    check = matXT(K_local, B, DB, neqel, neqel, sdim);
+		    if(!check) printf( "Problems with matXT \n");
 
-                    for( i1 = 0; i1 < neqlsq; ++i1 )
-                    {
-                        *(K_el + i1) += *(K_local + i1)*jacob*(*(w+j));
-                    }
+		    for( i1 = 0; i1 < neqlsq; ++i1 )
+		    {
+			*(K_el + i1) += *(K_local + i1)*jacob*(*(w+j));
+		    }
 		}
 
 /* Put K back to global coordinates */
 
-                check = matXrot(K_temp, K_el, rotate, neqel, neqel);
-                if(!check) printf( "Problems with matXrot \n");
+		check = matXrot(K_temp, K_el, rotate, neqel, neqel);
+		if(!check) printf( "Problems with matXrot \n");
 
-                check = rotXmat(K_el, rotateT, K_temp, neqel, neqel);
-                if(!check) printf( "Problems with rotXmat \n");
+		check = rotXmat(K_el, rotateT, K_temp, neqel, neqel);
+		if(!check) printf( "Problems with rotXmat \n");
 
 
 /* Assembly of the global P matrix */
@@ -266,15 +266,15 @@ int bmConjPassemble(double *A, double *axis_z, int *connect, double *coord, int 
 		}
 
 		check = matX(P_el, K_el, U_el, neqel, 1, neqel);
-                if(!check) printf( "Problems with matX \n");
+		if(!check) printf( "Problems with matX \n");
 
-                for( j = 0; j < neqel; ++j )
-                {
-                	*(P_global+*(dof_el+j)) += *(P_el+j);
+		for( j = 0; j < neqel; ++j )
+		{
+			*(P_global+*(dof_el+j)) += *(P_el+j);
 		}
-        }
+	}
 
-        return 1;
+	return 1;
 }
 
 
@@ -287,7 +287,7 @@ int bmConjGrad(double *A, double *axis_z, BOUND bc, int *connect, double *coord,
    displacements.  It also makes the call to bmConjPassemble to get the
    product of [A]*[p].
 
-			Updated 1/7/01
+			Updated 12/11/02
 
    It is taken from the algorithm 10.3.1 given in "Matrix Computations",
    by Golub, page 534.
@@ -311,13 +311,13 @@ int bmConjGrad(double *A, double *axis_z, BOUND bc, int *connect, double *coord,
 
 /* For the Conjugate Gradient Method doubles */
 
-	                                        ptr_inc = 0;
-	p=(mem_double+ptr_inc);                 ptr_inc += dof;
-	P_global=(mem_double+ptr_inc);          ptr_inc += dof;
-	rm1=(mem_double+ptr_inc);               ptr_inc += dof;
-	r=(mem_double+ptr_inc);                 ptr_inc += dof;
-	z=(mem_double+ptr_inc);                 ptr_inc += dof;
-	zm1=(mem_double+ptr_inc);               ptr_inc += dof;
+					 ptr_inc = 0;
+	p=(mem_double+ptr_inc);	         ptr_inc += dof;
+	P_global=(mem_double+ptr_inc);   ptr_inc += dof;
+	rm1=(mem_double+ptr_inc);        ptr_inc += dof;
+	r=(mem_double+ptr_inc);          ptr_inc += dof;
+	z=(mem_double+ptr_inc);          ptr_inc += dof;
+	zm1=(mem_double+ptr_inc);        ptr_inc += dof;
 
 /* Using Conjugate gradient method to find displacements */
 
@@ -328,7 +328,7 @@ int bmConjGrad(double *A, double *axis_z, BOUND bc, int *connect, double *coord,
 	memset(z,0,dof*sof);
 	memset(zm1,0,dof*sof);
 
-        for( j = 0; j < dof; ++j )
+	for( j = 0; j < dof; ++j )
 	{
 		*(K_diag + j) += SMALL;
 		*(r+j) = *(force+j);
@@ -349,9 +349,9 @@ int bmConjGrad(double *A, double *axis_z, BOUND bc, int *connect, double *coord,
 	check = dotX(&fdum, r, z, dof);
 
 	printf("\n iteration %3d iteration max %3d \n", iteration, iteration_max);
-        /*for( iteration = 0; iteration < iteration_max; ++iteration )*/
+	/*for( iteration = 0; iteration < iteration_max; ++iteration )*/
 	while(fdum2 > tolerance && counter < iteration_max )
-        {
+	{
 
 		printf( "\n %3d %16.8e\n",counter, fdum2);
 		check = bmConjPassemble( A, axis_z, connect, coord, el_matl, el_type,
@@ -362,9 +362,9 @@ int bmConjGrad(double *A, double *axis_z, BOUND bc, int *connect, double *coord,
 		check = dotX(&alpha2, p, P_global, dof);	
 		alpha = fdum/(SMALL + alpha2);
 
-        	for( j = 0; j < dof; ++j )
+		for( j = 0; j < dof; ++j )
 		{
-            	    /*printf( "%4d %14.5e  %14.5e  %14.5e  %14.5e  %14.5e %14.5e\n",j,alpha,
+	    	    /*printf( "%4d %14.5e  %14.5e  %14.5e  %14.5e  %14.5e %14.5e\n",j,alpha,
 			beta,*(U+j),*(r+j),*(P_global+j),*(p+j));*/
 		    *(rm1+j) = *(r + j); 
 		    *(zm1+j) = *(z + j); 
@@ -377,15 +377,15 @@ int bmConjGrad(double *A, double *axis_z, BOUND bc, int *connect, double *coord,
 		beta = fdum2/(SMALL + fdum);
 		fdum = fdum2;
 
-        	for( j = 0; j < dof; ++j )
-        	{
+		for( j = 0; j < dof; ++j )
+		{
        		    /*printf("\n  %3d %12.7f  %14.5f ",j,*(U+j),*(P_global+j));*/
-            	    /*printf( "%4d %14.5f  %14.5f  %14.5f  %14.5f %14.5f\n",j,alpha,
+	    	    /*printf( "%4d %14.5f  %14.5f  %14.5f  %14.5f %14.5f\n",j,alpha,
 			*(U+j),*(r+j),*(P_global+j),*(force+j));
-            	    printf( "%4d %14.8f  %14.8f  %14.8f  %14.8f %14.8f\n",j,
+	    	    printf( "%4d %14.8f  %14.8f  %14.8f  %14.8f %14.8f\n",j,
 			*(U+j)*bet,*(r+j)*bet,*(P_global+j)*alp/(*(mass+j)),
 			*(force+j)*alp/(*(mass+j)));*/
-            	    *(p+j) = *(z+j)+beta*(*(p+j));
+	    	    *(p+j) = *(z+j)+beta*(*(p+j));
 
 		}
 		check = bmBoundary (p, bc);
@@ -400,15 +400,21 @@ int bmConjGrad(double *A, double *axis_z, BOUND bc, int *connect, double *coord,
 		printf( "Problem may not have converged during Conj. Grad.\n");
 	}
 /*
+The lines below are for testing the quality of the calculation:
+
+1) r should be 0.0
+2) P_global( = A*U ) - force should be 0.0
+*/
+/*
+	check = bmConjPassemble( A, axis_z, connect, coord, el_matl, el_type, matl, P_global, U);
+	if(!check) printf( " Problems with bmConjPassemble \n");
+
 	for( j = 0; j < dof; ++j )
 	{
 		printf( "%4d %14.5f  %14.5f %14.5f  %14.5f  %14.5f %14.5f\n",j,alpha,beta,
 			*(U+j),*(r+j),*(P_global+j),*(force+j));
 	}
 */
-
-	check = bmConjPassemble( A, axis_z, connect, coord, el_matl, el_type, matl, P_global, U);
-	if(!check) printf( " Problems with bmConjPassemble \n");
 
 	free(mem_double);
 

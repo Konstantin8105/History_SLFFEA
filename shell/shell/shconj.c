@@ -9,8 +9,8 @@
 		Updated 12/11/02
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -46,7 +46,7 @@ int shellB1ptM(double *, double *, double *, double *);
 int shellB4pt(double *, double *,double *, double *, double *, double *);
 
 int shshg( double *, int , SH , SH , XL , double *, double *, double *,
-	double *, ROTATE , double *);
+	double *, ROTATE );
 
 int normcrossX(double *, double *, double *);
 
@@ -75,7 +75,7 @@ int shConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *
         double coord_el_trans[npel*nsd], zm1[npell], zp1[npell],
 		znode[npell*num_ints], dzdt_node[npell];
 	double vec_dum[nsd];
-	double det[num_int+num_ints];
+	double det[num_int+num_ints], wXdet;
 	XL xl;
         double P_el[neqel];
 
@@ -232,7 +232,7 @@ int shConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *
 /* Assembly of the shg matrix for each integration point */
 
 		check=shshg( det, k, shl, shg, xl, zp1, zm1, znode,
-			dzdt_node, rotate, &fdum);
+			dzdt_node, rotate);
 		if(!check) printf( "Problems with shshg \n");
 
 		memset(U_el,0,neqel*sof);
@@ -292,13 +292,14 @@ int shConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *
                             	*(DB+neqel*4+i1)=*(B+neqel*4+i1)*G3;
 		       	}
 
+			wXdet = *(w+num_intb*i4+j)*(*(det+num_intb*i4+j));
+
                     	check=matXT(K_temp, B, DB, neqel, neqel, sdim);
                     	if(!check) printf( "Problems with matXT \n");
 
                     	for( i2 = 0; i2 < neqlsq; ++i2 )
                     	{
-                           *(K_el+i2) +=
-				*(K_temp+i2)*(*(w+num_intb*i4+j))*(*(det+num_intb*i4+j));
+                           *(K_el+i2) += *(K_temp+i2)*wXdet;
                     	}
                    }
                 }

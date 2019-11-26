@@ -1,5 +1,5 @@
 
-                             SLFFEA 1.1
+                             SLFFEA 1.2
 
                     Copyright (C) 1999 San Le
 
@@ -77,6 +77,9 @@ viewing.  A complete list is given below:
  f - turns on and off the applied forces or moments
  q - quits
  r - turns on and off rendering
+ s - turns on and off cutting planes
+        with cutting planes activated, arrow keys move the x and y cutting planes
+        rather than move the mesh and < and > move the z cutting plane.
  w - turns on and off wire frame(for beam, turns on or off distributed load)
  x - turns on or off axes
  y - screen dump

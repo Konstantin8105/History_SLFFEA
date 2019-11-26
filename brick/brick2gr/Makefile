@@ -1,7 +1,7 @@
 # SLFFEA Makefile
-# Version:  1.1
+# Version:  1.2
 # Copyright (C) 1999, 2000  San Le (slffea@yahoo.com)
-# http://slffea.com/
+# http://www.geocities.com/slffea/slffea.html
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Library General Public
@@ -39,11 +39,14 @@ COMMON_GR = ../../common_gr
 OBJECTS_GR = $(COMMON_GR)/pwinston.o $(COMMON_GR)/axes.o \
 	$(COMMON_GR)/mshcommon.o $(COMMON_GR)/crtlcommon.o \
 	$(COMMON_GR)/printext.o $(COMMON_GR)/screenshot.o \
-	$(COMMON_GR)/filecheck.o 
+	$(COMMON_GR)/filecheck.o $(COMMON_GR)/pointlocate.o \
+	$(COMMON_GR)/axeslabel.o $(COMMON_GR)/quat.o \
+	$(COMMON_GR)/crossplane.o
+
 
 OBJECTS_GRH = $(COMMON_GR)/color_gr.h $(COMMON_GR)/control.h 
 
-OBJECTS2 = $(COMMON)/crossx.o 
+OBJECTS2 = $(COMMON)/crossx.o $(COMMON)/matx.o 
 
 PROGS = br2post 
 

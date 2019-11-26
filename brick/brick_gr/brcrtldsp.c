@@ -2,11 +2,11 @@
     This program contains the control display routine for the FEM GUI
     for brick elements.
   
-                        Last Update 5/14/00
+                        Last Update 10/20/01
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -35,7 +35,7 @@
 #include <GL/glu.h>
 #include <GL/glut.h>
 
-extern GLfloat MeshColor[boxnumber+5][3];
+extern GLfloat MeshColor[boxnumber+5][4];
 
 extern int ControlDiv_y[rowdim + 2], ControlDiv_x[rowdim + 2];
 extern char ControlText[][90];
@@ -48,15 +48,15 @@ extern int current_width, current_height;
 extern int control_height, control_width, mesh_height, mesh_width;
 extern int stress_flag, strain_flag, stress_strain, disp_flag, thermal_flag;
 
-extern GLfloat yellow[3], orange[3], orangeRed[3], red[3], green[3],
-        violetRed[3], magenta[3], purple[3], blue[3],
-        white[3], grey[3], black[3];
+extern GLfloat yellow[4], orange[4], orangeRed[4], red[4], green[4],
+        violetRed[4], magenta[4], purple[4], blue[4],
+        white[4], grey[4], black[4];
 
-extern char RotateData[3][10];
-extern char MoveData[3][10];
-extern char AmplifyData[10];
-extern char BoxData[2*boxnumber+2][14];
-extern char BoxText[10];
+extern char RotateData[3][25];
+extern char MoveData[3][25];
+extern char AmplifyData[25];
+extern char BoxData[2*boxnumber+2][25];
+extern char BoxText[25];
 
 extern int Color_flag[rowdim];
 
@@ -71,7 +71,11 @@ void brControlDisplay(void)
     	glClear(GL_COLOR_BUFFER_BIT);
     	glMatrixMode(GL_MODELVIEW);
     	glPushMatrix();
-    	glColor3fv(white);
+    	glColor4fv(white);
+
+	memset(ControlText[6],0,13*sizeof(char));
+	memset(ControlText[8],0,13*sizeof(char));
+	memset(ControlText[10],0,13*sizeof(char));
 
 /* Draw the Text */
 
@@ -99,27 +103,27 @@ void brControlDisplay(void)
 
 	if( Color_flag[3])
 	{
-    		strcpy(ControlText[6],"Next   Last  ");
+    		strncpy(ControlText[6],"Next   Last  ", 13);
 	}
 	else
 	{
-    		strcpy(ControlText[6]," On          ");
+    		strncpy(ControlText[6]," On          ", 13);
 	}
 	if( Color_flag[4])
 	{
-    		strcpy(ControlText[8],"Next   Last  ");
+    		strncpy(ControlText[8],"Next   Last  ", 13);
 	}
 	else
 	{
-    		strcpy(ControlText[8]," On          ");
+    		strncpy(ControlText[8]," On          ", 13);
 	}
 	if( Color_flag[5])
 	{
-    		strcpy(ControlText[10],"Next   Last  ");
+    		strncpy(ControlText[10],"Next   Last  ", 13);
 	}
 	else
 	{
-    		strcpy(ControlText[10]," On          ");
+    		strncpy(ControlText[10]," On          ", 13);
 	}
 
     	for( i = 2 ; i < 9 ; ++i)
@@ -127,19 +131,19 @@ void brControlDisplay(void)
     	   	glLoadIdentity();
     	   	glTranslatef (0,textMove_y[i],0);
     	   	glScalef( ratio, ratio, 1.0);
-    		glColor3fv(white);
+    		glColor4fv(white);
 		if( Color_flag[i])
 		{
-    			glColor3fv(yellow);
+    			glColor4fv(yellow);
 		}
     	   	printText( ControlText[2*i] );
-    		glColor3fv(white);
+    		glColor4fv(white);
     	   	printText( ControlText[2*i+1] );
 	}
 
 /* This draws the Rotation and Move Text */
 
-    	glColor3fv(white);
+    	glColor4fv(white);
     	for( i = 9 ; i < 11 ; ++i)
 	{
     	   	glLoadIdentity();
@@ -189,19 +193,19 @@ void brControlDisplay(void)
 	}
 
 /* This draws the Deformation Text */
-    	glColor3fv(white);
+    	glColor4fv(white);
     	for( i = 23 ; i < 26 ; ++i)
 	{
     	   	glLoadIdentity();
     	   	glTranslatef (0,textMove_y[i],0);
     	   	glScalef( ratio, ratio, 1.0);
-    		glColor3fv(white);
+    		glColor4fv(white);
 		if( Color_flag[i])
 		{
-    			glColor3fv(yellow);
+    			glColor4fv(yellow);
 		}
     	   	printText( ControlText[2*i] );
-    		glColor3fv(white);
+    		glColor4fv(white);
     	   	printText( ControlText[2*i+1] );
 	}
 /* This draws the Amplification Data  */
@@ -216,7 +220,7 @@ void brControlDisplay(void)
 	
 /* This draws the Engineering Analysis Option Text */
 /* Stress and Strain */
-    	glColor3fv(white);
+    	glColor4fv(white);
         for( i = 27 ; i < 29 ; ++i)
         {
                 glLoadIdentity();
@@ -230,28 +234,28 @@ void brControlDisplay(void)
     	   	glLoadIdentity();
     	   	glTranslatef (0,textMove_y[i],0);
     	   	glScalef( ratio, ratio, 1.0);
-    		glColor3fv(white);
+    		glColor4fv(white);
 		if( Color_flag[i])
 		{
 			if( stress_flag)
 		  	{
-    		  		glColor3fv(yellow);
+    		  		glColor4fv(yellow);
 		  	}
 		}
     	   	printText( ControlText[2*i] );
-    		glColor3fv(white);
+    		glColor4fv(white);
 		if( Color_flag[i])
 		{
 		  	if( strain_flag)
 		  	{
-    		  		glColor3fv(yellow);
+    		  		glColor4fv(yellow);
 		  	}
 		}
     	   	printText( ControlText[2*i+1] );
 	}
 
 /* Displacement */
-    	glColor3fv(white);
+    	glColor4fv(white);
         for( i = 40 ; i < 42 ; ++i)
         {
                 glLoadIdentity();
@@ -265,14 +269,14 @@ void brControlDisplay(void)
     	   	glLoadIdentity();
     	   	glTranslatef (0,textMove_y[i],0);
     	   	glScalef( ratio, ratio, 1.0);
-    		glColor3fv(white);
+    		glColor4fv(white);
 #if BRICK1
 		if( Color_flag[i])
 		{
-			glColor3fv(yellow);
+			glColor4fv(yellow);
 		}
 		printText( ControlText[2*i] );
-		glColor3fv(white);
+		glColor4fv(white);
 		printText( ControlText[2*i+1] );
 #endif
 #if BRICK2
@@ -280,16 +284,16 @@ void brControlDisplay(void)
 		{
 			if( disp_flag)
 			{
-				glColor3fv(yellow);
+				glColor4fv(yellow);
 			}
 		}
 		printText( ControlText[2*i] );
-		glColor3fv(white);
+		glColor4fv(white);
 		if( Color_flag[i])
 		{
 			if( thermal_flag)
 			{
-				glColor3fv(yellow);
+				glColor4fv(yellow);
 			}
 		}
 		printText( ControlText[2*i+1] );
@@ -298,7 +302,7 @@ void brControlDisplay(void)
 
 /* Text label for Color Scale Boxes */
 
-    	glColor3fv(white);
+    	glColor4fv(white);
 	boxTextMove_x = (int)(ratio2*boxTextMove_x0);
         for( i = 27 ; i < 28 ; ++i)
         {
@@ -311,7 +315,7 @@ void brControlDisplay(void)
 /* Text for Color Scale Boxes */
 
         dum = 0;
-    	glColor3fv(white);
+    	glColor4fv(white);
         for( i = 29 ; i < rowdim + 2 ; i += 1)
         {
                 glLoadIdentity();
@@ -331,28 +335,28 @@ void brControlDisplay(void)
 	glLoadIdentity();
 	glTranslatef (boxMove_x,boxMove_y,0);
 	glScalef( ratio2, ratio2, 1.0);
-	glColor3fv(MeshColor[0]);
+	glColor4fv(MeshColor[0]);
 	glRects(0,0,boxdim,boxdim);
 	glTranslatef (0,boxHeight,0);
-	glColor3fv(MeshColor[1]);
+	glColor4fv(MeshColor[1]);
 	glRects(0,0,boxdim,boxdim);
 	glTranslatef (0,boxHeight,0);
-	glColor3fv(MeshColor[2]);
+	glColor4fv(MeshColor[2]);
 	glRects(0,0,boxdim,boxdim);
 	glTranslatef (0,boxHeight,0);
-	glColor3fv(MeshColor[3]);
+	glColor4fv(MeshColor[3]);
 	glRects(0,0,boxdim,boxdim);
 	glTranslatef (0,boxHeight,0);
-	glColor3fv(MeshColor[4]);
+	glColor4fv(MeshColor[4]);
 	glRects(0,0,boxdim,boxdim);
 	glTranslatef (0,boxHeight,0);
-	glColor3fv(MeshColor[5]);
+	glColor4fv(MeshColor[5]);
 	glRects(0,0,boxdim,boxdim);
 	glTranslatef (0,boxHeight,0);
-	glColor3fv(MeshColor[6]);
+	glColor4fv(MeshColor[6]);
 	glRects(0,0,boxdim,boxdim);
 	glTranslatef (0,boxHeight,0);
-	glColor3fv(MeshColor[7]);
+	glColor4fv(MeshColor[7]);
 	glRects(0,0,boxdim,boxdim);
 
 	glutSwapBuffers();

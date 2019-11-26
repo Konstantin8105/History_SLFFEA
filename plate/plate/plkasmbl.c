@@ -2,11 +2,11 @@
     This utility function assembles the K matrix for a finite 
     element program which does analysis on a plate.
 
-		Updated 11/2/00
+		Updated 9/27/01
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -42,15 +42,14 @@ int plateB4pt_node( double *, double *);
 
 int plateB1pt( double *, double *);
 
-int plshg( double *, int, SH, SH, double *, double *);
+int plshg( double *, int, SH, SH, double *);
 
 int plstress_shg( double *, int, double *, double *, double * );
-               
+
 int plKassemble(double *A, int *connect, double *coord, CURVATURE *curve, MDIM *curve_node,
 	int *el_matl, double *force, int *id, int *idiag, double *K_diag, int *lm,
 	MATL *matl, MOMENT *moment, MDIM *moment_node, double *node_counter,
-	STRAIN *strain, SDIM *strain_node, STRESS *stress, SDIM *stress_node, double *U,
-	double *Arean)
+	STRAIN *strain, SDIM *strain_node, STRESS *stress, SDIM *stress_node, double *U)
 {
         int i, i1, i2, i3, j, k, dof_el[neqel], sdof_el[npel*nsd];
 	int check, counter, node;
@@ -63,7 +62,7 @@ int plKassemble(double *A, int *connect, double *coord, CURVATURE *curve, MDIM *
 	double force_el[neqel], U_el[neqel];
         double coord_el_trans[npel*nsd];
 	double stress_el[sdim], strain_el[sdim], xxaddyy, xxsubyy, xysq;
-	double det[num_int+1];
+	double det[num_int+1], wXdet;
 
         for( k = 0; k < numel; ++k )
         {
@@ -118,7 +117,7 @@ int plKassemble(double *A, int *connect, double *coord, CURVATURE *curve, MDIM *
 
 /* Assembly of the shg matrix for each integration point */
 
-		check=plshg(det, k, shl, shg, coord_el_trans, (Arean+k));
+		check=plshg(det, k, shl, shg, coord_el_trans);
 		if(!check) printf( "Problems with plshg \n");
 
 		memset(U_el,0,neqel*sof);
@@ -161,6 +160,8 @@ int plKassemble(double *A, int *connect, double *coord, CURVATURE *curve, MDIM *
                         *(DB+neqel*2+i1)=*(B+neqel*2+i1)*G1;
                     }
 
+		    wXdet = *(w+j)*(*(det+j));
+
                     check=matXT(K_temp, B, DB, neqel, neqel, sdim);
                     if(!check) printf( "Problems with matXT \n");
 
@@ -169,7 +170,7 @@ int plKassemble(double *A, int *connect, double *coord, CURVATURE *curve, MDIM *
 
                     for( i2 = 0; i2 < neqlsq; ++i2 )
                     {
-                          *(K_el+i2) += *(K_temp+i2)*(*(w+j))*(*(det+j));
+                          *(K_el+i2) += *(K_temp+i2)*wXdet;
                     }
                 }
 
@@ -213,7 +214,7 @@ int plKassemble(double *A, int *connect, double *coord, CURVATURE *curve, MDIM *
 /* Calculate the element reaction forces */
 
 			for( j = 0; j < neqel; ++j )
-                        {
+			{
 				*(force + *(dof_el+j)) += *(force_el + j);
 			}
 
@@ -223,42 +224,40 @@ int plKassemble(double *A, int *connect, double *coord, CURVATURE *curve, MDIM *
 			G2 = mu*const2;
 			G3 = mu*const2;
 
-/* Assembly of the plstress_shg matrix for each nodal point */
-
 /*
    plstress_shg calculates shg at the nodes.  It is more efficient than plshg
-   because it removes all the zero multiplications from the calculation of shg. 
-   You can use either function when calculating shg at the nodes.  Because stress
-   is calculated at the Gauss points, plshg is used.
+   because it removes all the zero multiplications from the calculation of shg.
+   You can use either function when calculating shg at the nodes.
 
-			check=plshg(det, k, shl_node, shg, coord_el_trans, (Arean+k));
-			check=plstress_shg(det, k, shl_node2, shg, coord_el_trans);
+			   check=plstress_shg(det, k, shl_node2, shg_node.bend, coord_el_trans);
+			   check=plshg(det, k, shl_node, shg_node, coord_el_trans);
 */
+
 			if(gauss_stress_flag)
 			{
 /* Calculate shg at integration point */
-				check=plshg(det, k, shl, shg, coord_el_trans, (Arean+k));
-				if(!check) printf( "Problems with plshg \n");
+			   check=plshg(det, k, shl, shg, coord_el_trans);
+			   if(!check) printf( "Problems with plshg \n");
 			}
 			else
 			{
 /* Calculate shg at nodal point */
-				check=plshg(det, k, shl_node, shg_node, coord_el_trans, (Arean+k));
-				if(!check) printf( "Problems with plshg \n");
+			   check=plstress_shg(det, k, shl_node2, shg_node.bend, coord_el_trans);
+			   if(!check) printf( "Problems with plshg \n");
 			}
 
-                	memset((B+neqel*(sdim-2)),0,neqel*(sdim-3)*sof);
+			memset((B+neqel*(sdim-2)),0,neqel*(sdim-3)*sof);
 
 /* Assembly of the B matrix */
 
-                	check = plateB1pt(shg.shear, (B+(sdim-2)*neqel));
-                	if(!check) printf( "Problems with plateB1pt \n");
+			check = plateB1pt(shg.shear, (B+(sdim-2)*neqel));
+			if(!check) printf( "Problems with plateB1pt \n");
 
 			for( j = 0; j < num_int; ++j )
-                	{
-		    	   memset(B,0,neqel*(sdim-2)*sof);
-                    	   memset(stress_el,0,sdim*sof);
-                    	   memset(strain_el,0,sdim*sof);
+			{
+			   memset(B,0,neqel*(sdim-2)*sof);
+			   memset(stress_el,0,sdim*sof);
+			   memset(strain_el,0,sdim*sof);
 
 			   node = *(connect+npel*k+j);
 
@@ -266,38 +265,38 @@ int plKassemble(double *A, int *connect, double *coord, CURVATURE *curve, MDIM *
 
 			   if(gauss_stress_flag)
 			   {
-		    	   	check = plateB4pt((shg.bend+npel*(nsd+1)*j), B);
-                    	   	if(!check) printf( "Problems with plateB4pt \n");
+				check = plateB4pt((shg.bend+npel*(nsd+1)*j), B);
+				if(!check) printf( "Problems with plateB4pt \n");
 			   }
 			   else
 			   {
 /* Calculate the shear terms in B at nodes using shg_node */
-		    	   	check = plateB4pt_node((shg_node.bend+npel*(nsd+1)*j), B);	
-                    	   	if(!check) printf( "Problems with plateB4pt_node \n");
+				check = plateB4pt_node((shg_node.bend+npel*(nsd+1)*j), B);	
+				if(!check) printf( "Problems with plateB4pt_node \n");
 			   }
 
 /* Calculation of the local strain matrix */
 
-                	   check=matX(strain_el, B, U_el, sdim, 1, neqel );
-                    	   if(!check) printf( "Problems with matX \n");
+			   check=matX(strain_el, B, U_el, sdim, 1, neqel );
+			   if(!check) printf( "Problems with matX \n");
 
 #if 0
-                    	   for( i1 = 0; i1 < sdim; ++i1 )
-                    	   {
-                          	     printf("%12.8f ",*(stress_el+i1));
-                          	     /*printf("%12.2f ",*(stress_el+i1));
-                          	     printf("%12.8f ",*(B+i1));*/
-                    	   }
-                    	   printf("\n");
+			   for( i1 = 0; i1 < sdim; ++i1 )
+			   {
+				   printf("%12.8f ",*(stress_el+i1));
+				   /*printf("%12.2f ",*(stress_el+i1));
+				   printf("%12.8f ",*(B+i1));*/
+			   }
+			   printf("\n");
 #endif
 
 /* Update of the global strain matrix */
 
-		       	   curve[k].pt[j].xx = *(strain_el);
-		     	   curve[k].pt[j].yy = *(strain_el+1);
-		    	   curve[k].pt[j].xy = *(strain_el+2);
-		    	   strain[k].pt[j].zx = *(strain_el+3);
-		    	   strain[k].pt[j].yz = *(strain_el+4);
+			   curve[k].pt[j].xx = *(strain_el);
+			   curve[k].pt[j].yy = *(strain_el+1);
+			   curve[k].pt[j].xy = *(strain_el+2);
+			   strain[k].pt[j].zx = *(strain_el+3);
+			   strain[k].pt[j].yz = *(strain_el+4);
 
 /* Calculate the principal straines */
 
@@ -305,11 +304,11 @@ int plKassemble(double *A, int *connect, double *coord, CURVATURE *curve, MDIM *
 			   xxsubyy = .5*(curve[k].pt[j].xx - curve[k].pt[j].yy);
 			   xysq = curve[k].pt[j].xy*curve[k].pt[j].xy;
 
-		    	   curve[k].pt[j].I = xxaddyy + sqrt( xxsubyy*xxsubyy
+			   curve[k].pt[j].I = xxaddyy + sqrt( xxsubyy*xxsubyy
 				+ xysq);
-		    	   curve[k].pt[j].II = xxaddyy - sqrt( xxsubyy*xxsubyy
+			   curve[k].pt[j].II = xxaddyy - sqrt( xxsubyy*xxsubyy
 				+ xysq);
-           		   /*printf("%14.6e %14.6e %14.6e\n",xxaddyy,xxsubyy,xysq);*/
+			   /*printf("%14.6e %14.6e %14.6e\n",xxaddyy,xxsubyy,xysq);*/
 
 /* Add all the curvatures and strains for a particular node from all the elements which
    share that node */
@@ -334,11 +333,11 @@ int plKassemble(double *A, int *connect, double *coord, CURVATURE *curve, MDIM *
 
 /* Update of the global stress matrix */
 
-		       	   moment[k].pt[j].xx += *(stress_el);
-		     	   moment[k].pt[j].yy += *(stress_el+1);
-		    	   moment[k].pt[j].xy += *(stress_el+2);
-		    	   stress[k].pt[j].zx += *(stress_el+3);
-		    	   stress[k].pt[j].yz += *(stress_el+4);
+			   moment[k].pt[j].xx += *(stress_el);
+			   moment[k].pt[j].yy += *(stress_el+1);
+			   moment[k].pt[j].xy += *(stress_el+2);
+			   stress[k].pt[j].zx += *(stress_el+3);
+			   stress[k].pt[j].yz += *(stress_el+4);
 
 /* Calculate the principal stresses */
 
@@ -346,9 +345,9 @@ int plKassemble(double *A, int *connect, double *coord, CURVATURE *curve, MDIM *
 			   xxsubyy = .5*(moment[k].pt[j].xx - moment[k].pt[j].yy);
 			   xysq = moment[k].pt[j].xy*moment[k].pt[j].xy;
 
-		    	   moment[k].pt[j].I = xxaddyy + sqrt( xxsubyy*xxsubyy
+			   moment[k].pt[j].I = xxaddyy + sqrt( xxsubyy*xxsubyy
 				+ xysq);
-		    	   moment[k].pt[j].II = xxaddyy - sqrt( xxsubyy*xxsubyy
+			   moment[k].pt[j].II = xxaddyy - sqrt( xxsubyy*xxsubyy
 				+ xysq);
 
 /* Add all the moments and stresses for a particular node from all the elements which
@@ -363,13 +362,13 @@ int plKassemble(double *A, int *connect, double *coord, CURVATURE *curve, MDIM *
 			   moment_node[node].II += moment[k].pt[j].II;
 
 /*
-           		   printf("%14.6e ",moment[k].pt[j].xx);
-           		   printf("%14.6e ",moment[k].pt[j].yy);
-           		   printf("%14.6e ",moment[k].pt[j].xy);
-           		   printf( "\n");
+			   printf("%14.6e ",moment[k].pt[j].xx);
+			   printf("%14.6e ",moment[k].pt[j].yy);
+			   printf("%14.6e ",moment[k].pt[j].xy);
+			   printf( "\n");
 */
 			}
-           		/*printf( "\n");*/
+			/*printf( "\n");*/
 		}
 	}
 

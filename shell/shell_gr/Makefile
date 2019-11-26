@@ -1,6 +1,6 @@
 # SLFFEA Makefile
-# Version:  1.1
-# Copyright (C) 1999, 2000  San Le (slffea@yahoo.com)
+# Version:  1.2
+# Copyright (C) 1999, 2000  San Le (slffea.juno.com)
 # http://slffea.com/
 #
 # This library is free software; you can redistribute it and/or
@@ -38,11 +38,13 @@ COMMON_GR = ../../common_gr
 OBJECTS_GR = $(COMMON_GR)/pwinston.o $(COMMON_GR)/axes.o \
 	$(COMMON_GR)/mshcommon.o $(COMMON_GR)/crtlcommon.o \
 	$(COMMON_GR)/printext.o $(COMMON_GR)/screenshot.o \
-	$(COMMON_GR)/filecheck.o 
+	$(COMMON_GR)/filecheck.o $(COMMON_GR)/pointlocate.o \
+	$(COMMON_GR)/axeslabel.o $(COMMON_GR)/quat.o \
+	$(COMMON_GR)/crossplane.o
 
 OBJECTS_GRH = $(COMMON_GR)/color_gr.h $(COMMON_GR)/control.h 
 
-OBJECTS2 = $(COMMON)/crossx.o $(COMMON)/dotx.o 
+OBJECTS2 = $(COMMON)/crossx.o $(COMMON)/matx.o $(COMMON)/dotx.o 
 
 COMMON_GR = ../../common_gr
 

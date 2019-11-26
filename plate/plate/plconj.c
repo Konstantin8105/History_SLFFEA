@@ -6,11 +6,11 @@
     which allocates the memory and goes through the steps of the algorithm.
     These go with the calculation of displacement.
 
-		Updated 12/11/02
+	                Updated 11/2/06
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -42,7 +42,7 @@ int plateB4pt( double *, double *);
 
 int plateB4pt_node( double *, double *);
 
-int plshg( double *, int, SH, SH, double *, double *);
+int plshg( double *, int, SH, SH, double *);
 
 int dotX(double *, double *, double *, int);
 
@@ -55,7 +55,7 @@ int plConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *
 /* This function assembles the P_global matrix for the displacement calculation by
    taking the product [K_el]*[U_el].  Some of the [K_el] is stored in [A].
 
-			Updated 7/3/00
+	                Updated 11/2/06
 */
         int i, i1, i2, j, k, dof_el[neqel], sdof_el[npel*nsd];
 	int check, node;
@@ -68,7 +68,7 @@ int plConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *
 	double K_temp[neqlsq], K_el[neqlsq];
 	double U_el[neqel];
         double coord_el_trans[npel*nsd];
-	double det[num_int+1];
+	double det[num_int+1], wXdet;
         double P_el[neqel];
 
 
@@ -150,7 +150,7 @@ int plConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *
 
 /* Assembly of the shg matrix for each integration point */
 
-		check = plshg(det, k, shl, shg, coord_el_trans, &fdum);
+		check = plshg(det, k, shl, shg, coord_el_trans);
 		if(!check) printf( "Problems with plshg \n");
 
 		memset(U_el,0,neqel*sof);
@@ -192,6 +192,8 @@ int plConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *
                         *(DB+neqel*2+i1)=*(B+neqel*2+i1)*G1;
                     }
 
+		    wXdet = *(w+j)*(*(det+j));
+
                     check = matXT(K_temp, B, DB, neqel, neqel, sdim);
                     if(!check) printf( "Problems with matXT \n");
 
@@ -200,7 +202,7 @@ int plConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *
 
                     for( i2 = 0; i2 < neqlsq; ++i2 )
                     {
-                          *(K_el+i2) += *(K_temp+i2)*(*(w+j))*(*(det+j));
+                          *(K_el+i2) += *(K_temp+i2)*wXdet;
                     }
                 }
 

@@ -1,7 +1,7 @@
 /*
      SLFFEA source file
-     Version:  1.1
-     Copyright (C) 1999, 2000  San Le
+     Version:  1.2
+     Copyright (C) 1999, 2000, 2001  San Le
 
      The source code contained in this file is released under the
      terms of the GNU Library General Public License.
@@ -54,7 +54,7 @@ int brshl_film( double g, double *shl_film)
         return 1;
 }
 
-int brshface( double *dArea, int el, double *shl_film, double *xl, double *Area)
+int brshface( double *dArea, int el, double *shl_film, double *xl)
 {
 /*
      This subroutine calculates the derivatives of the global coordinates
@@ -87,16 +87,12 @@ int brshface( double *dArea, int el, double *shl_film, double *xl, double *Area)
           k    = INTEGRATION-POINT NUMBER
        num_int_film    = NUMBER OF INTEGRATION POINTS FOR FILM SURFACE, 4
 		
-			Updated 5/2/00
+			Updated 9/25/01
 */
 
         double xs[6];
 	double fdum, fdum2, fdum3;
 	int check,i,j,k;
-
-/* initialize the Area */
-
-	*(Area)=0.0;
 
         for( k = 0; k < num_int_film; ++k )
 	{
@@ -118,9 +114,7 @@ int brshface( double *dArea, int el, double *shl_film, double *xl, double *Area)
 	   *(dArea + k) = fdum*fdum + fdum2*fdum2 + fdum3*fdum3;
 	   *(dArea + k) = sqrt(*(dArea + k));
 
-	   *Area +=*(dArea+k);
-
-	   /*printf("k %3d %14.5f %14.5f %14.5f %14.5f\n",k,fdum, fdum2, fdum3, *Area);*/
+	   /*printf("k %3d %14.5f %14.5f %14.5f %14.5f\n",k,fdum, fdum2, fdum3);*/
 
 	}
         return 1; 

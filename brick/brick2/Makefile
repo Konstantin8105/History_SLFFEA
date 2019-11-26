@@ -31,10 +31,10 @@ COMMON = ../../common
 BRICK = ../brick
 OBJECTS = $(COMMON)/matxt.o $(COMMON)/matx.o $(COMMON)/dotx.o \
 	$(COMMON)/lm.o $(COMMON)/idiag.o $(COMMON)/kasmbl.o \
-	$(COMMON)/sky.o 
+	$(COMMON)/sky.o $(COMMON)/cubic.o 
 OBJECTS2 = $(COMMON)/crossx.o
-OBJECTS_BR = $(BRICK)/brshape.o $(BRICK)/brickb.o $(BRICK)/brcubic.o \
-	$(BRICK)/brstress.o $(BRICK)/brwriter2.o 
+OBJECTS_BR = $(BRICK)/brshape.o $(BRICK)/brickb.o $(BRICK)/brstress.o \
+	$(BRICK)/brvolume.o $(BRICK)/brwriter2.o 
 
 PROGS = br2 
 
@@ -53,6 +53,7 @@ br2: fembr2.o \
 		brbound.o \
 		br2kasmbl.o \
 		br2writer.o \
+		brarea.o \
 		../brick/brconst.h \
 		br2struct.h 
 	$(CC) -o br2 fembr2.o \
@@ -67,7 +68,11 @@ br2: fembr2.o \
 		br2bound.o \
 		brbound.o \
 		br2kasmbl.o \
-		br2writer.o $(OBJECTS_BR) $(OBJECTS) $(LIBS)
+		br2writer.o \
+		brarea.o $(OBJECTS_BR) $(OBJECTS) $(LIBS)
+
+brarea.o: brarea.c
+	$(CC) -c brarea.c 
 
 br2writer.o: br2writer.c
 	$(CC) -c br2writer.c 

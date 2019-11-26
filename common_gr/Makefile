@@ -1,6 +1,6 @@
 # SLFFEA Makefile
-# Version:  1.1
-# Copyright (C) 1999  San Le (slffea.juno.com)
+# Version:  1.2
+# Copyright (C) 1999, 2000, 2001  San Le (slffea.juno.com)
 # http://slffea.com/
 #
 # This library is free software; you can redistribute it and/or
@@ -21,11 +21,15 @@
 # CC = /usr/lang/acc -g
 CC = /usr/bin/gcc
 
-all: pwinston.o axes.o mshcommon.o crtlcommon.o \
-	printext.o screenshot.o filecheck.o
+all: pwinston.o axes.o axeslabel.o mshcommon.o crtlcommon.o \
+	printext.o screenshot.o filecheck.o scalcom.o \
+	mytext.o pointlocate.o quat.o crossplane.o
 
 pwinston.o: pwinston.c 
 	$(CC) -c pwinston.c
+
+axeslabel.o: axeslabel.c 
+	$(CC) -c axeslabel.c
 
 axes.o: axes.c 
 	$(CC) -c axes.c
@@ -44,6 +48,21 @@ screenshot.o: screenshot.c
 
 filecheck.o: filecheck.c
 	$(CC) -c filecheck.c 
+
+scalcom.o: scalcom.c
+	$(CC) -c scalcom.c 
+
+mytext.o: mytext.c
+	$(CC) -c mytext.c 
+
+pointlocate.o: pointlocate.c
+	$(CC) -c pointlocate.c 
+
+quat.o: quat.c
+	$(CC) -c quat.c 
+
+crossplane.o: crossplane.c
+	$(CC) -c crossplane.c 
 
 clean:
 	-rm *.o 

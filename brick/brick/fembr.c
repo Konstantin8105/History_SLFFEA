@@ -4,10 +4,10 @@
     then solving the linear system for a brick
     element.
 
-        Updated 11/3/09
+        Updated 11/2/09
 
     SLFFEA source file
-    Version:  1.1
+    Version:  1.2
     Copyright (C) 1999-2009  San Le 
 
     The source code contained in this file is released under the
@@ -28,6 +28,8 @@
 
 int brConnectSurfwriter ( int *, int *, char *);
 
+int brVolume( int *, double *, double *);
+
 int brwriter ( BOUND , int *, double *, int *, double *, int *, MATL *,
 	char *, STRAIN *, SDIM *, STRESS *, SDIM *, double *);
 
@@ -47,7 +49,7 @@ int brMassemble(int *, double *, int *, int *, double *, MATL *);
 
 int brKassemble(double *, int *, int *, double *, int *, int *, double *,
 	int *, int *, double *, int *, MATL *, double *, STRAIN *, SDIM *,
-	STRESS *, SDIM *, double *, double *);
+	STRESS *, SDIM *, double *);
 
 int diag( int *, int *, int, int, int, int);
 
@@ -225,7 +227,7 @@ int main(int argc, char** argv)
 /* The criteria for over-calculating the number of desired eigenvalues is
    taken from "The Finite Element Method" by Thomas Hughes, page 578.  It
    is actually given for subspace iteration, but I find it works well
-   for the Lanczos Method as well.  I have also slightly modified
+   for the Lanczos Method.  I have also slightly modified
    one of the factors from 2.0 to 2.2.
 */
 		num_eigen = (int)(2.2*nmode);
@@ -501,7 +503,7 @@ int main(int argc, char** argv)
 	memset(A,0,sofmA*sof);
         check = brKassemble(A, connect, connect_surf, coord, el_matl, el_matl_surf,
 		force, id, idiag, K_diag, lm, matl, node_counter, strain,
-		strain_node, stress, stress_node, U, Voln);
+		strain_node, stress, stress_node, U);
         if(!check) printf( " Problems with brKassemble \n");
 /*
         printf( "\n\n This is the force matrix \n");
@@ -597,7 +599,7 @@ int main(int argc, char** argv)
 	    memset(force,0,dof*sof);
             check = brKassemble(A, connect, connect_surf, coord, el_matl, el_matl_surf,
 		force, id, idiag, K_diag, lm, matl, node_counter, strain, strain_node,
-		stress, stress_node, U, Voln);
+		stress, stress_node, U);
             if(!check) printf( " Problems with brKassembler \n");
 /*
             printf( "\n\n These are the reaction forces \n");
@@ -715,7 +717,7 @@ int main(int argc, char** argv)
 		check = brKassemble(A, connect, connect_surf, coord, el_matl,
 		    el_matl_surf, vector_dum, id, idiag, K_diag, lm, matl,
 		    node_counter, strain, strain_node, stress, stress_node,
-		    U, Voln);
+		    U);
 		if(!check) printf( " Problems with brKassembler \n");
 
 		check = brwriter( bc, connect, coord, el_matl, force, id, matl,
@@ -725,6 +727,19 @@ int main(int argc, char** argv)
 		++counter;
 	    }
 	}
+
+/* Calculating the value of the Volumes */
+
+	check = brVolume( connect, coord, Voln);
+	if(!check) printf( " Problems with brVolume \n");
+
+/*
+        printf("\nThis is the Volume\n");
+        for( i = 0; i < numel; ++i )
+        {
+                printf("%4i %12.4e\n",i, *(Voln + i));
+        }
+*/
 
 	check = brConnectSurfwriter( connect_surf, el_matl_surf, name);
 	if(!check) printf( " Problems with brConnectSurfwriter \n");

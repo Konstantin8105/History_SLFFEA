@@ -4,11 +4,11 @@
     the element mass matrices.  This is for a finite element program
     which does analysis on a shell.  It is for modal analysis.
 
-		Updated 10/9/00
+		Updated 9/26/01
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -34,7 +34,7 @@ int matXT(double *, double *, double *, int, int, int);
 int shellB_mass(double *, double *, double *, double *);
 
 int shshg_mass( double *, int , SH , XL , double *, double *, double *,
-	double *, double *);
+	double *);
 
 int normcrossX(double *, double *, double *);
 
@@ -51,7 +51,7 @@ int shMassemble(int *connect, double *coord, int *el_matl, int *id,
 	double coord_el_trans[npel*nsd], zm1[npell], zp1[npell],
 		znode[npell*num_ints], dzdt_node[npell];
 	double vec_dum[nsd];
-        double det[num_int], volume_el, volume_mass_el;
+        double det[num_int], volume_el, volume_mass_el, wXdet;
 	XL xl;
         double mass_el[neqel], mass_el_disp, mass_el_rot;
 
@@ -78,6 +78,7 @@ int shMassemble(int *connect, double *coord, int *el_matl, int *id,
         {
                 matl_num = *(el_matl+k);
                 rho = matl[matl_num].rho;
+		volume_el = 0.0;
 
 /* Zero out the Element mass matrices */
 
@@ -184,13 +185,9 @@ int shMassemble(int *connect, double *coord, int *el_matl, int *id,
 
 /* The call to shshg_mass is only for calculating the determinent */
 
-		check = shshg_mass( det, k, shl, xl, zp1, zm1, znode,
-			dzdt_node, &volume_el);
+		check = shshg_mass( det, k, shl, xl, zp1, zm1, znode, dzdt_node);
 		if(!check) printf( "Problems with shshg_mass \n");
 
-		volume_mass_el = volume_el*rho;
-
-                /* printf("This is 3 X Volume %10.6f for element %4d\n",3.0*volume_el,k);*/
 #if 0
                 for( i1 = 0; i1 < num_intb; ++i1 )
                 {
@@ -221,6 +218,14 @@ int shMassemble(int *connect, double *coord, int *el_matl, int *id,
 			    znode, B_mass, rotate.f_shear);
 			if(!check) printf( "Problems with shellB_mass \n");
 
+			wXdet = *(w+num_intb*i4+j)*(*(det+num_intb*i4+j));
+
+/* Calculate the Volume from determinant of the Jacobian */
+
+			volume_el += wXdet;
+
+			fdum =  rho*wXdet;
+
 			if(lumped_mass_flag)
 			{
 
@@ -249,7 +254,6 @@ multiplications of B_mass.
 					*(B_mass+neqel*2+ndof*i2+4)*(*(B_mass+neqel*2+ndof*i2+4));
 			    }
 
-			    fdum =  rho*(*(w+num_intb*i4+j))*(*(det+num_intb*i4+j));
 			    for( i2 = 0; i2 < neqel; ++i2 )
 			    {
 				*(M_el + i2) += *(M_temp + i2)*fdum;
@@ -265,7 +269,6 @@ multiplications of B_mass.
                 	    check=matXT(M_temp, B_mass, B2_mass, neqel, neqel, nsd);
                 	    if(!check) printf( "Problems with matXT \n");
 
-			    fdum =  rho*(*(w+num_intb*i4+j))*(*(det+num_intb*i4+j));
 			    for( i2 = 0; i2 < neqlsq; ++i2 )
 			    {
 				*(M_el+i2) += *(M_temp+i2)*fdum;
@@ -274,6 +277,10 @@ multiplications of B_mass.
 
 		   }
 		}
+
+                /* printf("This is 3 X Volume %10.6f for element %4d\n",3.0*volume_el,k);*/
+
+		volume_mass_el = volume_el*rho;
 
 		if(lumped_mass_flag)
 		{

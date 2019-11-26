@@ -1,12 +1,13 @@
 /*
     This subroutine calculates the global shape function derivatives for
-    a brick element at the nodal points.
+    a brick element at the nodal points.  It is streamlined by removal
+    of the zero terms.
 
-        Updated 2/1/00
+        Updated 9/22/01
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -22,7 +23,7 @@
 
 extern int sof;
 
-int brstress_shg(double *det, int el, double *shl_node, double *shg, double *xl )
+int brstress_shg(double *det, int el, double *shl_node2, double *shg, double *xl )
 {
 /*
  ....  CALCULATE GLOBAL DERIVATIVES OF SHAPE FUNCTIONS AND
@@ -35,10 +36,10 @@ int brstress_shg(double *det, int el, double *shl_node, double *shg, double *xl 
    *(xl+npel*(0,1,2)+*(node_zeta+2*k+(0,1))) = GLOBAL COORDINATES CORRESPONDING TO
 					       NONZERO SHAPE FUNCTION dN/dzeta
        *(det+k)  = JACOBIAN DETERMINANT
-       *(shl_node+2*nsd*k+i) = LOCAL ("XI") DERIVATIVE OF SHAPE FUNCTION
-       *(shl_node+2*nsd*k+2*1+i) = LOCAL ("ETA") DERIVATIVE OF SHAPE FUNCTION
-       *(shl_node+2*nsd*k+2*2+i) = LOCAL ("ZETA") DERIVATIVE OF SHAPE FUNCTION
-       *(shl_node+2*nsd*k+2*3+i) = LOCAL SHAPE FUNCTION
+       *(shl_node2+2*nsd*k+i) = LOCAL ("XI") DERIVATIVE OF SHAPE FUNCTION
+       *(shl_node2+2*nsd*k+2*1+i) = LOCAL ("ETA") DERIVATIVE OF SHAPE FUNCTION
+       *(shl_node2+2*nsd*k+2*2+i) = LOCAL ("ZETA") DERIVATIVE OF SHAPE FUNCTION
+       *(shl_node2+2*nsd*k+2*3+i) = LOCAL SHAPE FUNCTION
 
        2 has replaced "npel" because there are only 2 non-zero shape function
        derivatives when evaluating at a node.
@@ -62,7 +63,7 @@ int brstress_shg(double *det, int el, double *shl_node, double *shg, double *xl 
 		for dN/dzeta
 
 		1111
-			Updated 12/11/98 */
+			Updated 9/22/01 */
 
         int node_xi[]  = {0,1,0,1,2,3,2,3,4,5,4,5,6,7,6,7};
         int node_eta[] = {0,3,1,2,1,2,0,3,4,7,5,6,5,6,4,7};
@@ -81,14 +82,14 @@ int brstress_shg(double *det, int el, double *shl_node, double *shg, double *xl 
            for( j = 0; j < nsd; ++j )
 	   {
 	    	*(xs+nsd*j) = 
-	           *(shl_node+2*nsd*k)*(*(xl+npel*j+*(node_xi+2*k))) +
-	           *(shl_node+2*nsd*k+1)*(*(xl+npel*j+*(node_xi+2*k+1)));
+	           *(shl_node2+2*nsd*k)*(*(xl+npel*j+*(node_xi+2*k))) +
+	           *(shl_node2+2*nsd*k+1)*(*(xl+npel*j+*(node_xi+2*k+1)));
 	    	*(xs+nsd*j+1) = 
-	           *(shl_node+2*nsd*k+2*1)*(*(xl+npel*j+*(node_eta+2*k))) +
-	           *(shl_node+2*nsd*k+2*1+1)*(*(xl+npel*j+*(node_eta+2*k+1)));
+	           *(shl_node2+2*nsd*k+2*1)*(*(xl+npel*j+*(node_eta+2*k))) +
+	           *(shl_node2+2*nsd*k+2*1+1)*(*(xl+npel*j+*(node_eta+2*k+1)));
 	    	*(xs+nsd*j+2) = 
-	           *(shl_node+2*nsd*k+2*2)*(*(xl+npel*j+*(node_zeta+2*k))) +
-	           *(shl_node+2*nsd*k+2*2+1)*(*(xl+npel*j+*(node_zeta+2*k+1)));
+	           *(shl_node2+2*nsd*k+2*2)*(*(xl+npel*j+*(node_zeta+2*k))) +
+	           *(shl_node2+2*nsd*k+2*2+1)*(*(xl+npel*j+*(node_zeta+2*k+1)));
 	   }
 
            *(temp)=*(xs+4)*(*(xs+8))-*(xs+7)*(*(xs+5));
@@ -98,7 +99,7 @@ int brstress_shg(double *det, int el, double *shl_node, double *shg, double *xl 
            *(det+k)=*(xs)*(*(temp))+*(xs+1)*(*(temp+3))+*(xs+2)*(*(temp+6));
            /*printf("%d %f\n", k, *(det+k));*/
 
-           if(*(det+k) < 0 ) 
+           if(*(det+k) <= 0.0 ) 
 	   {
                 printf("the element (%6d) is inverted: %f %d\n", el,*(det+k),k);
 		return 1;
@@ -122,46 +123,46 @@ int brstress_shg(double *det, int el, double *shl_node, double *shg, double *xl 
 	   }
 
 	   *(shg+npel*(nsd+1)*k+*(node_xi+2*k)) =
-		*(shl_node+6*k)*(*(xs));
+		*(shl_node2+6*k)*(*(xs));
 	   *(shg+npel*(nsd+1)*k+npel*1+*(node_xi+2*k)) =
-		*(shl_node+6*k)*(*(xs+1));
+		*(shl_node2+6*k)*(*(xs+1));
 	   *(shg+npel*(nsd+1)*k+npel*2+*(node_xi+2*k)) =
-		*(shl_node+6*k)*(*(xs+2));
+		*(shl_node2+6*k)*(*(xs+2));
 
 	   *(shg+npel*(nsd+1)*k+*(node_xi+2*k+1)) =
-		*(shl_node+6*k+1)*(*(xs));
+		*(shl_node2+6*k+1)*(*(xs));
 	   *(shg+npel*(nsd+1)*k+npel*1+*(node_xi+2*k+1)) =
-		*(shl_node+6*k+1)*(*(xs+1));
+		*(shl_node2+6*k+1)*(*(xs+1));
 	   *(shg+npel*(nsd+1)*k+npel*2+*(node_xi+2*k+1)) =
-		*(shl_node+6*k+1)*(*(xs+2));
+		*(shl_node2+6*k+1)*(*(xs+2));
 
 	   *(shg+npel*(nsd+1)*k+*(node_eta+2*k)) +=
-		*(shl_node+6*k+2*1)*(*(xs+3));
+		*(shl_node2+6*k+2*1)*(*(xs+3));
 	   *(shg+npel*(nsd+1)*k+npel*1+*(node_eta+2*k)) +=
-		*(shl_node+6*k+2*1)*(*(xs+4));
+		*(shl_node2+6*k+2*1)*(*(xs+4));
 	   *(shg+npel*(nsd+1)*k+npel*2+*(node_eta+2*k)) +=
-		*(shl_node+6*k+2*1)*(*(xs+5));
+		*(shl_node2+6*k+2*1)*(*(xs+5));
 
 	   *(shg+npel*(nsd+1)*k+*(node_eta+2*k+1)) +=
-		*(shl_node+6*k+2*1+1)*(*(xs+3));
+		*(shl_node2+6*k+2*1+1)*(*(xs+3));
 	   *(shg+npel*(nsd+1)*k+npel*1+*(node_eta+2*k+1)) +=
-		*(shl_node+6*k+2*1+1)*(*(xs+4));
+		*(shl_node2+6*k+2*1+1)*(*(xs+4));
 	   *(shg+npel*(nsd+1)*k+npel*2+*(node_eta+2*k+1)) +=
-		*(shl_node+6*k+2*1+1)*(*(xs+5));
+		*(shl_node2+6*k+2*1+1)*(*(xs+5));
 
 	   *(shg+npel*(nsd+1)*k+*(node_zeta+2*k)) +=
-		*(shl_node+6*k+2*2)*(*(xs+6));
+		*(shl_node2+6*k+2*2)*(*(xs+6));
 	   *(shg+npel*(nsd+1)*k+npel*1+*(node_zeta+2*k)) +=
-		*(shl_node+6*k+2*2)*(*(xs+7));
+		*(shl_node2+6*k+2*2)*(*(xs+7));
 	   *(shg+npel*(nsd+1)*k+npel*2+*(node_zeta+2*k)) +=
-		*(shl_node+6*k+2*2)*(*(xs+8));
+		*(shl_node2+6*k+2*2)*(*(xs+8));
 
 	   *(shg+npel*(nsd+1)*k+*(node_zeta+2*k+1)) +=
-		*(shl_node+6*k+2*2+1)*(*(xs+6));
+		*(shl_node2+6*k+2*2+1)*(*(xs+6));
 	   *(shg+npel*(nsd+1)*k+npel*1+*(node_zeta+2*k+1)) +=
-		*(shl_node+6*k+2*2+1)*(*(xs+7));
+		*(shl_node2+6*k+2*2+1)*(*(xs+7));
 	   *(shg+npel*(nsd+1)*k+npel*2+*(node_zeta+2*k+1)) +=
-		*(shl_node+6*k+2*2+1)*(*(xs+8));
+		*(shl_node2+6*k+2*2+1)*(*(xs+8));
 	}
         return 1; 
 }

@@ -2,11 +2,11 @@
     This program calculates and writes the parameters for
     the FEM GUI for shell elements.
   
-   			Last Update 9/25/06
+   			Last Update 9/26/06
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999 San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -29,6 +29,8 @@
 extern int nmat, numnp, numel, dof;
 extern double step_sizex, step_sizey, step_sizez;
 extern double left, right, top, bottom, near, far, fscale;
+extern double cross_sec_left_right, cross_sec_up_down, cross_sec_in_out,
+	cross_sec_left_right0, cross_sec_up_down0, cross_sec_in_out0;
 extern int control_height, control_width, mesh_height, mesh_width;
 extern double ortho_left, ortho_right, ortho_top, ortho_bottom,
 	ortho_left0, ortho_right0, ortho_top0, ortho_bottom0;
@@ -133,20 +135,38 @@ int shparameter( double *coord, SDIM *strain_node, SDIM *stress_node, double *U 
                 if( init_right < *(coord+nsd*i))
                         init_right=*(coord+nsd*i);
 
+                if( init_right < *(coord+nsd*(i+numnp)))
+                        init_right=*(coord+nsd*(i+numnp));
+
                 if( init_left > *(coord+nsd*i))
                         init_left=*(coord+nsd*i);
+
+                if( init_left > *(coord+nsd*(i+numnp)))
+                        init_left=*(coord+nsd*(i+numnp));
 
                 if( init_top < *(coord+nsd*i+1))
                         init_top=*(coord+nsd*i+1);
 
+                if( init_top < *(coord+nsd*(i+numnp)+1))
+                        init_top=*(coord+nsd*(i+numnp)+1);
+
                 if( init_bottom > *(coord+nsd*i+1))
                         init_bottom=*(coord+nsd*i+1);
+
+                if( init_bottom > *(coord+nsd*(i+numnp)+1))
+                        init_bottom=*(coord+nsd*(i+numnp)+1);
 
 		if( init_near < *(coord+nsd*i+2))
 			init_near=*(coord+nsd*i+2);
 
+		if( init_near < *(coord+nsd*(i+numnp)+2))
+			init_near=*(coord+nsd*(i+numnp)+2);
+
 		if( true_far > *(coord+nsd*i+2))
 			true_far=*(coord+nsd*i+2);
+
+		if( true_far > *(coord+nsd*(i+numnp)+2))
+			true_far=*(coord+nsd*(i+numnp)+2);
 
 /* Search for extreme nodal displacements and angles */
 
@@ -480,6 +500,16 @@ int shparameter( double *coord, SDIM *strain_node, SDIM *stress_node, double *U 
 	left_right = left_right0;
 	up_down = up_down0;
 	in_out = in_out0;
+
+/* Set the Cross Section Plane parameters */
+
+	cross_sec_left_right0 = AxisMax_x;
+	cross_sec_up_down0 = AxisMax_y;
+	cross_sec_in_out0 = AxisMax_z;
+
+	cross_sec_left_right = cross_sec_left_right0;
+	cross_sec_up_down = cross_sec_up_down0;
+	cross_sec_in_out = cross_sec_in_out0;
 
     	mesh_width=mesh_width0;
     	mesh_height=mesh_height0;

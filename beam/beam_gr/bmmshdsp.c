@@ -5,8 +5,8 @@
    			Last Update 6/26/02
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -43,6 +43,15 @@ extern XYZPhiF *force_vec;
 extern XYZF_GR *dist_load_vec;
 extern int Render_flag, AppliedDisp_flag, AppliedForce_flag, Dist_Load_flag,
     Axes_flag, Before_flag, After_flag; 
+extern int CrossSection_flag;
+
+void AxesNumbers2(void);
+
+void AxesNumbers(void);
+
+void AxesLabel(void);
+
+void CrossSetionPlaneDraw(void);
 
 void bmMeshDisplay(void)
 {
@@ -79,9 +88,18 @@ void bmMeshDisplay(void)
 		if(After_flag )
   			bmdist_load_vectors(bc, connecter, coord, dist_load_vec);
 	}
+	if(CrossSection_flag)
+	{
+		CrossSetionPlaneDraw();
+	}
     	glPushMatrix ();
 	glLineWidth (2.0);
 	bmmeshdraw();
+	if(Axes_flag)
+	{
+		/*AxesNumbers();*/
+		AxesNumbers2();
+	}
     	glPopMatrix ();
 	glFlush();
   	glutSwapBuffers();

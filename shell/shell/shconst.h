@@ -5,8 +5,8 @@
                 Updated 8/16/00
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -78,13 +78,13 @@
 /*
   title               problem title
   numel               number of elements
-  numnp               number of nodal points
+  numnp               number of nodal points 
   nmat                number of materials
-  dof                 total number of degrees of freedom
+  dof                 total number of degrees of freedom 
   coord               *(coord + 0) x coordinate of node
                       *(coord + 1) y coordinate of node
                       *(coord + 2) z coordinate of node
-  connect (0-3)       connectivity array
+  connect (0-3)       connectivity array 
   matl                material structure
   Emod                young's modulus
   nu                  poisson's ratio
@@ -96,7 +96,7 @@
                       *(force + 4) phi2 component of applied load
   integ_flag          0 Reduced integration of membrane shear
                       1 Reduced integration of transverse shear
-                      2 Reduced integration of membrane and
+                      2 Reduced integration of membrane and 
                         transverse shear
   analysis_flag       1 calculate unknown displacemnts
                       2 calculate reaction forces

@@ -2,11 +2,11 @@
     This program sets viewing and analysis values based on the parameters 
     determined in bmparameters for the FEM GUI for beam elements.
   
-   			Last Update 4/22/00
+   			Last Update 6/9/01
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -57,11 +57,10 @@ extern double max_Uphi_x, min_Uphi_x, del_Uphi_x, max_Uphi_y, min_Uphi_y, del_Up
 	max_Ux, min_Ux, del_Ux, max_Uy, min_Uy, del_Uy,
 	max_Uz, min_Uz, del_Uz, absolute_max_U;
 
-int bmset( BOUND bc, double *coord, CURVATURE *curve, ICURVATURE *curve_color,
-	double *dist_load, QYQZ *dist_load_vec0, int *el_type,
-	double *force , XYZPhiF *force_vec0, MOMENT *moment, IMOMENT *moment_color,
-	STRAIN *strain, ISTRAIN *strain_color, STRESS *stress, ISTRESS *stress_color,
-	double *U, int *U_color )
+int bmset( BOUND bc, CURVATURE *curve, ICURVATURE *curve_color, double *dist_load,
+	QYQZ *dist_load_vec0, int *el_type, double *force , XYZPhiF *force_vec0,
+	MOMENT *moment, IMOMENT *moment_color, STRAIN *strain, ISTRAIN *strain_color,
+	STRESS *stress, ISTRESS *stress_color, double *U, int *U_color )
 {
         int i, j, check; 
 	double force_vec_length, moment_vec_length, dist_load_vec_length;

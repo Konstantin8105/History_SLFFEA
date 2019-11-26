@@ -1,7 +1,7 @@
 /*
      SLFFEA source file
-     Version:  1.1
-     Copyright (C) 1999  San Le
+     Version:  1.2
+     Copyright (C) 1999, 2000, 2001  San Le
 
      The source code contained in this file is released under the
      terms of the GNU Library General Public License.
@@ -114,7 +114,7 @@ int brshl_node2(double *shl_node2)
 }
 
 
-int brshg( double *det, int el, double *shl, double *shg, double *xl, double *Vol)
+int brshg( double *det, int el, double *shl, double *shg, double *xl)
 {
 /*
      This subroutine calculates the global shape function derivatives for
@@ -142,17 +142,13 @@ int brshg( double *det, int el, double *shl, double *shg, double *xl, double *Vo
           k    = INTEGRATION-POINT NUMBER
        num_int    = NUMBER OF INTEGRATION POINTS, EQ.1 OR 8
 		
-			Updated 4/7/00
+			Updated 9/25/01
 */
 
         double xs[9],temp[9],col1[nsd],col2[nsd];
 	int check,i,j,k;
 
 	memcpy(shg,shl,sosh*sizeof(double));
-
-/* initialize the Volume */
-
-	*(Vol)=0.0;
 
         for( k = 0; k < num_int; ++k )
 	{
@@ -175,11 +171,7 @@ int brshg( double *det, int el, double *shl, double *shg, double *xl, double *Vo
            *(det+k)=*(xs)*(*(temp))+*(xs+1)*(*(temp+3))+*(xs+2)*(*(temp+6));
            /*printf("%d %f\n", k, *(det+k));*/
 
-/* Calculate the Volume from determinant of the Jacobian */
-
-	   *Vol +=*(det+k);
-
-           if(*(det+k) < 0 ) 
+           if(*(det+k) <= 0.0 ) 
 	   {
                 printf("the element (%d) is inverted; det:%f; integ pt.:%d\n",
 			el,*(det+k),k);
@@ -228,7 +220,7 @@ int brshg( double *det, int el, double *shl, double *shg, double *xl, double *Vo
 }
 
 
-int brshg_mass( double *det, int el, double *shg, double *xl, double *Vol)
+int brshg_mass( double *det, int el, double *shg, double *xl)
 {
 /*
      This subroutine calculates the determinant for
@@ -256,15 +248,11 @@ int brshg_mass( double *det, int el, double *shg, double *xl, double *Vol)
           k    = INTEGRATION-POINT NUMBER
        num_int    = NUMBER OF INTEGRATION POINTS, EQ.1 OR 8
 		
-			Updated 4/7/00
+			Updated 9/25/01
 */
 
         double xs[9],temp[9],col1[nsd],col2[nsd];
 	int check,i,j,k;
-
-/* initialize the Volume */
-
-	*(Vol)=0.0;
 
         for( k = 0; k < num_int; ++k )
 	{
@@ -287,11 +275,7 @@ int brshg_mass( double *det, int el, double *shg, double *xl, double *Vol)
            *(det+k)=*(xs)*(*(temp))+*(xs+1)*(*(temp+3))+*(xs+2)*(*(temp+6));
            /*printf(" element %d int. pt. %d determinant %f\n", el, k, *(det+k));*/
 
-/* Calculate the Volume from determinant of the Jacobian */
-
-	   *Vol +=*(det+k);
-
-           if(*(det+k) < 0 ) 
+           if(*(det+k) <= 0.0 ) 
 	   {
                 printf("the element (%d) is inverted; det:%f; integ pt.:%d\n",
 			el,*(det+k),k);

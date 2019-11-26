@@ -1,5 +1,5 @@
 # SLFFEA Makefile
-# Version:  1.1
+# Version:  1.2
 # Copyright (C) 1999, 2000  San Le (slffea@yahoo.com)
 # http://slffea.com/
 #
@@ -51,6 +51,7 @@ qd: femqd.o \
 		qdlanczos.o\
 		qdmassp.o\
 		qdwriter.o\
+		qdarea.o\
 		qdconst.h \
 		qdstruct.h
 	$(CC) -o qd femqd.o \
@@ -66,7 +67,8 @@ qd: femqd.o \
 		qdmasmbl.o\
 		qdlanczos.o\
 		qdmassp.o\
-		qdwriter.o $(OBJECTS) $(LIBS)
+		qdwriter.o \
+		qdarea.o $(OBJECTS) $(LIBS)
 
 qdp: qdp.o \
 		qdpatch.o
@@ -74,6 +76,9 @@ qdp: qdp.o \
 
 qdp.o: qdpatch.c
 	$(CC) -c qdpatch.c
+
+qdarea.o: qdarea.c
+	$(CC) -c qdarea.c 
 
 qdwriter.o: qdwriter.c
 	$(CC) -c qdwriter.c 

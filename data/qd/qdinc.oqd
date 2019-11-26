@@ -1,5 +1,5 @@
-   numel numnp nmat nmode plane_stress_flag (This is for a quad           qdinc) 
-       72   91    1    0    1
+   numel numnp nmat nmode plane_stress_flag (This is for the quad mesh file: qdinc)
+      72   91    1    0    1
  matl no., E modulus, Poisson Ratio, density 
      0    10000000.0000    0.3000 2340.0000
  el no., connectivity, matl no 

@@ -3,10 +3,13 @@ Error tolerance
 Maximum number of iterations
 2000
 Amount of RAM in megabytes
-0.0
+64.0
 element stress read flag
-1
+0
 element stress print flag
-1
+0
 node or gauss stress ( 0 = node, 1 = gauss )
 1
+eigen print flag 
+1
+

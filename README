@@ -1,7 +1,7 @@
 
-                             SLFFEA 1.1
+                             SLFFEA 1.2
 
-                    Copyright (C) 1999 San Le
+                    Copyright (C) 1999, 2000, 2001 San Le
 
                     email:     slffea@yahoo.com
                     homepage:  http://slffea.sourceforge.net/
@@ -15,24 +15,27 @@ the GNU license.
 What's Inside:
 -------------
 
-6 of the basic finite elements types:
+9 of the basic finite elements types:
 
-1. beam    3-D 2 node beam
-2. brick       8 node brick
-3. plate       4 node plate
-4. quad        4 node quad - plane stress and plane strain
-5. shell       4 node doubly curved shell (individual element defined by 8 nodes)
-6. truss   3-D 2 node truss
+1. beam             3-D 2 node beam
+2. brick            3-D 8 node brick
+3. plate            2-D 4 node plate
+4. quad             2-D 4 node quad - plane stress and plane strain
+5. shell            3-D 4 node doubly curved shell (individual element defined by 8 nodes)
+6. tetrahedron      3-D 4 node tetrahedron
+7. triangle         2-D 3 node triangle
+8. truss            3-D 2 node truss
+9. wedge            3-D 6 node wedge
 
 1 non-linear large deformation element:
 
-1. brick       8 node brick - Updated Lagrange formulation with Jaumann Stress Rate
+1. brick            3-D 8 node brick - Updated Lagrange formulation with Jaumann Stress Rate
 
 And 1 thermal element(added on 5/6/00):
 
-1. brick       8 node brick - allows for thermal loads and orthotropy
+1. brick            3-D 8 node brick - allows for thermal loads and orthotropy
 
-7 Graphical User Interfaces for each element type.
+10 Graphical User Interfaces for each element type.
 
 In the spirit of Unix, I keep the code as specific as possible which means that each
 element has its own binary rather than having one big executable handling

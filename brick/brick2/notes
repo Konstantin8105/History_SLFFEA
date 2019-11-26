@@ -1,0 +1,47 @@
+After a discussion with  Carlos_Ortiz@uqtr.uquebec.ca,
+and looking at the way he tried to implement a thermal
+brick, I considered doing what he did in terms of
+immediately putting the convection surface conductivity
+directly into the regular conductivity.  This is very
+appealing in that if the Conjugate Gradient method is used
+and element matrices are stored, then I don't have to have
+separate storage for the element convection surface
+conductivity.  The reason I decided against this are:
+
+1) To put it directly, I would have to know which element
+   the convection surface belongs to.  The only way to do
+   this is:
+
+  1a) list the convection surfaces by their associate
+      element.
+
+  2b) extrapolate from the connectivity the associate element.
+
+   I think 1a) is too much for users to firgure out and 1b is too
+   difficult to implement. 
+
+2) It may be good to view convection in terms of the whole
+   body rather than simply over an element.  By doing it my way
+   it is assembled using either TBlm which puts it directly into
+   the global conductivity [K] or if Conjugate Gradient is used,
+   by putting into the global [P_global] vector.  This encourages a sense
+   that convection is over the whole body rather over individual
+   elements.
+
+3) Assuming the case where there are no element conductiviies stored
+   and everything has to be assembled in the Conjugate Gradient subroutine,
+   then assembly of the [P_global] vector will be done separately
+   anyway(since there HAS to be separate loops for regular conductivity
+   and convection), so this keeps things consistant.  When storing
+   elements, it is possible to pull up different element conductivities
+   to add the convection terms.  On the other hand, recreating each element
+   conductivity during the loop would not involve combining them. 
+   
+  
+
+A misconception that I had was that node numbering mattered in terms
+of clockwise and counter-clockwise when dealing with convection surfaces.
+This is not the case.  The results will not change either way.  I made
+a test as well as examined the code to prove to myself that this is true.
+
+ 

@@ -6,7 +6,7 @@
 		Updated 11/2/09
 
     SLFFEA source file
-    Version:  1.1
+    Version:  1.2
     Copyright (C) 1999-2009  San Le 
 
     The source code contained in this file is released under the
@@ -211,7 +211,7 @@ int main(int argc, char** argv)
 /* The criteria for over-calculating the number of desired eigenvalues is
    taken from "The Finite Element Method" by Thomas Hughes, page 578.  It
    is actually given for subspace iteration, but I find it works well
-   for the Lanczos Method as well.  I have also modified the factors
+   for the Lanczos Method.  I have also modified the factors
    given in Hughes from 2.0 to 3.0 and 8 to 10.
 */
 

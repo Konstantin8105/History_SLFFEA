@@ -4,11 +4,11 @@
     the element mass matrices.  This is for a finite element program
     which does analysis on a quad.  It is for modal analysis.
 
-		Updated 10/9/00
+		Updated 9/27/01
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -31,7 +31,7 @@ int matXT(double *, double *, double *, int, int, int);
 
 int quadB_mass(double *,double *);
 
-int qdshg_mass( double *, int, double *, double *, double *);
+int qdshg_mass( double *, int, double *, double *);
 
 int qdMassemble(int *connect, double *coord, int *el_matl, int *id,
 	double *mass, MATL *matl) 
@@ -44,7 +44,7 @@ int qdMassemble(int *connect, double *coord, int *el_matl, int *id,
         double B_mass[MsoB], B2_mass[MsoB];
         double M_temp[neqlsq], M_el[neqlsq];
         double coord_el_trans[neqel];
-        double det[num_int], area_el;
+        double det[num_int], area_el, wXdet;
         double mass_el[neqel];
 
 /*      initialize all variables  */
@@ -58,6 +58,7 @@ int qdMassemble(int *connect, double *coord, int *el_matl, int *id,
         {
                 matl_num = *(el_matl+k);
                 rho = matl[matl_num].rho;
+		area_el = 0.0;
 
 /* Zero out the Element mass matrices */
 
@@ -82,10 +83,8 @@ int qdMassemble(int *connect, double *coord, int *el_matl, int *id,
 
 /* The call to qdshg_mass is only for calculating the determinent */
 
-		check = qdshg_mass(det, k, shg, coord_el_trans, &area_el);
+		check = qdshg_mass(det, k, shg, coord_el_trans);
 		if(!check) printf( "Problems with qdshg_mass \n");
-
-                /* printf("This is 2 X Area %10.6f for element %4d\n",2.0*area_el,k);*/
 
 #if 0
                 for( i1 = 0; i1 < num_int; ++i1 )
@@ -124,15 +123,23 @@ int qdMassemble(int *connect, double *coord, int *el_matl, int *id,
 
 		    memcpy(B2_mass,B_mass,MsoB*sizeof(double));
 
+		    wXdet = *(w+j)*(*(det+j));
+
+/* Calculate the Area from determinant of the Jacobian */
+
+		    area_el += wXdet;
+
                     check=matXT(M_temp, B_mass, B2_mass, neqel, neqel, nsd);
                     if(!check) printf( "Problems with matXT \n");
 
-		    fdum = rho*(*(w+j))*(*(det+j));
+		    fdum = rho*wXdet;
 		    for( i2 = 0; i2 < neqlsq; ++i2 )
 		    {
 			*(M_el+i2) += *(M_temp+i2)*fdum;
 		    }
 		}
+
+                /* printf("This is 2 X Area %10.6f for element %4d\n",2.0*area_el,k);*/
 
 		if(lumped_mass_flag)
 		{

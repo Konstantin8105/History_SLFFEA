@@ -5,8 +5,8 @@
    			Last Update 1/14/03
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -78,7 +78,7 @@ void tsdisp_vectors0(int , BOUND , double *);
 
 void agvMakeAxesList(GLuint);
 
-int tsset( BOUND , double *, double *, XYZF *, STRAIN *, ISTRAIN *,
+int tsset( BOUND , double *, XYZF *, STRAIN *, ISTRAIN *,
 	STRESS *, ISTRESS *, double *, int *);
 
 int tsparameter( double *, STRAIN *, STRESS *, double * );
@@ -186,6 +186,10 @@ double left_right, up_down, in_out, left_right0, up_down0, in_out0;
 /****** Rotation Variables ******/
 double xAngle = 0.0, yAngle = 0.0, zAngle = 0.0;
 
+/****** Cross Section Plane Translation Variables ******/
+double cross_sec_left_right, cross_sec_up_down, cross_sec_in_out,
+	cross_sec_left_right0, cross_sec_up_down0, cross_sec_in_out0;
+
 /* Global variables for drawing the axes */
 GLuint AxesList, DispList, ForceList;   /* Display lists */
 double AxisMax_x, AxisMax_y, AxisMax_z,
@@ -221,12 +225,12 @@ double ratio_height = 1.0;
 int boxMove_x, boxMove_y, boxTextMove_x, textMove_x, textMove_y[rowdim+2];
 int Color_flag[rowdim];
 
-char RotateData[3][10] = { "    0.00", "    0.00", "    0.00" };
-char MoveData[3][10] = { "    0.00", "    0.00", "    0.00" };
-char AmplifyData[10] = { "    1.00"};
-char BoxData[2*boxnumber+2][14] = { "", "", "", "", "", "", "", "",
+char RotateData[3][25] = { "    0.00", "    0.00", "    0.00" };
+char MoveData[3][25] = { "    0.00", "    0.00", "    0.00" };
+char AmplifyData[25] = { " 1.000e+00"};
+char BoxData[2*boxnumber+2][25] = { "", "", "", "", "", "", "", "",
         "", "", "", "", "", "", "", "", "", "" };
-char BoxText[10];
+char BoxText[25];
 
 int del_height = 0;
 int del_width = 0;
@@ -270,7 +274,8 @@ int Dead_flag = 1,           /* Flag which is currently unused on and off  */
     Material_flag = 0,       /* Turns material on and off */
     Node_flag = 0,           /* Turns Node ID on and off */
     Element_flag = 0,        /* Turns Element ID on and off */
-    Axes_flag = 0;           /* Turns Axes on and off  */
+    Axes_flag = 0,           /* Turns Axes on and off  */
+    CrossSection_flag = 0;   /* Turns CrossSection_flag on and off  */
 int Before_flag = 0,         /* Turns before mesh on and off */
     After_flag = 1,          /* Turns after mesh on and off */
     Both_flag = 0,           /* Turns both before and after on and off */
@@ -476,7 +481,7 @@ int main(int argc, char** argv)
 	check = tsparameter( coord, strain, stress, U );
         if(!check) printf( " Problems with tsparameter \n");
 
-	check = tsset( bc, coord, force, force_vec0, strain, strain_color,
+	check = tsset( bc, force, force_vec0, strain, strain_color,
 		stress, stress_color, U, U_color);
         if(!check) printf( " Problems with tsparameter \n");
 

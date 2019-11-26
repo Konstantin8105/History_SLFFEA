@@ -4,8 +4,8 @@
    			Last Update 10/10/06
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -48,7 +48,7 @@ extern int Before_flag, After_flag,
     Both_flag, Amplify_flag;
 extern double amplify_factor, amplify_step, amplify_step0;
 
-int shset( BOUND, int *, double *, double *, XYZPhiF *, SDIM *, ISTRAIN *,
+int shset( BOUND, int *, double *, XYZPhiF *, SDIM *, ISTRAIN *,
 	SDIM *, ISTRESS *, double *U, int * );
 
 void shReGetparameter( void);
@@ -110,7 +110,7 @@ void shMenuSelect(int value)
 	    break;
 	case 4:
 	    shReGetparameter();
-	    check = shset( bc, connecter, coord, force, force_vec0, strain_node,
+	    check = shset( bc, connecter, force, force_vec0, strain_node,
 		strain_color, stress_node, stress_color, U, U_color );
 	    if(!check) printf( " Problems with shset \n");
 	    break;

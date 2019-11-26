@@ -5,8 +5,8 @@
    			Last Update 9/26/06
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -189,7 +189,6 @@ void shReGetparameter(void)
 		max_strain_node.II, min_strain.II, max_strain.II);
 	printf("strain III           %5d     %5d  %14.6e %14.6e\n", min_strain_node.III,
 		max_strain_node.III, min_strain.III, max_strain.III);
-	printf("\n");
 	printf("\n");
 	printf("Orthographic viewport parameters(right, left, top, bootom, near, far)\n ");
 	printf("%14.6e %14.6e %14.6e %14.6e %14.6e %14.6e\n", ortho_right, ortho_left,

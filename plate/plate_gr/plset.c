@@ -2,11 +2,11 @@
     This program sets viewing and analysis values based on the parameters 
     determined in plparameters for the FEM GUI for plate elements.
   
-   			Last Update 6/9/00
+   			Last Update 6/9/01
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -54,10 +54,10 @@ extern SDIM del_stress, del_strain, max_stress, min_stress,
 extern double max_Uphi_x, min_Uphi_x, del_Uphi_x, max_Uphi_y, min_Uphi_y, del_Uphi_y,
        	max_Uz, min_Uz, del_Uz, absolute_max_U;
 
-int plset( BOUND bc, int *connecter, double *coord, MDIM *curve_node,
-	ICURVATURE *curve_color, double *force, ZPhiF *force_vec0, MDIM *moment_node,
-	IMOMENT *moment_color, SDIM *strain_node, ISTRAIN *strain_color,
-	SDIM *stress_node, ISTRESS *stress_color, double *U, int *U_color )
+int plset( BOUND bc, int *connecter, MDIM *curve_node, ICURVATURE *curve_color,
+	double *force, ZPhiF *force_vec0, MDIM *moment_node, IMOMENT *moment_color,
+	SDIM *strain_node, ISTRAIN *strain_color, SDIM *stress_node,
+	ISTRESS *stress_color, double *U, int *U_color )
 {
         int i, j, check;
 	int node;

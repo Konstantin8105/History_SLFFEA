@@ -4,10 +4,10 @@
     then solving the linear system for a thermal
     brick element.
 
-        Updated 3/30/01
+        Updated 9/27/01
 
     SLFFEA source file
-    Version:  1.1
+    Version:  1.2
     Copyright (C) 1999, 2000  San Le 
 
     The source code contained in this file is released under the
@@ -29,6 +29,10 @@
 
 int brConnectSurfwriter ( int *, int *, char *);
 
+int brArea( int *, double *, double * );
+
+int brVolume( int *, double *, double *);
+
 int br2writer ( BOUND, int *, int *, double *, int *, int *, double *, double *,
 	double *, int *, MATL *, char *, double *, STRAIN *, SDIM *,
         STRESS *, SDIM *, double *, double *, double *);
@@ -42,14 +46,13 @@ int decomp(double *,int *,int );
 
 int br2Kassemble(double *, int *, int *, double *, int *, int *, double *, int *,
 	int *, double *, int *, MATL *, double *, STRAIN *, SDIM *, STRESS *,
-	SDIM *, double *, double *, double *);
+	SDIM *, double *, double *);
 
 int brTConjGrad(double *, BOUND, int *, int *, double *, int *, int *, double *,
 	MATL *, double *, double *);
 
-int brCassemble(double *, double *, int *, int *, double *, int *, int *, double *,
-	double *, int *, int *, int *, int *, MATL *, double *, double *, double *,
-	double *, double *);
+int brCassemble(double *, int *, int *, double *, int *, int *, double *, double *,
+	int *, int *, int *, int *, MATL *, double *, double *, double *, double *);
 
 int diag( int *, int *, int, int, int, int);
 
@@ -562,8 +565,8 @@ int main(int argc, char** argv)
 	   temp_analysis_flag = 1;
 	   memset(A,0,sofmA*sof);
 	   memset(TK_diag,0,Tdof*sof);
-       	   check = brCassemble(A, Area, connect, connect_film, coord, el_matl, el_matl_film,
-		heat_el, heat_node, Tid, Tidiag, Tlm, TBlm, matl, Q, T, TB, TK_diag, Voln);
+       	   check = brCassemble(A, connect, connect_film, coord, el_matl, el_matl_film,
+		heat_el, heat_node, Tid, Tidiag, Tlm, TBlm, matl, Q, T, TB, TK_diag);
        	   if(!check) printf( " Problems with brCassemble \n");
 
 	   if(Tlin_algebra_flag)
@@ -618,8 +621,8 @@ int main(int argc, char** argv)
 /* Calculate the reaction heat */
 	   temp_analysis_flag = 2;
 	   memset(Q,0,Tdof*sof);
-           check = brCassemble(A, Area, connect, connect_film, coord, el_matl, el_matl_film,
-		heat_el, heat_node, Tid, Tidiag, Tlm, TBlm, matl, Q, T, TB, TK_diag, Voln);
+           check = brCassemble(A, connect, connect_film, coord, el_matl, el_matl_film,
+		heat_el, heat_node, Tid, Tidiag, Tlm, TBlm, matl, Q, T, TB, TK_diag);
            if(!check) printf( " Problems with brCassembler \n");
 /*
            printf( "\n\n These are the reaction heat Q\n");
@@ -641,7 +644,7 @@ int main(int argc, char** argv)
 	   memset(K_diag,0,dof*sof);
 	   check = br2Kassemble(A, connect, connect_surf, coord, el_matl, el_matl_surf,
 		force, id, idiag, K_diag, lm, matl, node_counter, strain,
-		strain_node, stress, stress_node, T, U, Voln);
+		strain_node, stress, stress_node, T, U);
 	   if(!check) printf( " Problems with br2Kassemble \n");
 
 	   if(lin_algebra_flag)
@@ -702,9 +705,38 @@ int main(int argc, char** argv)
 	   memset(force,0,dof*sof);
 	   check = br2Kassemble(A, connect, connect_surf, coord, el_matl, el_matl_surf,
 		force, id, idiag, K_diag, lm, matl, node_counter, strain,
-		strain_node, stress, stress_node, T, U, Voln);
+		strain_node, stress, stress_node, T, U);
 	   if(!check) printf( " Problems with br2Kassemble \n");
 	}
+
+/* Calculating the value of the Volumes */
+
+	check = brVolume( connect, coord, Voln);
+	if(!check) printf( " Problems with brVolume \n");
+
+/*
+	printf("\nThis is the Volume\n");
+	for( i = 0; i < numel; ++i )
+	{
+		printf("%4i %12.4e\n",i, *(Voln + i));
+	}
+*/
+
+/* Calculating the value of the convection film surface Areas */
+
+	if(thermal_analysis == 1)
+	{
+		check = brArea( connect_film, coord, Area );
+		if(!check) printf( " Problems with brArea \n");
+	}
+
+/*
+	printf("\nThis is the Covection Surfaces\n");
+	for( i = 0; i < numel_surf; ++i )
+	{
+		printf("%4i %12.4e\n",i, *(Area + i));
+	}
+*/
 
 	check = br2writer ( bc, connect, connect_film, coord, el_matl, el_matl_film,
 		force, heat_el, heat_node, id, matl, name, Q, strain, strain_node,

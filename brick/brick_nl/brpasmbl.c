@@ -7,8 +7,8 @@
 		Updated 12/17/02
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -33,11 +33,10 @@ int matXT(double *, double *, double *, int, int, int);
 
 int brickB(double *,double *);
 
-int brshg( double *, int, double *, double *, double *, double *);
+int brshg( double *, int, double *, double *, double *);
 
 int brPassemble(int *connect, double *coord, double *coordh, int *el_matl,
-	MATL *matl, double *P_global, STRESS *stress, double *V,
-	double *Voln)
+	MATL *matl, double *P_global, STRESS *stress, double *V)
 
 {
         int i,i1,i2,j,k,dof_el[npel*ndof],sdof_el[npel*nsd];
@@ -51,7 +50,7 @@ int brPassemble(int *connect, double *coord, double *coordh, int *el_matl,
         double dU_el[neqel],domega_el[3],coord_el[npel*nsd],coordh_el[npel*nsd],
 		coord_el_trans[npel*nsd],coordh_el_trans[npel*nsd];
 	double stress_el[sdim], dstress_el[sdim], dstrain_el[sdim];
-	double det[num_int], deth[num_int];
+	double det[num_int], deth[num_int], wXdet;
 	int i4,i5,i5m1,i5m2;
 
 	memset(P_global,0,dof*sof);
@@ -121,11 +120,11 @@ int brPassemble(int *connect, double *coord, double *coordh, int *el_matl,
 
 /* Assembly of the shgh matrix for each integration point at 1/2 time */
 
-		brshg(deth, k, shl, shgh, coordh_el_trans, (Voln+k));
+		brshg(deth, k, shl, shgh, coordh_el_trans);
 
 /* Assembly of the shg matrix for each integration point at full time */
 
-		brshg(det, k, shl, shg, coord_el_trans, (Voln+k));
+		brshg(det, k, shl, shg, coord_el_trans);
 
 /* The loop over j below calculates the 8 points of the gaussian integration 
    for several quantities */
@@ -256,6 +255,8 @@ int brPassemble(int *connect, double *coord, double *coordh, int *el_matl,
 		    *(stress_el+4) = stress[k].pt[j].zx;
 		    *(stress_el+5) = stress[k].pt[j].yz;
 
+		    wXdet = *(w+j)*(*(deth+j));
+
 /* Assembly of the element P matrix = (B transpose)*stress_el  */
 
                     check=matXT(P_temp, B, stress_el, neqel, 1, sdim);
@@ -264,8 +265,8 @@ int brPassemble(int *connect, double *coord, double *coordh, int *el_matl,
                     for( i1 = 0; i1 < neqel; ++i1 )
 		    {
 			/*printf("rrrrr %14.9f \n",*(P_temp+i1));*/
-			/*printf("rrrrr %14.9f \n",*(P_temp+i1)*(*(w+j))*(*(deth+j)));*/
-			*(P_el+i1) += *(P_temp+i1)*(*(w+j))*(*(deth+j));
+			/*printf("rrrrr %14.9f \n",*(P_temp+i1)*wXdet);*/
+			*(P_el+i1) += *(P_temp+i1)*wXdet;
 		    }
                 }
 

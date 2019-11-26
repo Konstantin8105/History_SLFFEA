@@ -6,8 +6,8 @@
         Updated 11/2/09
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999-2009 San Le 
+    Version:  1.2
+    Copyright (C) 1999-2009  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -23,6 +23,8 @@
 #include "../../common/eigen.h"
 #include "qdconst.h"
 #include "qdstruct.h"
+
+int qdArea( int *, double *, double *);
 
 int qdwriter ( BOUND , int *, double *, int *, double *, int *, MATL *,
 	char *, STRAIN *, SDIM *, STRESS *, SDIM *, double *);
@@ -43,7 +45,7 @@ int qdMassemble(int *, double *, int *, int *, double *, MATL *);
 
 int qdKassemble(double *, int *, double *, int *, double *, int *, int *,
 	double *, int *, MATL *, double *, STRAIN *, SDIM *, STRESS *,
-	SDIM *, double *, double *);
+	SDIM *, double *);
 
 int diag( int *, int *, int, int, int, int);
 
@@ -223,7 +225,7 @@ int main(int argc, char** argv)
 /* The criteria for over-calculating the number of desired eigenvalues is
    taken from "The Finite Element Method" by Thomas Hughes, page 578.  It
    is actually given for subspace iteration, but I find it works well
-   for the Lanczos Method as well.
+   for the Lanczos Method.
 */
 
 	        num_eigen = (int)(2.0*nmode);
@@ -496,7 +498,7 @@ int main(int argc, char** argv)
 	memset(A,0,sofmA*sof);
         check = qdKassemble(A, connect, coord, el_matl, force, id, idiag, K_diag,
 		lm, matl, node_counter, strain, strain_node, stress,
-		stress_node, U, Arean);
+		stress_node, U);
         if(!check) printf( " Problems with qdKassembler \n");
 /*
         printf( "\n\n This is the force matrix \n");
@@ -591,7 +593,7 @@ int main(int argc, char** argv)
 	    memset(force,0,dof*sof);
 	    check = qdKassemble(A, connect, coord, el_matl, force, id, idiag, K_diag,
 		lm, matl, node_counter, strain, strain_node, stress, stress_node,
-		U, Arean);
+		U);
 	    if(!check) printf( " Problems with qdKassembler \n");
 /*
 	    printf( "\n\n These are the reaction forces \n");
@@ -702,7 +704,7 @@ int main(int argc, char** argv)
 
 		check = qdKassemble(A, connect, coord, el_matl, vector_dum,
 		    id, idiag, K_diag, lm, matl, node_counter, strain,
-		    strain_node, stress, stress_node, U, Arean);
+		    strain_node, stress, stress_node, U);
 		if(!check) printf( " Problems with qdKassembler \n"); 
 		
 		check = qdwriter( bc, connect, coord, el_matl, force, id, matl,
@@ -713,6 +715,19 @@ int main(int argc, char** argv)
 
 	    }
 	}
+
+/* Calculating the value of the Areas */
+
+	check = qdArea( connect, coord, Arean);
+	if(!check) printf( " Problems with qdArea \n");
+
+/*
+        printf("\nThis is the Area\n");
+        for( i = 0; i < numel; ++i )
+        {
+                printf("%4i %12.4e\n",i, *(Arean + i));
+        }
+*/
 
     	timec = clock();
 	printf("\n\n elapsed CPU = %lf\n\n",( (double)timec)/800.);

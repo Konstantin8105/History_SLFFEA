@@ -5,8 +5,8 @@
                         Last Update 1/22/02
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -69,15 +69,15 @@ extern int Dead_flag, Perspective_flag, Render_flag, AppliedDisp_flag,
 extern int Before_flag, After_flag, Both_flag, Amplify_flag; 
 extern int stress_flag, strain_flag, stress_strain, disp_flag, angle_flag;
 
-extern GLfloat yellow[3], orange[3], orangeRed[3], red[3], green[3],
-        violetRed[3], magenta[3], purple[3], blue[3],
-        white[3], grey[3], black[3];
+extern GLfloat yellow[4], orange[4], orangeRed[4], red[4], green[4],
+        violetRed[4], magenta[4], purple[4], blue[4],
+        white[4], grey[4], black[4];
 
-extern char RotateData[3][10];
-extern char MoveData[3][10];
-extern char AmplifyData[10];
-extern char BoxData[2*boxnumber+2][14];
-extern char BoxText[10];
+extern char RotateData[3][25];
+extern char MoveData[3][25];
+extern char AmplifyData[25];
+extern char BoxData[2*boxnumber+2][25];
+extern char BoxText[25];
 
 extern int Color_flag[rowdim];
 extern double Ux_div[boxnumber+1], Uy_div[boxnumber+1], Uz_div[boxnumber+1];
@@ -90,6 +90,13 @@ void tsControlMouse(int button, int state, int x, int y)
 {
 	int i, check, dum1, dum2;
 	double fpointx, fpointy, fpointz;
+
+	memset(BoxText,0,25*sizeof(char));
+	for( i = 0; i < 2*boxnumber+2; ++i)
+	{
+		memset(BoxData[i],0,25*sizeof(char));
+	}
+
   	if (button == GLUT_LEFT_BUTTON)
   	{
 		if ( x < textDiv_xa )
@@ -123,7 +130,6 @@ void tsControlMouse(int button, int state, int x, int y)
                         		node_choice = 0;
                 		}
 				color_choice = 31;
-				Render_flag = 0;
 				strain_flag = 0;
 				stress_flag = 0;
      				if ( Both_flag )
@@ -156,7 +162,6 @@ void tsControlMouse(int button, int state, int x, int y)
                         		ele_choice = 0;
                 		}
 				color_choice = 32;
-				Render_flag = 0;
 				strain_flag = 0;
 				stress_flag = 0;
      				if ( Both_flag )
@@ -187,7 +192,6 @@ void tsControlMouse(int button, int state, int x, int y)
                         		matl_choice = 0;
                 		}
 				color_choice = 30;
-				Render_flag = 0;
 				strain_flag = 0;
 				stress_flag = 0;
      				if ( Both_flag )
@@ -205,7 +209,6 @@ void tsControlMouse(int button, int state, int x, int y)
 				Element_flag = 0;
 				Material_flag = 0;
 				Node_flag = 0;
-				Render_flag = 0;
      				/*if ( Both_flag )
      				{
 					After_flag = 0;
@@ -221,7 +224,6 @@ void tsControlMouse(int button, int state, int x, int y)
 				Element_flag = 0;
 				Material_flag = 0;
 				Node_flag = 0;
-				Render_flag = 0;
      				/*if ( Both_flag )
      				{
 					After_flag = 0;
@@ -314,7 +316,6 @@ void tsControlMouse(int button, int state, int x, int y)
 				/*disp_flag = 0;
 				AppliedDisp_flag = 0;*/
 				/*Material_flag = 0;
-				Render_flag = 0;
 				strain_flag = 0;
 				stress_flag = 0;*/
      			}
@@ -368,7 +369,6 @@ void tsControlMouse(int button, int state, int x, int y)
 				Element_flag = 0;
 				Material_flag = 0;
 				Node_flag = 0;
-				Render_flag = 0;
 /* Stresses */
 
 /* Stress XX*/
@@ -431,7 +431,6 @@ void tsControlMouse(int button, int state, int x, int y)
                         		node_choice = numnp-1;
                 		}
 				color_choice = 31;
-				Render_flag = 0;
 				strain_flag = 0;
 				stress_flag = 0;
      				if ( Both_flag )
@@ -464,7 +463,6 @@ void tsControlMouse(int button, int state, int x, int y)
                         		ele_choice = numel-1;
                 		}
 				color_choice = 32;
-				Render_flag = 0;
 				strain_flag = 0;
 				stress_flag = 0;
      				if ( Both_flag )
@@ -495,7 +493,6 @@ void tsControlMouse(int button, int state, int x, int y)
                         		matl_choice = nmat-1;
                 		}
 				color_choice = 30;
-				Render_flag = 0;
 				strain_flag = 0;
 				stress_flag = 0;
      				if ( Both_flag )
@@ -603,7 +600,6 @@ void tsControlMouse(int button, int state, int x, int y)
 				Element_flag = 0;
 				Material_flag = 0;
 				Node_flag = 0;
-				Render_flag = 0;
 /* Strains */
 
 /* Strain XX*/
@@ -645,36 +641,16 @@ void tsControlMouse(int button, int state, int x, int y)
 	sprintf( MoveData[1], "%8.2f ", up_down);
 	sprintf( MoveData[2], "%8.2f ", in_out);
 
-	sprintf( AmplifyData, "%8.2f ", amplify_factor);
+	sprintf( AmplifyData, "%10.3e ", amplify_factor);
 
-    	strcpy(BoxText, "");
 	for(i = 29; i < rowdim ; ++i)
 	{
 		Color_flag[i] = 0;
 	}
 
-        sprintf( BoxData[0], " " );
-        sprintf( BoxData[1], " " );
-        sprintf( BoxData[2], " " );
-        sprintf( BoxData[3], " " );
-        sprintf( BoxData[4], " " );
-        sprintf( BoxData[5], " " );
-        sprintf( BoxData[6], " " );
-        sprintf( BoxData[7], " " );
-        sprintf( BoxData[8], " " );
-        sprintf( BoxData[9], " " );
-        sprintf( BoxData[10], " " );
-        sprintf( BoxData[11], " " );
-        sprintf( BoxData[12], " " );
-        sprintf( BoxData[13], " " );
-        sprintf( BoxData[14], " " );
-        sprintf( BoxData[15], " " );
-        sprintf( BoxData[16], " " );
-        sprintf( BoxData[17], " " );
-
     	switch (color_choice) {
                 case 1:
-                        strcpy(BoxText, "strain XX");
+                        strncpy(BoxText, "strain XX", 9);
 			Color_flag[29] = 1;
 			strain_flag = 1;
 			stress_flag = 0;
@@ -689,7 +665,7 @@ void tsControlMouse(int button, int state, int x, int y)
 			sprintf( BoxData[16], "%10.3e ", strain_div[0].xx);
                 break;
       		case 10:
-    			strcpy(BoxText, "stress XX");
+    			strncpy(BoxText, "stress XX", 9);
 			Color_flag[29] = 1;
 			strain_flag = 0;
 			stress_flag = 1;
@@ -704,7 +680,7 @@ void tsControlMouse(int button, int state, int x, int y)
 			sprintf( BoxData[16], "%10.3e ", stress_div[0].xx);
        		break;
                 case 19:
-                        strcpy(BoxText, "disp X");
+                        strncpy(BoxText, "disp X", 6);
 			Color_flag[32] = 1;
 			strain_flag = 0;
 			stress_flag = 0;
@@ -721,7 +697,7 @@ void tsControlMouse(int button, int state, int x, int y)
 			sprintf( BoxData[16], "%10.3e ", Ux_div[0]);
                 break;
                 case 20:
-                        strcpy(BoxText, "disp Y");
+                        strncpy(BoxText, "disp Y", 6);
 			Color_flag[33] = 1;
 			strain_flag = 0;
 			stress_flag = 0;
@@ -738,7 +714,7 @@ void tsControlMouse(int button, int state, int x, int y)
 			sprintf( BoxData[16], "%10.3e ", Uy_div[0]);
                 break;
                 case 21:
-                        strcpy(BoxText, "disp Z");
+                        strncpy(BoxText, "disp Z", 6);
 			Color_flag[34] = 1;
 			strain_flag = 0;
 			stress_flag = 0;
@@ -755,7 +731,7 @@ void tsControlMouse(int button, int state, int x, int y)
 			sprintf( BoxData[16], "%10.3e ", Uz_div[0]);
                 break;
                 case 30:
-    			strcpy(BoxText, "Material");
+    			strncpy(BoxText, "Material", 8);
 			Color_flag[7] = 1;
         		input_color_flag = 0;
 			strain_flag = 0;
@@ -766,11 +742,11 @@ void tsControlMouse(int button, int state, int x, int y)
 			Node_flag = 0;
 			Material_flag = 1;
 			sprintf( BoxData[0], "%4d ", matl_choice);
-    			strcpy( BoxData[1], "Emod");
+    			strncpy( BoxData[1], "Emod", 4);
 			sprintf( BoxData[2], "%10.3e ", matl_crtl[matl_choice].E);
-    			strcpy( BoxData[3], "Mass");
+    			strncpy( BoxData[3], "Mass", 4);
 			sprintf( BoxData[4], "%10.3e ", matl_crtl[matl_choice].rho);
-    			strcpy( BoxData[5], "Area");
+    			strncpy( BoxData[5], "Area", 4);
 			sprintf( BoxData[6], "%10.3e ", matl_crtl[matl_choice].area);
 			sprintf( BoxData[8], " " );
 			sprintf( BoxData[10], " " );
@@ -779,7 +755,7 @@ void tsControlMouse(int button, int state, int x, int y)
 			sprintf( BoxData[16], " " );
                 break;
                 case 31:
-    			strcpy(BoxText, "Node");
+    			strncpy(BoxText, "Node", 4);
 			Color_flag[3] = 1;
         		input_color_flag = 0;
 			strain_flag = 0;
@@ -799,17 +775,17 @@ void tsControlMouse(int button, int state, int x, int y)
 				fpointz = *(coord0 + nsd*node_choice + 2);
 			}
 			sprintf( BoxData[0], "%4d ", node_choice);
-			strcpy( BoxData[2], "coord x"); 
+			strncpy( BoxData[2], "coord x", 7); 
 			sprintf( BoxData[4], "%10.3e ", fpointx);
-			strcpy( BoxData[6], "coord y"); 
+			strncpy( BoxData[6], "coord y", 7); 
 			sprintf( BoxData[8], "%10.3e ", fpointy);
-			strcpy( BoxData[10], "coord z");
+			strncpy( BoxData[10], "coord z", 7);
 			sprintf( BoxData[12], "%10.3e ", fpointz);
 			sprintf( BoxData[14], " " );
 			sprintf( BoxData[16], " " );
                 break;
                 case 32:
-    			strcpy(BoxText, "Element");
+    			strncpy(BoxText, "Element", 7);
 			Color_flag[4] = 1;
         		input_color_flag = 0;
 			strain_flag = 0;
@@ -820,9 +796,9 @@ void tsControlMouse(int button, int state, int x, int y)
 			Node_flag = 0;
 			Element_flag = 1;
 			sprintf( BoxData[0], "%4d ", ele_choice);
-    			strcpy( BoxData[2], "Material");
+    			strncpy( BoxData[2], "Material", 8);
 			sprintf( BoxData[4], "%4d ", *(el_matl_color+ele_choice));
-    			strcpy( BoxData[6], "Connect");
+    			strncpy( BoxData[6], "Connect", 7);
 			dum1 = *(connecter + npel*ele_choice);
 			dum2 = *(connecter + npel*ele_choice+1);
 			sprintf( BoxData[8], "%4d,%4d ",dum1, dum2);

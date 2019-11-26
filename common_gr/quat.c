@@ -26,14 +26,21 @@
 
 
 /*
-    This utility function calculates rotations based Quaternions.
-    It is based on code taken from the Mesa OpenGL library
+    This utility function calculates rotations based on Quaternions.
+    It is based on the function:
+
+      gl_rotation_matrix
+
+    taken from the Mesa OpenGL library source file:
+
+      /usr/local/Mesa-3.4/src/matrix.c
+
     and modified by San Le.
 
-                Updated 4/26/01
+                Updated 6/26/02
 
     SLFFEA source file
-    Version:  1.1
+    Version:  1.2
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -44,6 +51,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 #include "control.h"
 

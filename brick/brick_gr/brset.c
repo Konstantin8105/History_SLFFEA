@@ -2,11 +2,11 @@
     This program sets viewing and analysis values based on the parameters
     determined in brparameters for the FEM GUI for brick elements.
   
-   			Last Update 3/17/00
+   			Last Update 6/9/01
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -49,9 +49,9 @@ extern SDIM del_stress, del_strain, max_stress, min_stress,
 extern double max_Ux, min_Ux, del_Ux, max_Uy, min_Uy, del_Uy,
 	max_Uz, min_Uz, del_Uz, absolute_max_U;
 
-int brset( BOUND bc, int *connecter, double *coord, double *force,
-	XYZF *force_vec0, SDIM *strain_node, ISTRAIN *strain_color,
-	SDIM *stress_node, ISTRESS *stress_color, double *U, int *U_color )
+int brset( BOUND bc, int *connecter, double *force, XYZF *force_vec0,
+	SDIM *strain_node, ISTRAIN *strain_color, SDIM *stress_node,
+	ISTRESS *stress_color, double *U, int *U_color )
 {
         int i, j, check;
 	double force_vec_length;

@@ -6,7 +6,7 @@
         Updated 11/2/09
 
     SLFFEA source file
-    Version:  1.1
+    Version:  1.2
     Copyright (C) 1999-2009  San Le 
 
     The source code contained in this file is released under the
@@ -23,6 +23,8 @@
 #include "../../common/eigen.h"
 #include "plconst.h"
 #include "plstruct.h"
+
+int plArea ( int *, double *, double *);
 
 int plwriter ( BOUND , int *, double *, CURVATURE *, MDIM *, int *,
 	double *, int *, MATL *, MOMENT *, MDIM *, char *, STRAIN *,
@@ -44,7 +46,7 @@ int plMassemble(int *, double *, int *, int *, double *, MATL *);
 
 int plKassemble(double *, int *, double *, CURVATURE *, MDIM *, int *,
 	double *, int *, int *, double *, int *, MATL *, MOMENT *, MDIM *,
-	double *, STRAIN *, SDIM *, STRESS *, SDIM *, double *, double *);
+	double *, STRAIN *, SDIM *, STRESS *, SDIM *, double *);
 
 int diag( int *, int *, int, int, int, int);
 
@@ -61,9 +63,7 @@ int plMemory( double **, int , int **, int , MATL **, int , ZPhiI **, int ,
 
 int plshl( double, SH, double * );
 
-#if 0
 int plshl_node2(double * );
-#endif
 
 int analysis_flag, dof, modal_flag, neqn, nmat, nmode, numel, numnp, sof;
 int standard_flag, consistent_mass_flag, consistent_mass_store, eigen_print_flag,
@@ -147,10 +147,8 @@ int main(int argc, char** argv)
 
 /* Create local streamlined shape funcion matrix at nodal points */
 
-#if 0
         check = plshl_node2(shl_node2);
         if(!check) printf( " Problems with plshl_node2 \n");
-#endif
 
 	memset(name,0,30*sizeof(char));
 	
@@ -252,7 +250,7 @@ int main(int argc, char** argv)
 /* The criteria for over-calculating the number of desired eigenvalues is
    taken from "The Finite Element Method" by Thomas Hughes, page 578.  It
    is actually given for subspace iteration, but I find it works well
-   for the Lanczos Method as well.  I have also slightly modified
+   for the Lanczos Method.  I have also slightly modified
    one of the factors from 2.0 to 2.6.
 */
 		num_eigen = (int)(2.6*nmode);
@@ -540,7 +538,7 @@ int main(int argc, char** argv)
 	memset(A,0,sofmA*sof);
 	check = plKassemble(A, connect, coord, curve, curve_node, el_matl, force,
 		id, idiag, K_diag, lm, matl, moment, moment_node, node_counter,
-		strain, strain_node, stress, stress_node, U, Arean);
+		strain, strain_node, stress, stress_node, U);
 	if(!check) printf( " Problems with plKassembler \n");
 /*
 	printf( "\n\n This is the force matrix \n");
@@ -637,7 +635,7 @@ int main(int argc, char** argv)
 	    memset(force,0,dof*sof);
 	    check = plKassemble(A, connect, coord, curve, curve_node, el_matl, force,
 		id, idiag, K_diag, lm, matl, moment, moment_node, node_counter,
-		strain, strain_node, stress, stress_node, U, Arean);
+		strain, strain_node, stress, stress_node, U);
 	    if(!check) printf( " Problems with plKassembler \n");
 /*
 	    printf( "\n\n These are the reaction forces and moments\n");
@@ -758,8 +756,7 @@ int main(int argc, char** argv)
 
 		check = plKassemble(A, connect, coord, curve, curve_node, el_matl,
 		    vector_dum, id, idiag, K_diag, lm, matl, moment, moment_node,
-		    node_counter, strain, strain_node, stress, stress_node,
-		    U, Arean);
+		    node_counter, strain, strain_node, stress, stress_node, U);
 		if(!check) printf( " Problems with plKassembler \n");
 
 		check = plwriter ( bc, connect, coord, curve, curve_node, el_matl,
@@ -771,7 +768,19 @@ int main(int argc, char** argv)
 	    }
 	}
 
-		
+	/* Calculating the value of the Areas */
+
+	check = plArea( connect, coord, Arean);
+	if(!check) printf( " Problems with plArea \n");
+
+/*
+        printf("\nThis is the Area\n");
+        for( i = 0; i < numel; ++i )
+        {
+                printf("%4i %12.4e\n",i, *(Arean + i));
+        }
+*/
+
     	timec = clock();
 	printf("\n\n elapsed CPU = %lf\n\n",( (double)timec)/800.);
 

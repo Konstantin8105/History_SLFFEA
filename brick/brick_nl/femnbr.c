@@ -6,11 +6,11 @@
     The material is assumed to be hypo-elastic and the stress
     is updated using the Jaumann Stress Rate.
 
-		Udated 12/20/02
+		Udated 6/20/02
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -30,20 +30,22 @@
 
 int brConnectSurfwriter ( int *, int *, char *);
 
+int brVolume( int *, double *, double *);
+
 int brwriter ( BOUND , int *, double *, int *, double *, int *, MATL *,
         char *, STRAIN *, SDIM *, STRESS *, SDIM *, double *);
 
 int matX(double *,double *,double *, int ,int ,int );
 
 int brPassemble(int *, double *, double *, int *, MATL *, double *, STRESS *,
-	double *, double * );
+	double * );
 
 int brFMassemble(int *, double *, double *, int *, double *, double *, MATL *,
-	double *, double *);
+	double *);
 
 int brformid( BOUND, int *);
 
-int brshg( double *, int, double *, double *, double *, double *);
+int brshg( double *, int, double *, double *, double *);
 
 int brreader( BOUND , int *, double *, int *, double *, MATL *, char *, FILE *,
         STRESS *, SDIM *, double *);
@@ -82,7 +84,7 @@ int main(int argc, char** argv)
         double coord_el_trans[neqel], *coordh;
 	char name[30], buf[ BUFSIZ ];
         FILE *o1, *o2, *o3, *o4;
-	double det[num_int];
+	double det[num_int], wXdet;
 	BOUND bc;
 	STRESS *stress;
 	STRAIN *strain;
@@ -116,7 +118,7 @@ int main(int argc, char** argv)
 /*   o4 contains dynamic data   */
 
         o1 = fopen( name,"r" );
-        o2 = o2 = fopen( "brinput","r" );
+        o2 = fopen( "brinput","r" );
         o3 = fopen( "data","w" );
         o4 = fopen( "brdynam.dat","r" );
 
@@ -236,8 +238,6 @@ int main(int argc, char** argv)
 	timec = clock();
 	timef = 0;
 
-/* Initializing the data for stress */
-
         for( k = 0; k < numel; ++k )
         {
         	for( j = 0; j < num_int; ++j )
@@ -289,25 +289,15 @@ int main(int argc, char** argv)
 		*(coordh+i)=*(coord0+i);
 	}
 
-	for( k = 0; k < numel; ++k )
-	{
-
-/* Create the coord_el transpose vector for one element */
-
-		for( j = 0; j < npel; ++j )
-		{
-			node=*(connect+npel*k+j);
-
-			*(coord_el_trans+j)=*(coord+nsd*node);
-			*(coord_el_trans+npel*1+j)=*(coord+nsd*node+1);
-			*(coord_el_trans+npel*2+j)=*(coord+nsd*node+2);
-		}
-
 /* Initializing the data for the Volume */
 
-		brshg(det, k, shl, shg, coord_el_trans, (Vol0+k));
+	check = brVolume( connect, coord0, Vol0);
+        if(!check) printf( "Problems with brVolume \n");
+
+	for( k = 0; k < numel; ++k )
+	{
        	   	printf(" \n");
-	   	printf("Volume for element %d %14.5f ",k,*(Vol0+k));
+	   	printf("Volume for element %d %14.5f ", k, *(Vol0+k));
 	}
 	printf("\n\n");
 
@@ -316,7 +306,7 @@ int main(int argc, char** argv)
        	printf(" \n");
 	printf("mass  matrix\n");
 
-    	check = brFMassemble(connect, coord, coordh, el_matl, force, mass, matl, U, Voln );
+    	check = brFMassemble(connect, coord, coordh, el_matl, force, mass, matl, U );
 	if(!check) printf( "Problems with brFMassemble \n");
 
 	printf( "\n\n This is the mass matrix \n");
@@ -348,7 +338,7 @@ int main(int argc, char** argv)
 		/*fprintf(o3, " %f %f \n",timer,*(dU+dof-1)/numel*10);*/
 		printf( " \n %3d \n",iteration);
 		check = brPassemble( connect, coord, coordh, el_matl, matl, P_global,
-		    stress, V, Voln);
+		    stress, V);
 		if(!check) printf( "Problems with brPassemble \n");
 		/*for( j = 0; j < dof; ++j )
 		{
@@ -438,6 +428,19 @@ int main(int argc, char** argv)
 	}
 
 
+/* Calculating the final value of the Volumes */
+
+	check = brVolume( connect, coord, Voln);
+        if(!check) printf( "Problems with brVolume \n");
+
+/*
+        printf("\nThis is the Volume\n");
+        for( i = 0; i < numel; ++i )
+        {
+                printf("%4i %12.4e\n",i, *(Voln + i));
+        }
+*/
+
 /* Set reaction forces */
 
 	for( i = 0; i < numnp; ++i )
@@ -511,7 +514,7 @@ int main(int argc, char** argv)
                          yzsq*strain[k].pt[j].xx + zxsq*strain[k].pt[j].yy +
                          xysq*strain[k].pt[j].zz;
 
-                    check = brcubic(invariant);
+                    check = cubic(invariant);
 
                     strain[k].pt[j].I = *(invariant);
                     strain[k].pt[j].II = *(invariant+1);
@@ -549,7 +552,7 @@ int main(int argc, char** argv)
                          yzsq*stress[k].pt[j].xx + zxsq*stress[k].pt[j].yy +
                          xysq*stress[k].pt[j].zz;
 
-                    check = brcubic(invariant);
+                    check = cubic(invariant);
 
                     stress[k].pt[j].I = *(invariant);
                     stress[k].pt[j].II = *(invariant+1);

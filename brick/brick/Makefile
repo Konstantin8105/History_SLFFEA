@@ -1,5 +1,5 @@
 # SLFFEA Makefile
-# Version:  1.1
+# Version:  1.2
 # Copyright (C) 1999, 2000  San Le (slffea@yahoo.com)
 # http://slffea.com/
 #
@@ -31,7 +31,7 @@ COMMON = ../../common
 OBJECTS = $(COMMON)/matxt.o $(COMMON)/matx.o $(COMMON)/dotx.o \
 	$(COMMON)/lm.o $(COMMON)/idiag.o $(COMMON)/kasmbl.o \
 	$(COMMON)/sky.o $(COMMON)/qr.o $(COMMON)/eigen.o \
-	$(COMMON)/eigenprint.o
+	$(COMMON)/eigenprint.o $(COMMON)/cubic.o
 OBJECTS2 = $(COMMON)/crossx.o
 PROGS = br brp
 
@@ -47,11 +47,11 @@ br: fembr.o \
 		brconj.o \
 		brbound.o \
 		brstress.o \
-		brcubic.o \
 		brmasmbl.o \
 		brlanczos.o \
 		brmassp.o \
 		brwriter.o \
+		brvolume.o \
 		brwriter2.o \
 		brconst.h \
 		brstruct.h 
@@ -65,11 +65,11 @@ br: fembr.o \
 		brconj.o \
 		brbound.o \
 		brstress.o \
-		brcubic.o \
 		brmasmbl.o \
 		brlanczos.o \
 		brmassp.o \
 		brwriter.o \
+		brvolume.o \
 		brwriter2.o $(OBJECTS) $(LIBS)
 
 brp: brp.o \
@@ -82,6 +82,9 @@ brp.o: brpatch.c
 brwriter2.o: brwriter2.c
 	$(CC) -c brwriter2.c 
 
+brvolume.o: brvolume.c
+	$(CC) -c brvolume.c 
+
 brwriter.o: brwriter.c
 	$(CC) -c brwriter.c 
 
@@ -93,9 +96,6 @@ brlanczos.o: brlanczos.c
 
 brmasmbl.o: brmasmbl.c
 	$(CC) -c brmasmbl.c 
-
-brcubic.o: brcubic.c
-	$(CC) -c brcubic.c 
 
 brstress.o: brstress.c
 	$(CC) -c brstress.c 

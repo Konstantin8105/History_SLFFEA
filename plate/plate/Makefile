@@ -1,5 +1,5 @@
 # SLFFEA Makefile
-# Version:  1.1
+# Version:  1.2
 # Copyright (C) 1999, 2000  San Le (slffea@yahoo.com)
 # http://slffea.com/
 #
@@ -46,10 +46,12 @@ pl: fempl.o \
 		plkasmbl.o\
 		plconj.o\
 		plbound.o\
+		plstress.o\
 		plmasmbl.o \
 		pllanczos.o \
 		plmassp.o \
 		plwriter.o\
+		plarea.o\
 		plconst.h \
 		plstruct.h
 	$(CC) -o pl fempl.o \
@@ -61,10 +63,12 @@ pl: fempl.o \
 		plkasmbl.o\
 		plconj.o\
 		plbound.o\
+		plstress.o\
 		plmasmbl.o \
 		pllanczos.o \
 		plmassp.o \
-		plwriter.o $(OBJECTS) $(LIBS)
+		plwriter.o \
+		plarea.o $(OBJECTS) $(LIBS)
 
 plp: plp.o \
 		plpatch.o
@@ -72,6 +76,9 @@ plp: plp.o \
 
 plp.o: plpatch.c
 	$(CC) -c plpatch.c
+
+plarea.o: plarea.c
+	$(CC) -c plarea.c 
 
 plwriter.o: plwriter.c
 	$(CC) -c plwriter.c 
@@ -85,8 +92,8 @@ pllanczos.o: pllanczos.c
 plmasmbl.o: plmasmbl.c
 	$(CC) -c plmasmbl.c
 
-#plstress.o: plstress.c
-#	$(CC) -c plstress.c
+plstress.o: plstress.c
+	$(CC) -c plstress.c
 
 plbound.o: plbound.c
 	$(CC) -c plbound.c

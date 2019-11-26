@@ -1,5 +1,5 @@
-   numel numnp nmat nmode (This is for the truss mesh file: com5)
-      17   11    2    0
+   numel numnp nmat nmode   (This is for a truss                           com5) 
+       17   11    2    0
  matl no., E modulus, density, Area 
      0    70000000000.0000 9229.2000    0.0004
      1    70000000000.0000 6290.0000    0.0004
@@ -73,7 +73,7 @@ prescribed displacement z: node  disp value
   10   0.000000e+00
  -10 
 node with point load and load vector in x,y,z 
-   0   0.000000e+00   -5.000000e+04    0.000000e+00 
+   0  -1.818989e-12   -5.000000e+04    0.000000e+00 
    2   2.002777e+04    1.216548e+04    0.000000e+00 
    3  -2.002777e+04    7.862292e+03    0.000000e+00 
    4   0.000000e+00    8.612133e+03    2.285220e+04 
@@ -82,7 +82,7 @@ node with point load and load vector in x,y,z
    7   5.492191e+06   -4.269925e+06    0.000000e+00 
    8   8.821221e+06    1.086920e+07    0.000000e+00 
    9  -1.134932e+07    3.236690e+06    0.000000e+00 
-  10   9.313226e-10    1.164153e-09    0.000000e+00 
+  10   0.000000e+00    1.164153e-09    0.000000e+00 
  -10
 element no. with stress and tensile stress vector 
    0   -4.118606e+07 

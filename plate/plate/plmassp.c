@@ -3,11 +3,11 @@
     consistent mass matrix.  This is for a finite element program
     which does analysis on a plate.  It is for modal analysis.
 
-		Updated 9/21/00
+		Updated 11/2/06
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -33,7 +33,7 @@ int matX(double *, double *, double *, int, int, int);
 
 int plateB_mass(double *,double *);
 
-int plshg_mass( double *, int, SH , double *, double *);
+int plshg_mass( double *, int, SH , double *);
 
 int plMassPassemble(int *connect, double *coord, int *el_matl, double *mass,
 	MATL *matl, double *P_global, double *U) 
@@ -123,7 +123,7 @@ int plMassPassemble(int *connect, double *coord, int *el_matl, double *mass,
 
 /* The call to plshg_mass is only for calculating the determinent */
 
-		check = plshg_mass(det, k, shg, coord_el_trans, &fdum);
+		check = plshg_mass(det, k, shg, coord_el_trans);
        		if(!check) printf( "Problems with plshg_mass \n");
 
 #if 0

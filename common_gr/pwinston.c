@@ -17,7 +17,7 @@
     http://www.cs.hmc.edu/people/pwinston
   
     SLFFEA source file
-    Version:  1.1
+    Version:  1.2
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.

@@ -1,11 +1,11 @@
 /*
     This program draws the drag down menus.  It works with a plate FEM code.
   
-   			Last Update 6/9/00
+   			Last Update 6/9/01
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -52,7 +52,7 @@ extern int Before_flag, After_flag,
     Both_flag, Amplify_flag;
 extern double amplify_factor, amplify_step, amplify_step0;
 
-int plset( BOUND bc, int *, double *, MDIM *, ICURVATURE *, double *, ZPhiF *,
+int plset( BOUND bc, int *, MDIM *, ICURVATURE *, double *, ZPhiF *,
         MDIM *, IMOMENT *, SDIM *, ISTRAIN *, SDIM *, ISTRESS *,
         double *, int * );
 
@@ -115,9 +115,9 @@ void plMenuSelect(int value)
 	    break;
 	case 4:
 	    plReGetparameter();
-	    check = plset( bc, connecter, coord, curve_node, curve_color, force,
-		force_vec0, moment_node, moment_color, strain_node, strain_color,
-		stress_node, stress_color, U, U_color );
+	    check = plset( bc, connecter, curve_node, curve_color, force, force_vec0,
+		moment_node, moment_color, strain_node, strain_color, stress_node,
+		stress_color, U, U_color );
 	    if(!check) printf( " Problems with plset \n");
 	    break;
 	case 5:

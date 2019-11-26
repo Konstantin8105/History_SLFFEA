@@ -1,34 +1,34 @@
                             node
                           min  max       min            max
-displacement Ux           47     1    -8.760323e-03   8.790243e-03
-displacement Uy           85    47    -8.778012e-03   9.156730e-03
-displacement Uz            0     0     0.000000e+00   0.000000e+00
-angle phi x               47    48    -6.658174e-07   6.623860e-07
-angle phi y               84    48    -7.709783e-07   5.814180e-07
+displacement Ux            9   191    -1.832073e-02   1.577467e-03
+displacement Uy            0   201    -4.272162e-03   1.018820e-02
+displacement Uz          240    57    -1.152565e-02   4.031381e-03
+angle phi x              124    68    -9.723618e-03   1.157437e-02
+angle phi y              123    69    -8.470101e-03   1.274888e-02
 
                             node
                         min       max         min           max
-stress xx              123       151    -1.675687e+04   1.673066e+04
-stress yy               91       175    -4.653530e+04   4.664256e+04
-stress xy              133       137    -1.802615e+04   1.591635e+04
-stress zx               34        73    -2.720661e-01   2.883785e-01
-stress yz               70        84    -1.186643e+00   8.287026e-01
-stress I                91       175    -1.375446e+04   4.719927e+04
-stress II               91       175    -4.709409e+04   1.378098e+04
+stress xx              255       287    -3.029151e+06   3.946940e+06
+stress yy              511        19    -2.141968e+06   1.519601e+06
+stress xy              415       255    -1.252706e+06   3.253017e+06
+stress zx               64       195    -5.816044e+05   6.283746e+05
+stress yz                4       147    -1.095781e+06   7.968029e+05
+stress I               357       256    -5.407856e+05   4.226350e+06
+stress II              255       292    -6.167227e+06   3.519477e+05
 
-strain xx               25       151    -2.248044e-03   2.264080e-03
-strain yy               91       175    -4.224132e-03   4.234125e-03
-strain xy              133       137    -4.686798e-03   4.138251e-03
-strain zx               34        73    -8.488464e-08   8.997409e-08
-strain yz               70        84    -3.702326e-07   2.585552e-07
-strain I                 0        56     2.418563e-04   5.311341e-03
-strain II               28       175    -5.305178e-03  -2.418104e-04
+strain xx              255       287    -7.011923e-03   9.136435e-03
+strain yy              511        19    -4.958260e-03   3.517595e-03
+strain xy              415       255    -5.799566e-03   1.506026e-02
+strain zx               64       195    -3.231265e-03   3.491110e-03
+strain yz                4       147    -6.087915e-03   4.426860e-03
+strain I               357       256    -1.158938e-03   1.118308e-02
+strain II              255       292    -2.127194e-02   7.468162e-04
 
 Orthographic viewport parameters(right, left, top, bootom, near, far)
-   9.809467e+00  -1.800861e+00   9.809656e+00  -1.800671e+00   1.300000e+00   1.000000e+03
+   3.949005e+00  -3.962556e+00   4.087183e+00  -3.824378e+00   2.952355e+00   1.000000e+03
 Perspective viewport parameters( mesh width and height)
     320    320
 Step sizes in x, y, z
-   4.805164e-01   4.804027e-01   7.200000e-01
+   2.955781e-01   2.825257e-01   1.181579e+00
 Amplification size
-   3.003256e+01
+   9.552021e+00

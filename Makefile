@@ -1,6 +1,6 @@
 # SLFFEA Makefile
-# Version:  1.1
-# Copyright (C) 1999  San Le (slffea@yahoo.com)
+# Version:  1.2
+# Copyright (C) 1999, 2000, 2001  San Le (slffea@yahoo.com)
 # http://slffea.sourceforge.net/
 #
 # This library is free software; you can redistribute it and/or
@@ -42,6 +42,9 @@ everything:
 	cd quad/quad ;  make
 	cd shell/shell ; make
 	cd truss/truss ;  make 
+	cd tetra/tetra ;  make 
+	cd tri/tri ;  make 
+	cd wedge/wedge ;  make 
 #	cd truss/fortran ;  make
 #	cd truss/geotruss ;  make
 	cd common_gr ;  make
@@ -52,6 +55,9 @@ everything:
 	cd quad/quad_gr ;  make
 	cd shell/shell_gr ; make
 	cd truss/truss_gr ;  make 
+	cd tetra/tetra_gr ;  make 
+	cd tri/tri_gr ;  make 
+	cd wedge/wedge_gr ;  make 
 
 # This makes the scientific FEM executables only.
 
@@ -65,6 +71,9 @@ science:
 	cd quad/quad ;  make
 	cd shell/shell ; make
 	cd truss/truss ;  make 
+	cd tetra/tetra ;  make 
+	cd tri/tri ;  make 
+	cd wedge/wedge ;  make 
 
 # This makes the graphics FEM executables only, but
 # the science must have been made already.
@@ -78,6 +87,9 @@ gui:
 	cd quad/quad_gr ;  make
 	cd shell/shell_gr ; make
 	cd truss/truss_gr ;  make 
+	cd tetra/tetra_gr ;  make 
+	cd tri/tri_gr ;  make 
+	cd wedge/wedge_gr ;  make 
 
 clean:
 	cd common ;  make clean
@@ -89,6 +101,9 @@ clean:
 	cd quad/quad ;  make clean
 	cd shell/shell ; make clean
 	cd truss/truss ;  make clean
+	cd tetra/tetra ;  make clean
+	cd tri/tri ;  make clean
+	cd wedge/wedge ;  make clean
 #	cd truss/fortran ;  make clean
 #	cd truss/geotruss ;  make clean
 	cd common_gr ;  make clean
@@ -99,6 +114,9 @@ clean:
 	cd quad/quad_gr ;  make clean
 	cd shell/shell_gr ; make clean
 	cd truss/truss_gr ;  make clean
+	cd tetra/tetra_gr ; make clean
+	cd tri/tri_gr ; make clean
+	cd wedge/wedge_gr ;  make clean
 
 # The lines below remove the science or the graphics or all
 # of the executables.
@@ -113,6 +131,9 @@ clean_science:
 	cd quad/quad ; make clean
 	cd shell/shell ; make clean
 	cd truss/truss ; make clean
+	cd tetra/tetra ; make clean
+	cd tri/tri ; make clean
+	cd wedge/wedge ; make clean
 
 clean_gui:
 	cd common_gr ; make clean
@@ -123,3 +144,6 @@ clean_gui:
 	cd quad/quad_gr ; make clean
 	cd shell/shell_gr ; make clean
 	cd truss/truss_gr ; make clean
+	cd tetra/tetra_gr ; make clean
+	cd tri/tri_gr ; make clean
+	cd wedge/wedge_gr ; make clean

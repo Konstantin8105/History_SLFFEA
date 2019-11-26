@@ -1,5 +1,5 @@
    numel numnp nmat nmode  integ_flag  This is the inclusion problem
-       72   91    1    5   1 
+       72   91    1    -5   1 
  matl no., E modulus, Poisson Ratio, density, shear fac.
   0  10000000.0000    0.3000   2340.0000 .8333333
  el no., connectivity, matl no 

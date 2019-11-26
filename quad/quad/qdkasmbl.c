@@ -2,11 +2,11 @@
     This utility function assembles the K matrix for a finite 
     element program which does analysis on a quad.
 
-		Updated 11/2/00
+		Updated 9/27/01
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -38,14 +38,14 @@ int matXT( double *, double *, double *, int, int, int);
 
 int quadB( double *,double *);
 
-int qdshg( double *, int, double *, double *, double *, double *);
+int qdshg( double *, int, double *, double *, double *);
 
 int qdstress_shg( double *, int, double *, double *, double * );
 
 int qdKassemble(double *A, int *connect, double *coord, int *el_matl, double *force,
 	int *id, int *idiag, double *K_diag, int *lm, MATL *matl,
 	double *node_counter, STRAIN *strain, SDIM *strain_node, STRESS *stress,
-	SDIM *stress_node, double *U, double *Arean)
+	SDIM *stress_node, double *U)
 {
 	int i, i1, i2, j, k, dof_el[neqel], sdof_el[npel*nsd];
 	int check, counter, node;
@@ -58,7 +58,7 @@ int qdKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
 	double force_el[neqel], U_el[neqel];
 	double coord_el_trans[npel*nsd];
 	double stress_el[sdim], strain_el[sdim], xxaddyy, xxsubyy, xysq;
-	double det[num_int];
+	double det[num_int], wXdet;
 
 	for( k = 0; k < numel; ++k )
 	{
@@ -111,7 +111,7 @@ int qdKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
 
 /* Assembly of the shg matrix for each integration point */
 
-		check=qdshg(det, k, shl, shg, coord_el_trans, (Arean+k));
+		check=qdshg(det, k, shl, shg, coord_el_trans);
 		if(!check) printf( "Problems with qdshg \n");
 
 /* The loop over j below calculates the 4 points of the gaussian integration 
@@ -142,11 +142,13 @@ int qdKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
 			*(DB+neqel*2+i1) = *(B+neqel*2+i1)*G;
 		    }
 
+		    wXdet = *(w+j)*(*(det+j));
+
 		    check=matXT(K_temp, B, DB, neqel, neqel, sdim);
 		    if(!check) printf( "Problems with matXT  \n");
 		    for( i2 = 0; i2 < neqlsq; ++i2 )
 		    {
-			  *(K_el+i2) += *(K_temp+i2)*(*(w+j))*(*(det+j));
+			  *(K_el+i2) += *(K_temp+i2)*wXdet;
 		    }
 		}
 
@@ -200,17 +202,16 @@ int qdKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
 /*
    qdstress_shg calculates shg at the nodes.  It is more efficient than qdshg
    because it removes all the zero multiplications from the calculation of shg. 
-   You can use either function when calculating shg at the nodes.  Because stress
-   is calculated at the Gauss points, qdshg is used.
+   You can use either function when calculating shg at the nodes. 
 
-			check=qdstress_shg(det, k, shl_node2, shg, coord_el_trans);
-			check=qdshg(det, k, shl_node, shg, coord_el_trans, (Arean+k));
+			    check=qdstress_shg(det, k, shl_node2, shg_node, coord_el_trans);
+			    check=qdshg(det, k, shl_node, shg_node, coord_el_trans);
 */
 
 			if(gauss_stress_flag)
 			{
 /* Calculate shg at integration point */
-			    check=qdshg(det, k, shl, shg, coord_el_trans, (Arean+k));
+			    check=qdshg(det, k, shl, shg, coord_el_trans);
 			    if(!check) printf( "Problems with qdshg \n");
 			}
 			else
@@ -252,9 +253,9 @@ int qdKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
 #if 0
 			   for( i1 = 0; i1 < sdim; ++i1 )
 			   {
-				     printf("%12.8f ",*(stress_el+i1));
-				     /*printf("%12.2f ",*(stress_el+i1));
-				     printf("%12.8f ",*(B+i1));*/
+				printf("%12.8f ",*(stress_el+i1));
+				/*printf("%12.2f ",*(stress_el+i1));
+				printf("%12.8f ",*(B+i1));*/
 			   }
 			   printf("\n");
 #endif

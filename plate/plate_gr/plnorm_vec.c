@@ -2,11 +2,11 @@
     This program Calculates the normal vectors of a mesh
     for plate elements.
   
-  		Last Update 3/10/01
+  		Last Update 6/26/01
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -56,31 +56,33 @@ int plnormal_vectors(int *connecter, double *coord, NORM *norm, double *zcoord)
    and the shell.
 */
 
-	     	*(d1)=*(coord_el+3)-*(coord_el);
-	     	*(d1+1)=*(coord_el+4)-*(coord_el+1);
-	     	*(d1+2)=*(coord_el+5)-*(coord_el+2);
-	     	*(d2)=*(coord_el+9)-*(coord_el);
-	     	*(d2+1)=*(coord_el+10)-*(coord_el+1);
-	     	*(d2+2)=*(coord_el+11)-*(coord_el+2);
+/* Calculate normal vectors */
+
+/* Triangle face 0 */
+
+		*(d1)=*(coord_el+6)-*(coord_el+3);
+		*(d1+1)=*(coord_el+7)-*(coord_el+4);
+		*(d1+2)=*(coord_el+8)-*(coord_el+5);
+		*(d2)=*(coord_el)-*(coord_el+3);
+		*(d2+1)=*(coord_el+1)-*(coord_el+4);
+		*(d2+2)=*(coord_el+2)-*(coord_el+5);
 		normcrossX(d1, d2, norm_temp);
 		norm[k].face[0].x = *(norm_temp);
 		norm[k].face[0].y = *(norm_temp+1);
 		norm[k].face[0].z = *(norm_temp+2);
-    		/*printf( "%9.5f %9.5f %9.5f \n",*(norm_temp),
-			*(norm_temp+1),*(norm_temp+2));*/
 
-	     	*(d1)=*(coord_el+9)-*(coord_el+6);
-	     	*(d1+1)=*(coord_el+10)-*(coord_el+7);
-	     	*(d1+2)=*(coord_el+11)-*(coord_el+8);
-	     	*(d2)=*(coord_el+3)-*(coord_el+6);
-	     	*(d2+1)=*(coord_el+4)-*(coord_el+7);
-	     	*(d2+2)=*(coord_el+5)-*(coord_el+8);
+/* Triangle face 1 */
+
+		*(d1)=*(coord_el)-*(coord_el+9);
+		*(d1+1)=*(coord_el+1)-*(coord_el+10);
+		*(d1+2)=*(coord_el+2)-*(coord_el+11);
+		*(d2)=*(coord_el+6)-*(coord_el+9);
+		*(d2+1)=*(coord_el+7)-*(coord_el+10);
+		*(d2+2)=*(coord_el+8)-*(coord_el+11);
 		normcrossX(d1, d2, norm_temp);
 		norm[k].face[1].x = *(norm_temp);
 		norm[k].face[1].y = *(norm_temp+1);
 		norm[k].face[1].z = *(norm_temp+2);
-    		/*printf( "%9.5f %9.5f %9.5f \n",*(norm_temp),
-			*(norm_temp+1),*(norm_temp+2));*/
 	}
 	return 1;
 }

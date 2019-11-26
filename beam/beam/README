@@ -18,7 +18,7 @@ load.
 Beams usually require that you to specify the local axes as part of the input
 data because elements have to rotated from their local coordinates to the global
 coordinates.  For my beam, you can either specify the axes yourself or have the software
-do it for you based on the method given in Logan [10] in slffea-1.1/REFERENCES.  Note that
+do it for you based on the method given in Logan [11] in slffea-1.2/REFERENCES.  Note that
 the local x axis will always be along the length of the beam.  And because axis z and y are
 perpendicular to x and to each other, you only have to specify either y or z(I chose
 z).  In case the z axis you input is not exactly perpendicular to x, I also do a cross

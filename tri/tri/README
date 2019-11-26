@@ -1,0 +1,12 @@
+
+                             SLFFEA 1.2 Triangle README
+
+                    Copyright (C) 1999 San Le
+
+                    email:     slffea@juno.com
+                    homepage:  http://www.geocities.com/Athens/2099/slffea.html
+
+
+You can do either plane stress or plane strain analysis.  For plane stress,
+set the plane_stress_flag in your input file to 1.  For plane strain, set
+it to 0.

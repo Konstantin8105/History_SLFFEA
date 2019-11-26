@@ -1,13 +1,14 @@
-/* This progam tests the random number generator.
+/* This progam converts brick data to tetrahedron
+   data by modifying the connectivity.
 
-     SLFFEA source file
-     Version:  1.1
-     Copyright (C) 1999, 2000, 2001  San Le
+    Updated 11/15/01
 
-     The source code contained in this file is released under the
-     terms of the GNU Library General Public License.
+    SLFFEA source file
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le
 
-    Updated 4/19/01
+    The source code contained in this file is released under the
+    terms of the GNU Library General Public License.
 
  */
 
@@ -56,7 +57,7 @@ int main()
 
 	    fscanf( o2, "\n");
             fscanf(o2, "%d", &dum2);
-	    for( j = 0; j < 8; ++j)
+	    for( j = 0; j < npel; ++j)
 	    {
         	fscanf(o2, "%d", (connect_el + j));
 	    }

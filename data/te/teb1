@@ -1,0 +1,25 @@
+   numel numnp nmat nmode  (This is for a tetrahedron "te1")
+	1   4  1   0
+matl no., E modulus, Poisson Ratio, mass
+0    3000000.0   0.29   2.77e3
+el no.,connectivity, matl no
+0        0   1   2   3    0
+node no. coordinates
+0      0.0  0.0  0.0
+1      0.0  0.0  1.0
+2      1.0  0.0  1.0
+3      0.5  1.0  0.5
+prescribed displacement x: node  disp value
+    -10
+prescribed displacement y: node  disp value
+    -10
+prescribed displacement z: node  disp value
+    -10
+node with point load and load vector in x,y,z
+   0          -0.0000            0.0000        10000.0000
+   1       10000.0000            0.0000           -0.0000
+   2           0.0000           -0.0000       -10000.0000
+   3      -10000.0000           -0.0000            0.0000
+-10
+element and gauss pt. with stress and stress vector in xx,yy,zz,xy,zx,yz
+-10

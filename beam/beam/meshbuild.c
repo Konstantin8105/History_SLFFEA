@@ -5,8 +5,8 @@
 		Updated 10/5/00
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -69,7 +69,7 @@ int main(int argc, char** argv)
 /* Make connectivity for building */
 
 	dum = 0;
-        fprintf( o1, "el no., connectivity, matl no, element type\n");
+        fprintf( o1, "el no., connectivity, matl no., element type\n");
         for( k = 0; k < height_el_num; ++k )
         {
             for( i = 0; i < x_el_num+1; ++i )

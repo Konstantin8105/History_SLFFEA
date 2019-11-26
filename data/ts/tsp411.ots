@@ -1,5 +1,5 @@
-   numel numnp nmat nmode (This is for the truss mesh file: tsp411)
-       9    6    1    0
+   numel numnp nmat nmode   (This is for a truss                         tsp411) 
+        9    6    1    0
  matl no., E modulus, density, Area 
      0    70000000000.0000 9229.2000    0.0004
 el no., connectivity, matl no 

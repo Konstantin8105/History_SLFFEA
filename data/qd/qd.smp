@@ -1,5 +1,5 @@
    numel numnp nmat  nmode plane_stress_flag (This is "patch.in" for a quad)
-     1   4    1    0    0
+     1   4    1    5    0
 matl no., E modulus, Poisson Ratio, mass
 0    1.000e+07 3.000e-01  1.0
 el no.,connectivity, matl no

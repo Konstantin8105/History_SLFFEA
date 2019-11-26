@@ -11,8 +11,8 @@
 		Updated 10/2/01
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -237,9 +237,9 @@ int main(int argc, char** argv)
         fprintf( o2, "%4d\n ",-10);
         fprintf( o3, "%4d\n ",-10);
         fprintf( o4, "%4d\n ",-10);
-	fprintf( o2, "node no. with stress and stress vector in lamina xx,yy,xy,zx,yz\n");
-	fprintf( o3, "node no. with stress and stress vector in lamina xx,yy,xy,zx,yz\n");
-	fprintf( o4, "node no. with stress and stress vector in lamina xx,yy,xy,zx,yz\n");
+        fprintf( o2, "node no. with stress and stress vector in lamina xx,yy,xy,zx,yz\n");
+        fprintf( o3, "node no. with stress and stress vector in lamina xx,yy,xy,zx,yz\n");
+        fprintf( o4, "node no. with stress and stress vector in lamina xx,yy,xy,zx,yz\n");
         fprintf( o2, "%4d ",-10);
         fprintf( o3, "%4d ",-10);
         fprintf( o4, "%4d ",-10);

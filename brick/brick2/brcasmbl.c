@@ -11,10 +11,10 @@
     pages 6-1 to 6-6.  They show how the thermal loads and
     orthortrophy are included.
 
-		Updated 10/27/00
+		Updated 9/26/01
 
     SLFFEA source file
-    Version:  1.1
+    Version:  1.2
     Copyright (C) 1999, 2000  San Le 
 
     The source code contained in this file is released under the
@@ -46,7 +46,7 @@ int matX( double *,double *,double *, int ,int ,int );
 
 int matXT( double *, double *, double *, int, int, int);
 
-int brshface( double *, int , double *, double *, double *);
+int brshface( double *, int , double *, double *);
 
 int dotX(double *, double *, double *, int);
 
@@ -54,14 +54,13 @@ int brickB_T2( double *,double *);
 
 int brickB_T( double *,double *);
 
-int brshg( double *, int, double *, double *, double *, double *);
+int brshg( double *, int, double *, double *, double *);
 
 int brstress_shg( double *, int, double *, double *, double * );
                
-int brCassemble(double *A, double *Area, int *connect, int *connect_film, double *coord,
-	int *el_matl, int *el_matl_film, double *heat_el, double *heat_node, int *Tid,
-	int *Tidiag, int *Tlm, int *TBlm, MATL *matl, double *Q, double *T, double *TB,
-	double *TK_diag, double *Voln)
+int brCassemble(double *A, int *connect, int *connect_film, double *coord, int *el_matl,
+	int *el_matl_film, double *heat_el, double *heat_node, int *Tid, int *Tidiag,
+	int *Tlm, int *TBlm, MATL *matl, double *Q, double *T, double *TB, double *TK_diag)
 {
         int i, i1, i2, j, k, Tdof_el[Tneqel], TBdof_el[TBneqel],
 		sdof_el[npel*nsd];
@@ -75,12 +74,12 @@ int brCassemble(double *A, double *Area, int *connect, int *connect_film, double
 	double heat_node_el[Tneqel], Q_el[Tneqel], Q_el_film[TBneqel],
 		T_el[Tneqel], TB_el[TBneqel];
         double coord_el_trans[npel*nsd];
-	double det[num_int], dArea[num_int_film];
+	double det[num_int], dArea[num_int_film], wXdet, wXdArea;
 
         for( k = 0; k < numel; ++k )
         {
 
-                matl_num = *(el_matl+k);
+		matl_num = *(el_matl+k);
 
 		thrml_cond.x = matl[matl_num].thrml_cond.x;
 		thrml_cond.y = matl[matl_num].thrml_cond.y;
@@ -109,7 +108,7 @@ int brCassemble(double *A, double *Area, int *connect, int *connect_film, double
 
 /* Assembly of the shg matrix for each integration point */
 
-		check=brshg(det, k, shl, shg, coord_el_trans, (Voln+k));
+		check=brshg(det, k, shl, shg, coord_el_trans);
 		if(!check) printf( "Problems with brshg \n");
 
 /* The loop over j below calculates the 8 points of the gaussian integration 
@@ -137,6 +136,8 @@ int brCassemble(double *A, double *Area, int *connect, int *connect_film, double
 		    	*(DB+Tneqel*2+i1) = *(B_T+Tneqel*2+i1)*thrml_cond.z;
 		    }
 
+		    wXdet = *(w+j)*(*(det+j));
+
                     check=matXT(K_temp, B_T, DB, Tneqel, Tneqel, Tdim);
                     if(!check) printf( "error \n");
 
@@ -145,7 +146,7 @@ int brCassemble(double *A, double *Area, int *connect, int *connect_film, double
 */
                     for( i2 = 0; i2 < Tneqlsq; ++i2 )
                     {
-                          *(K_el+i2) += *(K_temp+i2)*(*(w+j))*(*(det+j));
+                          *(K_el+i2) += *(K_temp+i2)*wXdet;
                     }
                 }
 
@@ -183,6 +184,8 @@ int brCassemble(double *A, double *Area, int *connect, int *connect_film, double
 
 /* Calculate the value of heat at the integration point */
 
+			wXdet = *(w+j)*(*(det+j));
+
 		 	check=dotX( &fdum, heat_node_el, B_heat, Tneqel);
 		 	if(!check) printf( "Problems with dotX \n");
 
@@ -194,7 +197,7 @@ int brCassemble(double *A, double *Area, int *connect, int *connect_film, double
                  	for( i2 = 0; i2 < Tneqel; ++i2 )
 			{
                           *(Q_el+i2) +=
-			     (fdum + *(heat_el+k))*(*(B_heat+i2))*(*(w+j))*(*(det+j));
+			     (fdum + *(heat_el+k))*(*(B_heat+i2))*wXdet;
                 	}
 		  }
 
@@ -267,13 +270,11 @@ int brCassemble(double *A, double *Area, int *connect, int *connect_film, double
 			*(TB_el + j) = *(TB + *(TBdof_el+j));
 		}
 
-		check = brshface( dArea, k, shl_film, coord_el_trans, (Area+k));
+		check = brshface( dArea, k, shl_film, coord_el_trans);
 		if(!check) printf( "Problems with brshface \n");
 
                 memset(K_el,0,TBneqlsq*sof);
                 memset(Q_el_film,0,TBneqel*sof);
-
-                /*printf("Area %3d %14.5f\n",k, *(Area + k));*/
 
                 for( j = 0; j < num_int_film; ++j )
                 {
@@ -289,6 +290,8 @@ int brCassemble(double *A, double *Area, int *connect, int *connect_film, double
 		   *(DB+2) = *(B_TB+2)*film_const;
 		   *(DB+3) = *(B_TB+3)*film_const;
 
+		   wXdArea = *(w+j)*(*(dArea+j));
+
                    check=matXT(K_temp, B_TB, DB, TBneqel, TBneqel, 1);
                    if(!check) printf( "error \n");
 
@@ -297,7 +300,7 @@ int brCassemble(double *A, double *Area, int *connect, int *connect_film, double
 */
                    for( i2 = 0; i2 < TBneqlsq; ++i2 )
                    {
-                       *(K_el+i2) += *(K_temp+i2)*(*(w+j))*(*(dArea+j));
+                       *(K_el+i2) += *(K_temp+i2)*wXdArea;
                    }
 
 		   check=dotX( &fdum, TB_el, B_TB, TBneqel);
@@ -309,14 +312,14 @@ int brCassemble(double *A, double *Area, int *connect, int *connect_film, double
                    for( i2 = 0; i2 < TBneqel; ++i2 )
 		   {
                        *(Q_el_film+i2) +=
-			   fdum*film_const*(*(B_TB+i2))*(*(w+j))*(*(dArea+j));
+			   fdum*film_const*(*(B_TB+i2))*wXdArea;
                    }
 		}
 
 		for( j = 0; j < TBneqel; ++j )
                 {
 			*(Q + *(TBdof_el+j)) += *(Q_el_film + j);
-                	/*printf("Area %3d %14.5f\n",*(TBdof_el+j),
+                	/*printf("Q %3d %14.5f\n",*(TBdof_el+j),
 				*(Q + *(TBdof_el+j)));*/
 		}
 

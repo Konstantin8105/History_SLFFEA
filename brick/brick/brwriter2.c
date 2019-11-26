@@ -2,11 +2,11 @@
     This library function writes the connectivity data for surface
     elements for a finite element program which does analysis on a brick 
 
-		Updated 11/11/00
+		Updated 9/5/01
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -19,7 +19,7 @@
 #include <string.h>
 #include "brconst.h"
 
-extern int dof, nmat, nmode, numel, numnp, gauss_stress_print_flag;
+extern int dof, nmat, nmode, numel, numnp;
 extern int numel_surf;
 
 int brConnectSurfwriter ( int *connect_surf, int *el_matl_surf, char *name)

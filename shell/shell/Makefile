@@ -1,5 +1,5 @@
 # SLFFEA Makefile
-# Version:  1.1
+# Version:  1.2
 # Copyright (C) 1999, 2000  San Le (slffea@yahoo.com)
 # http://slffea.com/
 #
@@ -28,18 +28,16 @@ CC = /usr/bin/gcc  -g
 
 LIBS = -lm
 COMMON = ../../common
-BRICK = ../../brick/brick
 OBJECTS = $(COMMON)/matxt.o $(COMMON)/matx.o $(COMMON)/dotx.o \
 	$(COMMON)/lm.o $(COMMON)/idiag.o $(COMMON)/kasmbl.o  \
 	$(COMMON)/sky.o $(COMMON)/qr.o $(COMMON)/eigen.o \
-	$(COMMON)/eigenprint.o
-OBJECTS_BR = $(BRICK)/brcubic.o
+	$(COMMON)/eigenprint.o $(COMMON)/cubic.o
 
 OBJECTS2 = $(COMMON)/crossx.o 
 
 PROGS = shl shp shplane
 
-all: brcubic.o shl shp shplane
+all: shl shp shplane
 
 shl: femsh.o \
 		shmemory.o \
@@ -54,6 +52,7 @@ shl: femsh.o \
 		shlanczos.o \
 		shmassp.o \
 		shwriter.o\
+		shvolume.o\
 		shconst.h \
 		shstruct.h
 	$(CC) -o shl femsh.o \
@@ -68,10 +67,8 @@ shl: femsh.o \
 		shmasmbl.o \
 		shlanczos.o \
 		shmassp.o \
-		shwriter.o $(OBJECTS) $(OBJECTS_BR) $(OBJECTS2) $(LIBS)
-
-brcubic.o:
-	cd $(BRICK) ; make brcubic.o
+		shwriter.o \
+		shvolume.o $(OBJECTS) $(OBJECTS2) $(LIBS)
 
 shplane: shplane.o \
 		shplane.o
@@ -86,6 +83,9 @@ shplane.o: shplane.c
 
 shp.o: shpatch.c
 	$(CC) -c shpatch.c
+
+shvolume.o: shvolume.c
+	$(CC) -c shvolume.c 
 
 shwriter.o: shwriter.c
 	$(CC) -c shwriter.c 

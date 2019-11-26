@@ -2,13 +2,11 @@
     This program uses xAngle, yAngle, and zAngle
     to rotate a point about the origin.
 
-			San Le
-
  		Last Update 4/26/01
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -24,9 +22,9 @@ int matX( double *, double *, double *, int, int, int);
 
 int quaternion( double , double *, double *);
 
-int PointLocate(double *rot_vec, double xAngle, double yAngle, double zAngle )
+int PointLocate(double *point_vec, double xAngle, double yAngle, double zAngle )
 {
-	double rotate[9], rot_vec2[3], rot_vec3[3], rot_vec4[3];
+	double rotate[9], point_vec2[3], point_vec3[3], point_vec4[3];
 	double x_axis[3], y_axis[3], z_axis[3];
 	double x2_axis[3], y2_axis[3], z2_axis[3];
 	double x3_axis[3], y3_axis[3], z3_axis[3];
@@ -61,7 +59,7 @@ int PointLocate(double *rot_vec, double xAngle, double yAngle, double zAngle )
 /* Find location of point after being rotated though by xAngle about
    the x axis */
 
-	check = matX( rot_vec2, rotate, rot_vec, 3, 1, 3); 
+	check = matX( point_vec2, rotate, point_vec, 3, 1, 3); 
 	if(!check) printf( " Problems with matX\n");
 
 /* Determine rotation matrix rotate which is calculated from a
@@ -79,7 +77,7 @@ int PointLocate(double *rot_vec, double xAngle, double yAngle, double zAngle )
 /* Find location of point after being rotated though by yAngle about
    the new y2_axis */
 
-	check = matX( rot_vec3, rotate, rot_vec2, 3, 1, 3); 
+	check = matX( point_vec3, rotate, point_vec2, 3, 1, 3); 
 	if(!check) printf( " Problems with matX\n");
 
 /* Determine rotation matrix rotate which is calculated from a
@@ -91,12 +89,12 @@ int PointLocate(double *rot_vec, double xAngle, double yAngle, double zAngle )
 /* Find location of point after being rotated though by zAngle about
    the new z3_axis */
 
-	check = matX( rot_vec4, rotate, rot_vec3, 3, 1, 3); 
+	check = matX( point_vec4, rotate, point_vec3, 3, 1, 3); 
 	if(!check) printf( " Problems with matX\n");
 
-    	rot_vec[0] = rot_vec4[0];
-    	rot_vec[1] = rot_vec4[1];
-    	rot_vec[2] = rot_vec4[2];
+    	point_vec[0] = point_vec4[0];
+    	point_vec[1] = point_vec4[1];
+    	point_vec[2] = point_vec4[2];
 
 	return 1;
 }

@@ -14,10 +14,10 @@
       Kohneke, Peter, *ANSYS User's Manual for Revision 5.0,
          Vol IV Theory, Swanson Analysis Systems Inc., 1992.
 
-	                Updated 11/2/06
+	            Updated 11/2/06
 
     SLFFEA source file
-    Version:  1.1
+    Version:  1.2
     Copyright (C) 1999, 2000  San Le 
 
     The source code contained in this file is released under the
@@ -53,7 +53,7 @@ int brickB_T2(double *,double *);
 
 int brickB_T(double *,double *);
 
-int brshg( double *, int, double *, double *, double *, double *);
+int brshg( double *, int, double *, double *, double *);
 
 int dotX(double *, double *, double *, int);
 
@@ -81,7 +81,7 @@ int brTConjPassemble(double *A, int *connect, int *connect_film, double *coord,
 	double K_temp[Tneqlsq], K_el[Tneqlsq];
 	double T_el[Tneqel], TB_el[Tneqel];
         double coord_el_trans[npel*nsd];
-	double det[num_int], dArea[num_int_film];
+	double det[num_int], dArea[num_int_film], wXdet, wXdArea;
         double P_el[Tneqel], PB_el[TBneqel];
 
 
@@ -150,7 +150,7 @@ before calculating P_global */
 
 /* Assembly of the shg matrix for each integration point */
 
-		check = brshg(det, k, shl, shg, coord_el_trans, &fdum);
+		check = brshg(det, k, shl, shg, coord_el_trans);
 		if(!check) printf( "Problems with brshg \n");
 
 /* The loop over j below calculates the 8 points of the gaussian integration 
@@ -177,6 +177,8 @@ before calculating P_global */
 		    	*(DB+Tneqel*2+i1) = *(B_T+Tneqel*2+i1)*thrml_cond.z;
 		    }
 
+		    wXdet = *(w+j)*(*(det+j));
+
                     check = matXT(K_temp, B_T, DB, Tneqel, Tneqel, Tdim);
                     if(!check) printf( "error \n");
 
@@ -185,7 +187,7 @@ before calculating P_global */
 */
                     for( i2 = 0; i2 < Tneqlsq; ++i2 )
                     {
-                          *(K_el+i2) += *(K_temp+i2)*(*(w+j))*(*(det+j));
+                          *(K_el+i2) += *(K_temp+i2)*wXdet;
                     }
                 }
 
@@ -287,6 +289,8 @@ before calculating P_global */
 		   *(DB+2) = *(B_TB+2)*film_const;
 		   *(DB+3) = *(B_TB+3)*film_const;
 
+		   wXdArea = *(w+j)*(*(dArea+j));
+
                    check = matXT(K_temp, B_TB, DB, TBneqel, TBneqel, 1);
                    if(!check) printf( "error \n");
 
@@ -295,7 +299,7 @@ before calculating P_global */
 */
                    for( i2 = 0; i2 < TBneqlsq; ++i2 )
                    {
-                       *(K_el+i2) += *(K_temp+i2)*(*(w+j))*(*(dArea+j));
+                       *(K_el+i2) += *(K_temp+i2)*wXdArea;
                    }
 		}
 
@@ -320,7 +324,7 @@ int br2ConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL 
 /* This function assembles the P_global matrix for the displacement calculation by
    taking the product [K_el]*[U_el].  Some of the [K_el] is stored in [A].
 
-			Updated 11/12/02
+			Updated 9/25/01
 */
         int i, i1, i2, j, k, dof_el[neqel], sdof_el[npel*nsd];
 	int check, node;
@@ -335,7 +339,7 @@ int br2ConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL 
 	double U_el[neqel];
         double coord_el_trans[npel*nsd], 
 		yzsq, zxsq, xzsq, xysq, xxyy, xzyz, xzxy, yzxy;
-	double det[num_int];
+	double det[num_int], wXdet;
         double P_el[neqel];
 
 
@@ -451,7 +455,7 @@ int br2ConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL 
 /* Assembly of the shg matrix for each integration point */
 
 		memset(shg,0,sosh*sof);
-		check = brshg(det, k, shl, shg, coord_el_trans, &fdum);
+		check = brshg(det, k, shl, shg, coord_el_trans);
 		if(!check) printf( "Problems with brshg \n");
 
 /* The loop over j below calculates the 8 points of the gaussian integration 
@@ -488,11 +492,13 @@ int br2ConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL 
 		    	*(DB+neqel*5+i1) = *(B+neqel*5+i1)*G.yz; 
 		    }
 
+		    wXdet = *(w+j)*(*(det+j));
+
                     check = matXT(K_temp, B, DB, neqel, neqel, sdim);
                     if(!check) printf( "Problems with matXT \n");
                     for( i2 = 0; i2 < neqlsq; ++i2 )
                     {
-                          *(K_el+i2) += *(K_temp+i2)*(*(w+j))*(*(det+j));
+                          *(K_el+i2) += *(K_temp+i2)*wXdet;
                     }
                 }
 
@@ -524,7 +530,7 @@ int brTConjGrad(double *A, BOUND bc, int *connect, int *connect_film, double *co
    temperature.  It also makes the call to brTConjPassemble to get the
    product of [A]*[p].
 
-                        Updated 1/7/01
+                        Updated 12/11/02
 
    It is taken from the algorithm 10.3.1 given in "Matrix Computations",
    by Golub, page 534.
@@ -662,7 +668,7 @@ int br2ConjGrad(double *A, BOUND bc, int *connect, double *coord, int *el_matl,
    displacements.  It also makes the call to br2ConjPassemble to get the
    product of [A]*[p].
 
-			Updated 12/11/02
+			Updated 1/7/01
 
    It is taken from the algorithm 10.3.1 given in "Matrix Computations",
    by Golub, page 534.

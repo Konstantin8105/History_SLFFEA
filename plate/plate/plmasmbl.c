@@ -4,11 +4,11 @@
     the element mass matrices.  This is for a finite element program
     which does analysis on a plate.  It is for modal analysis.
 
-		Updated 9/15/00
+		Updated 9/27/01
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -32,7 +32,7 @@ int matXT(double *, double *, double *, int, int, int);
 
 int plateB_mass(double *,double *);
 
-int plshg_mass( double *, int, SH, double *, double *);
+int plshg_mass( double *, int, SH, double *);
 
 int plMassemble(int *connect, double *coord, int *el_matl, int *id,
 	double *mass, MATL *matl) 
@@ -45,7 +45,7 @@ int plMassemble(int *connect, double *coord, int *el_matl, int *id,
         double B_mass[MsoB], B2_mass[MsoB];
         double M_temp[neqlsq], M_el[neqlsq];
         double coord_el_trans[neqel];
-        double det[num_int], area_el;
+        double det[num_int], area_el, wXdet;
         double mass_el[neqel];
 
 /*      initialize all variables  */
@@ -61,6 +61,7 @@ int plMassemble(int *connect, double *coord, int *el_matl, int *id,
 		thickness = matl[matl_num].thick;
 		thickness_cubed = thickness*thickness*thickness/12.0;
                 rho = matl[matl_num].rho;
+		area_el = 0.0;
 
 /* Zero out the Element mass matrices */
 
@@ -86,10 +87,8 @@ int plMassemble(int *connect, double *coord, int *el_matl, int *id,
 
 /* The call to plshg_mass is only for calculating the determinent */
 
-		check = plshg_mass(det, k, shg, coord_el_trans, &area_el);
+		check = plshg_mass(det, k, shg, coord_el_trans);
 		if(!check) printf( "Problems with plshg_mass \n");
-
-                /* printf("This is Area %10.6f for element %4d\n",area_el,k);*/
 
 #if 0
                 for( i1 = 0; i1 < num_int; ++i1 )
@@ -116,11 +115,17 @@ int plMassemble(int *connect, double *coord, int *el_matl, int *id,
 
 		    memcpy(B2_mass,B_mass,MsoB*sizeof(double));
 
+		    wXdet = *(w+j)*(*(det+j));
+
+/* Calculate the Area from determinant of the Jacobian */
+
+		    area_el += wXdet;
+
                     check=matXT(M_temp, B_mass, B2_mass, neqel, neqel, nsd+1);
                     if(!check) printf( "Problems with matXT \n");
 
-		    fdum = rho*thickness*(*(w+j))*(*(det+j));
-		    fdum2 = rho*thickness_cubed*(*(w+j))*(*(det+j));
+		    fdum = rho*thickness*wXdet;
+		    fdum2 = rho*thickness_cubed*wXdet;
 
 		    for( i2 = 0; i2 < npel; ++i2 )
 		    {
@@ -153,6 +158,8 @@ int plMassemble(int *connect, double *coord, int *el_matl, int *id,
 			    *(M_temp+neqel*11+ndof*i2+2)*fdum2;
 		    }
                 }
+
+                /* printf("This is Area %10.6f for element %4d\n",area_el,k);*/
 
 		if(lumped_mass_flag)
 		{

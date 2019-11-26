@@ -9,8 +9,8 @@
 		Updated 12/11/02
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -39,7 +39,7 @@ int matXT(double *, double *, double *, int, int, int);
 
 int brickB(double *,double *);
 
-int brshg( double *, int, double *, double *, double *, double *);
+int brshg( double *, int, double *, double *, double *);
 
 int dotX(double *, double *, double *, int);
 
@@ -65,7 +65,7 @@ int brConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *
 	double K_temp[neqlsq], K_el[neqlsq];
 	double U_el[neqel];
         double coord_el_trans[npel*nsd];
-	double det[num_int];
+	double det[num_int], wXdet;
         double P_el[neqel];
 
 
@@ -146,7 +146,7 @@ int brConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *
 
 /* Assembly of the shg matrix for each integration point */
 
-		check = brshg(det, k, shl, shg, coord_el_trans, &fdum);
+		check = brshg(det, k, shl, shg, coord_el_trans);
 		if(!check) printf( "Problems with brshg \n");
 
 /* The loop over j below calculates the 8 points of the gaussian integration 
@@ -183,11 +183,13 @@ int brConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *
 		    	*(DB+neqel*5+i1) = *(B+neqel*5+i1)*G; 
 		    }
 
+		    wXdet = *(w+j)*(*(det+j));
+
                     check = matXT(K_temp, B, DB, neqel, neqel, sdim);
                     if(!check) printf( "Problems with matXT \n");
                     for( i2 = 0; i2 < neqlsq; ++i2 )
                     {
-                        *(K_el+i2) += *(K_temp+i2)*(*(w+j))*(*(det+j));
+                        *(K_el+i2) += *(K_temp+i2)*wXdet;
                     }
                 }
 
@@ -330,6 +332,13 @@ int brConjGrad(double *A, BOUND bc, int *connect, double *coord, int *el_matl,
 		printf( "\nMaximum iterations %4d reached.  Residual is: %16.8e\n",counter,fdum2);
 		printf( "Problem may not have converged during Conj. Grad.\n");
 	}
+/*
+The lines below are for testing the quality of the calculation:
+
+1) r should be 0.0
+2) P_global( = A*U ) - force should be 0.0
+*/
+
 /*
 	check = brConjPassemble( A, connect, coord, el_matl, matl, P_global, U);
 	if(!check) printf( " Problems with brConjPassemble \n");

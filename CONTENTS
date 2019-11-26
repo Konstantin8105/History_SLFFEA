@@ -1,39 +1,42 @@
 
-                             SLFFEA 1.1
+                             SLFFEA 1.2
 
-                    Copyright (C) 1999 San Le
+                    Copyright (C) 1999, 2000, 2001 San Le
 
                     email:     slffea@yahoo.com
                     homepage:  http://slffea.sourceforge.net/
 
 
-First let me iterate that SLFFEA contains 6 of the basic element types:
+First let me iterate that SLFFEA contains 9 of the basic element types:
 
-1. beam    3-D 2 node beam (Euler-Bernoulli Non-shear deformable)
-2. brick       8 node brick
-3. plate       4 node plate
-4. quad        4 node quad - plane stress or plane strain
-5. shell       4 node doubly curved shell (individual element defined by 8 nodes)
-6. truss   3-D 2 node truss
+1. beam          3-D 2 node beam (Euler-Bernoulli Non-shear deformable)
+2. brick         3-D 8 node brick
+3. plate         2-D 4 node plate
+4. quad          2-D 4 node quad - plane stress or plane strain
+5. shell         3-D 4 node doubly curved shell (individual element defined by 8 nodes)
+6. tetrahedron   3-D 4 node tetrahedron
+7. triangle      2-D 3 node triangle
+8. truss         3-D 2 node truss
+9. wedge         3-D 6 node wedge
 
 1 non-linear large deformation element:
 
-1. brick       8 node brick - updated Lagrange formulation with Jaumann Stress Rate
+1. brick       3-D 8 node brick - updated Lagrange formulation with Jaumann Stress Rate
 
 And 1 thermal element(added on 5/6/00):
 
-1. brick       8 node brick - allows for thermal loads and orthotropy
+1. brick       3-D 8 node brick - allows for thermal loads and orthotropy
 
-7 Graphical User Interfaces for each element type.
+10 Graphical User Interfaces for each element type.
 
 
 Naming Conventions:
 ------------------
 
-There are 6 directories corresponding to the 6 basic element types.  Within
+There are 9 directories corresponding to the 9 basic element types.  Within
 each are at least 2 directories: one which contains the source for the
 basic element type and one for the GUI associated with that element.  All
-GUI directories have a "_gr" extension.  For instance, in the slffea-1.1/plate/
+GUI directories have a "_gr" extension.  For instance, in the slffea-1.2/plate/
 directory, there is the plate and plate_gr directories. 
 
 There are 2 common directories, one for the common scientific functions and
@@ -56,6 +59,7 @@ mesh*.c         Mesh generator for various meshes(ball, roof, inclusion)
 *pasmbl.c       Assembles the P force matrix for non-linear analyses
 *patch.c        Prepares data set for the patch test by calculating
                 prescribed displacements
+*memory.c       Allocates memory for calculation
 *reader.c       Reads in input data
 *shape.c        Assembles the shape functions 
 *writer.c       Writes out output data
@@ -78,10 +82,33 @@ Graphics C Files for GUI:
 *mshdsp.c       Calls *mesh.c
 *mshkey.c       Mesh Window hotkeys
 *norm_vec.c     Calculates the normal vectors of mesh
-*param.c        Calculates the Mesh Window parameters
+*param.c        Calculates the Mesh Window parameters, such as the
+                maximum and minimum strains and displacements, and the
+                dimensions of the window to fit the mesh.
 *post.c         Contains the main function 
 *readgr.c       Reads in additional mesh data
 *render.c       Draws Rendered mesh
+
+
+*memgr.c        Allocates memory for graphics variables 
+*readgr2.c      reads in a specific set of connectivity data
+                This is for when you only want to plot elements
+                which lie on the surface of the mesh.
+*param2.c       Reads in a new set of parameters based on the
+                file *view.dat
+*set.c          Uses the parameters and then assigns colors
+                for displaying displacement and stress data.
+*menu.c         Creates the menu in the Control Panel Window
+                which gives additional options such as node, element,
+                and material ID based on user input.
+*filecheck.c    Does tasks related to input file such as searching for
+                the existence of the necessary files to display the mesh.
+*getnew.c       Retrieves a new mesh and does the necessary tasks such as
+                reallocating memory for graphical display.
+                
+
+
+
 
 Graphics Include Files for GUI:
 ------------------------------
@@ -106,9 +133,9 @@ dyadx.c         creates the dyadic product of 2 vectors
 eigen.c         Sorts the eigenvalues in ascending order
 eigenprint.c    Prints out the eigenvalue data from the Lanczos codes
 idiag.c         Assembles the idiag matrix
-lm.c            Assembles the lm matrix
 kasmbl.c        Puts element stiffness matrices into the global stiffness or stores them
                 for the Conjugate Gradient method
+lm.c            Assembles the lm matrix
 matx.c          matrix multiplication
 matxt.c         matrix multiplication transpose
 qr.c            Uses the QR algorithm to solve for the eigenvalues of a tridiagonal matrix
@@ -125,4 +152,16 @@ mshcommon.c     Common Subroutines for Mesh window
 printext.c      Writes Text for the GUI
 pwinston.c      P-Winston Motion Engine
 screenshot.c    Screen Dump
+scalcom.c       Creates a separate scale window consisting of the color
+                boxes and associated data that can be seen inside
+                the Control panel.
+pointlocate.c   Locates a point based on the rotations and translations
+                due to the variables xAngle, yAngle, zAngle,
+                left_right, up_down, in_out.
+axeslabel.c     Numerically labels the axes
+quat.c          Does calculations to for pointlocate.c using
+                quaternions.
+crossplane.c    Draws the cutting planes
+boundbox.c      Draws a bounding box around the mesh
+
 

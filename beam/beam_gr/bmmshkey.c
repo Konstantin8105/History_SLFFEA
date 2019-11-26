@@ -5,8 +5,8 @@
                         Last Update 8/18/06
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006 San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -52,6 +52,8 @@ extern int *U_color;
 extern double step_sizex, step_sizey, step_sizez;
 extern int choice_stress_moment;
 extern double left_right, up_down, in_out, left_right0, up_down0, in_out0;
+extern double cross_sec_left_right, cross_sec_up_down, cross_sec_in_out,
+	cross_sec_left_right0, cross_sec_up_down0, cross_sec_in_out0;
 extern double ortho_left, ortho_right, ortho_top, ortho_bottom,
         ortho_left0, ortho_right0, ortho_top0, ortho_bottom0;
 extern int ortho_redraw_flag;
@@ -59,10 +61,13 @@ extern double xAngle, yAngle, zAngle;
 extern int mesh_width, mesh_height;
 extern int input_flag, post_flag, color_choice,
     choice, matl_choice, node_choice, ele_choice;
+extern double AxisMax_x, AxisMax_y, AxisMax_z,
+	AxisMin_x, AxisMin_y, AxisMin_z;
 extern int input_color_flag;
 extern int Dist_Load_flag, Perspective_flag, Render_flag,
     AppliedDisp_flag, AppliedForce_flag,
-    Material_flag, Node_flag, Element_flag, Axes_flag;
+    Material_flag, Node_flag, Element_flag, Axes_flag,
+    CrossSection_flag;
 extern int Before_flag, After_flag,
     Both_flag, Amplify_flag;
 extern double amplify_factor, amplify_step, amplify_step0;
@@ -71,9 +76,9 @@ void ScreenShot( int , int );
 
 int rotater( double *, double *, double *);
 
-int bmset( BOUND , double *, CURVATURE *, ICURVATURE *, double *, QYQZ *, int *,
-	double * , XYZPhiF *, MOMENT *, IMOMENT *, STRAIN *, ISTRAIN *, STRESS *,
-	ISTRESS *, double *, int * );
+int bmset( BOUND , CURVATURE *, ICURVATURE *, double *, QYQZ *, int *, double * ,
+	XYZPhiF *, MOMENT *, IMOMENT *, STRAIN *, ISTRAIN *, STRESS *, ISTRESS *,
+	double *, int * );
 
 void bmReGetparameter(void);
 
@@ -361,6 +366,20 @@ void bmMeshKeys( unsigned char key, int x, int y )
 		}
 	    	break;
 
+/* The '<' and '>' keys move the Cross Section Plane on the Z
+   Axes in the mesh window. */
+
+	    case '<':
+		cross_sec_in_out -= step_sizez;
+		if( cross_sec_in_out < AxisMin_z )
+			cross_sec_in_out = AxisMin_z;
+		break;
+	    case '>':
+		cross_sec_in_out += step_sizez;
+		if( cross_sec_in_out > AxisMax_z )
+			cross_sec_in_out = AxisMax_z;
+		break;
+
 /* 'a' and 'b' turns on and off the deformed and undeformed mesh */
 
   	    case 'a':
@@ -401,6 +420,9 @@ void bmMeshKeys( unsigned char key, int x, int y )
 			MeshReshape( glutGet(GLUT_WINDOW_WIDTH),
 				glutGet(GLUT_WINDOW_HEIGHT));
 		} 
+		cross_sec_left_right = cross_sec_left_right0;
+		cross_sec_up_down = cross_sec_up_down0;
+		cross_sec_in_out = cross_sec_in_out0;
 	    	break; 
 
   	    case 'f':
@@ -412,8 +434,8 @@ void bmMeshKeys( unsigned char key, int x, int y )
 		break;
 	    case 'h':
 		bmReGetparameter();
-		check = bmset( bc, coord, curve, curve_color, dist_load, dist_load_vec0,
-			el_type, force, force_vec0, moment, moment_color, strain, strain_color,
+		check = bmset( bc, curve, curve_color, dist_load, dist_load_vec0, el_type,
+			force, force_vec0, moment, moment_color, strain, strain_color,
 			stress, stress_color, U, U_color );
 		if(!check) printf( " Problems with bmset \n");
 		if ( !Perspective_flag )
@@ -438,6 +460,9 @@ void bmMeshKeys( unsigned char key, int x, int y )
   	    case 'q':
 		exit(1);
 	    	break;
+	    case 's':
+		CrossSection_flag = 1 - CrossSection_flag;
+		break;
             case 'w':
                 Dist_Load_flag = 1 - Dist_Load_flag;
                 break;

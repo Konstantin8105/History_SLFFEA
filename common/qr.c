@@ -9,8 +9,8 @@
                         Updated 9/2/00  
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -45,12 +45,12 @@ int givens( double *a, double *b)
 	else
 	{
 		tau = -*b/(*a);
-		c = 1/sqrt(1 + tau*tau);
+		c = 1.0/sqrt(1.0 + tau*tau);
 		s = tau*c; 
 		if (  fb > fa);
 		{
 			tau = - *a/(*b);
-			s = 1/sqrt(1 + tau*tau);
+			s = 1.0/sqrt(1.0 + tau*tau);
 			c = s*tau;
 		}
 	}

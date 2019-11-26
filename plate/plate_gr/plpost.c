@@ -2,11 +2,11 @@
     This program shows the 3 dimensional model of the finite
     element mesh for plate elements.
   
-   			Last Update 3/30/01
+   			Last Update 10/19/01
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -78,7 +78,7 @@ void pldisp_vectors0(int , BOUND , double *);
 
 void agvMakeAxesList(GLuint);
 
-int plset( BOUND bc, int *, double *, MDIM *, ICURVATURE *, double *, ZPhiF *,
+int plset( BOUND bc, int *, MDIM *, ICURVATURE *, double *, ZPhiF *,
 	MDIM *, IMOMENT *, SDIM *, ISTRAIN *, SDIM *, ISTRESS *,
         double *, int * );
 
@@ -202,6 +202,10 @@ double left_right, up_down, in_out, left_right0, up_down0, in_out0;
 /****** Rotation Variables ******/
 double xAngle = 0.0, yAngle = 0.0, zAngle = 0.0;
 
+/****** Cross Section Plane Translation Variables ******/
+double cross_sec_left_right, cross_sec_up_down, cross_sec_in_out,
+	cross_sec_left_right0, cross_sec_up_down0, cross_sec_in_out0;
+
 /* Global variables for drawing the axes */
 GLuint AxesList, DispList, ForceList;   /* Display lists */
 double AxisMax_x, AxisMax_y, AxisMax_z,
@@ -237,12 +241,12 @@ double ratio_height = 1.0;
 int boxMove_x, boxMove_y, boxTextMove_x, textMove_x, textMove_y[rowdim+2];
 int Color_flag[rowdim];
 
-char RotateData[3][10] = { "    0.00", "    0.00", "    0.00" };
-char MoveData[3][10] = { "    0.00", "    0.00", "    0.00" };
-char AmplifyData[10] = { "    1.00"};
-char BoxData[2*boxnumber+2][14] = { "", "", "", "", "", "", "", "",
+char RotateData[3][25] = { "    0.00", "    0.00", "    0.00" };
+char MoveData[3][25] = { "    0.00", "    0.00", "    0.00" };
+char AmplifyData[25] = { " 1.000e+00"};
+char BoxData[2*boxnumber+2][25] = { "", "", "", "", "", "", "", "",
         "", "", "", "", "", "", "", "", "", "" };
-char BoxText[10];
+char BoxText[25];
 
 int del_height = 0;
 int del_width = 0;
@@ -288,7 +292,8 @@ int Solid_flag = 1,          /* Selects between wire frame or solid model */
     Material_flag = 0,       /* Turns material on and off */
     Node_flag = 0,           /* Turns Node ID on and off */
     Element_flag = 0,        /* Turns Element ID on and off */
-    Axes_flag = 0;           /* Turns Axes on and off  */
+    Axes_flag = 0,           /* Turns Axes on and off  */
+    CrossSection_flag = 0;   /* Turns CrossSection_flag on and off  */
 int Before_flag = 0,         /* Turns before mesh on and off */
     After_flag = 1,          /* Turns after mesh on and off */
     Both_flag = 0,           /* Turns both before and after on and off */
@@ -555,9 +560,9 @@ int main(int argc, char** argv)
 		stress_node, U );
         if(!check) printf( " Problems with plparameter \n");
 
-	check = plset( bc, connecter, coord, curve_node, curve_color, force,
-		force_vec0, moment_node, moment_color, strain_node, strain_color,
-		stress_node, stress_color, U, U_color );
+	check = plset( bc, connecter, curve_node, curve_color, force, force_vec0,
+		moment_node, moment_color, strain_node, strain_color, stress_node,
+		stress_color, U, U_color );
         if(!check) printf( " Problems with plset \n");
 
 /* Initialize the mesh viewer */

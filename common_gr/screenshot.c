@@ -17,7 +17,7 @@
     acs654@my-dejanews.com
   
     SLFFEA source file
-    Version:  1.1
+    Version:  1.2
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -90,3 +90,83 @@ void ScreenShot( int width, int height)
 
     free(ScreenBuffer);
 }
+
+
+/*
+ * Demo of off-screen Mesa rendering
+ *
+ * See Mesa/include/GL/osmesa.h for documentation of the OSMesa functions.
+ *
+ * If you want to render BIG images you'll probably have to increase
+ * MAX_WIDTH and MAX_HEIGHT in src/config.h.
+ *
+ * Brian Paul
+ *
+ * PPM output provided by Joerg Schmalzl.
+ * ASCII PPM output added by Brian Paul.
+
+  This file had been modified by San Le.
+
+        Updated 4/2/01
+  
+    SLFFEA source file
+    Version:  1.2
+
+    The source code contained in this file is released under the
+    terms of the GNU Library General Public License.
+ */
+
+
+void ScreenShot_ppm( int width, int height)
+{
+   GLubyte *ScreenBuffer;
+   const int binary = 1;
+   FILE *f = fopen( "Screen.ppm", "w" );
+
+   /* use glReadPixels and save a .tga file */
+   ScreenBuffer = ( GLubyte *)
+         calloc(4*width*height,sizeof( GLubyte ));
+   glReadPixels(0, 0, width, height, GL_RGBA,
+         GL_UNSIGNED_BYTE, ScreenBuffer);
+
+   if (f) {
+      int i, x, y;
+      const GLubyte *ptr = ScreenBuffer;
+      if (binary) {
+         fprintf(f,"P6\n");
+         fprintf(f,"# ppm-file created by osdemo.c\n");
+         fprintf(f,"%i %i\n", width,height);
+         fprintf(f,"255\n");
+         fclose(f);
+         f = fopen( "Screen.ppm", "ab" );  /* reopen in binary append mode */
+         for (y=height-1; y>=0; y--) {
+            for (x=0; x<width; x++) {
+               i = (y*width + x) * 4;
+               fputc(ptr[i], f);   /* write red */
+               fputc(ptr[i+1], f); /* write green */
+               fputc(ptr[i+2], f); /* write blue */
+            }
+         }
+      }
+      else {
+         /*ASCII*/
+         int counter = 0;
+         fprintf(f,"P3\n");
+         fprintf(f,"# ascii ppm file created by osdemo.c\n");
+         fprintf(f,"%i %i\n", width, height);
+         fprintf(f,"255\n");
+         for (y=height-1; y>=0; y--) {
+            for (x=0; x<width; x++) {
+               i = (y*width + x) * 4;
+               fprintf(f, " %3d %3d %3d", ptr[i], ptr[i+1], ptr[i+2]);
+               counter++;
+               if (counter % 5 == 0)
+                  fprintf(f, "\n");
+            }
+         }
+      }
+      fclose(f);
+   }
+   free(ScreenBuffer);
+}
+

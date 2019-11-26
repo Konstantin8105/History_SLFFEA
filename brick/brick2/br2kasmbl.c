@@ -11,10 +11,10 @@
     pages 2-1 to 2-5.  They show how the thermal loads and
     orthortrophy are included.
 
-		Updated 11/2/00
+		Updated 9/26/01
 
     SLFFEA source file
-    Version:  1.1
+    Version:  1.2
     Copyright (C) 1999, 2000  San Le 
 
     The source code contained in this file is released under the
@@ -36,7 +36,7 @@ extern int lin_algebra_flag, numel_K, numel_P, numel_surf;
 extern double shg[sosh], shg_node[sosh], shl[sosh], shl_node[sosh],
 	shl_node2[sosh_node2], w[num_int], *Vol0;
 
-int brcubic( double *);
+int cubic( double *);
 
 int globalConjKassemble(double *, int *, int , double *,
 	double *, int , int , int );
@@ -53,14 +53,14 @@ int brickB_T2( double *,double *);
 
 int brickB( double *,double *);
 
-int brshg( double *, int, double *, double *, double *, double *);
+int brshg( double *, int, double *, double *, double *);
 
 int brstress_shg( double *, int, double *, double *, double * );
                
 int br2Kassemble(double *A, int *connect, int *connect_surf, double *coord, int *el_matl,
 	int *el_matl_surf, double *force, int *id, int *idiag, double *K_diag, int *lm,
 	MATL *matl, double *node_counter, STRAIN *strain, SDIM *strain_node,
-	STRESS *stress, SDIM *stress_node, double *T, double *U, double *Voln)
+	STRESS *stress, SDIM *stress_node, double *T, double *U)
 {
         int i, i1, i2, j, k, dof_el[neqel], Tdof_el[Tneqel], sdof_el[npel*nsd];
 	int check, counter, node, surf_el_counter, surface_el_flag;
@@ -79,17 +79,17 @@ int br2Kassemble(double *A, int *connect, int *connect_surf, double *coord, int 
 		stress_el_th_node[sdim], strain_el_th_node[sdim], invariant[nsd],
 		yzsq, zxsq, xzsq, xysq, xxyy,
 		xzyz, xzxy, yzxy;
-	double det[num_int], det_node[num_int];
+	double det[num_int], det_node[num_int], wXdet;
 
 	surf_el_counter = 0;
         for( k = 0; k < numel; ++k )
         {
 
-                matl_num = *(el_matl+k);
+		matl_num = *(el_matl+k);
 
-                Emod.x = matl[matl_num].E.x;
-                Emod.y = matl[matl_num].E.y;
-                Emod.z = matl[matl_num].E.z;
+		Emod.x = matl[matl_num].E.x;
+		Emod.y = matl[matl_num].E.y;
+		Emod.z = matl[matl_num].E.z;
 
 		Pois.xy = matl[matl_num].nu.xy;
 		Pois.xz = matl[matl_num].nu.xz;
@@ -193,9 +193,9 @@ int br2Kassemble(double *A, int *connect, int *connect_surf, double *coord, int 
 		memset(shg,0,sosh*sof);
 		memset(shg_node,0,sosh*sof);
 
-		check=brshg(det_node, k, shl_node, shg_node, coord_el_trans, (Voln+k));
+		check=brshg(det_node, k, shl_node, shg_node, coord_el_trans);
 		if(!check) printf( "Problems with brshg \n");
-		check=brshg(det, k, shl, shg, coord_el_trans, (Voln+k));
+		check=brshg(det, k, shl, shg, coord_el_trans);
 		if(!check) printf( "Problems with brshg \n");
 
 /* The loop over j below calculates the 8 points of the gaussian integration 
@@ -336,11 +336,13 @@ int br2Kassemble(double *A, int *connect, int *connect_surf, double *coord, int 
 		    	*(DB+neqel*5+i1) = *(B+neqel*5+i1)*G.yz; 
 		    }
 
+		    wXdet = *(w+j)*(*(det+j));
+
                     check=matXT(K_temp, B, DB, neqel, neqel, sdim);
                     if(!check) printf( "Problems with matXT \n");
                     for( i2 = 0; i2 < neqlsq; ++i2 )
                     {
-                          *(K_el+i2) += *(K_temp+i2)*(*(w+j))*(*(det+j));
+                          *(K_el+i2) += *(K_temp+i2)*wXdet;
                     }
 
 		    if(analysis_flag==1)
@@ -349,7 +351,7 @@ int br2Kassemble(double *A, int *connect, int *connect_surf, double *coord, int 
                     	if(!check) printf( "Problems with matXT \n");
                     	for( i2 = 0; i2 < neqel; ++i2 )
                     	{
-                        	*(force_el_heat+i2) += *(force_el_dum+i2)*(*(w+j))*(*(det+j));
+                        	*(force_el_heat+i2) += *(force_el_dum+i2)*wXdet;
            		   	/*printf("mmmm %14.6e\n ",*(force_el_heat+i2));*/
                     	}
            		/*printf("\n");*/
@@ -398,7 +400,7 @@ int br2Kassemble(double *A, int *connect, int *connect_surf, double *coord, int 
 /* Calculate the element reaction forces */
 
 			for( j = 0; j < neqel; ++j )
-                        {
+			{
 				*(force + *(dof_el+j)) += *(force_el_U + j);
 			}
 
@@ -409,19 +411,18 @@ int br2Kassemble(double *A, int *connect, int *connect_surf, double *coord, int 
 /*
    brstress_shg calculates shg at the nodes.  It is more efficient than brshg
    because it removes all the zero multiplications from the calculation of shg. 
-   You can use either function when calculating shg at the nodes.  Because stress
-   is calculated at the Gauss points, brshg is used.
+   You can use either function when calculating shg at the nodes.  
 
-			check=brshg(det, k, shl_node, shg, coord_el_trans, (Voln+k));
-			check=brshg(det, k, shl, shg, coord_el_trans, (Voln+k));
+			    check=brshg(det, k, shl_node, shg_node, coord_el_trans);
+			    check=brstress_shg(det, k, shl_node2, shg_node, coord_el_trans);
 */
-                    	memset(shg_node,0,sosh*sof);
-                    	memset(shg,0,sosh*sof);
+			memset(shg_node,0,sosh*sof);
+			memset(shg,0,sosh*sof);
 
-		    	if(gauss_stress_flag)
-		    	{
+			if(gauss_stress_flag)
+			{
 /* Calculate shg at integration point */
-			    check=brshg(det, k, shl, shg, coord_el_trans, (Voln+k));
+			    check=brshg(det, k, shl, shg, coord_el_trans);
 			    if(!check) printf( "Problems with brshg \n");
 			}
 			else
@@ -433,11 +434,11 @@ int br2Kassemble(double *A, int *connect, int *connect_surf, double *coord, int 
 
 			surface_el_flag = 0;
 			for( j = 0; j < num_int; ++j )
-                	{
+			{
 
-                    	   memset(B,0,soB*sof);
-                    	   memset(stress_el,0,sdim*sof);
-                    	   memset(strain_el,0,sdim*sof);
+			   memset(B,0,soB*sof);
+			   memset(stress_el,0,sdim*sof);
+			   memset(strain_el,0,sdim*sof);
 
 
 /* Determine which elements are on the surface */
@@ -449,36 +450,36 @@ int br2Kassemble(double *A, int *connect, int *connect_surf, double *coord, int 
 
 /* Assembly of the B matrix */
 
-		    	   if(gauss_stress_flag)
-		    	   {
+			   if(gauss_stress_flag)
+			   {
 /* Calculate B matrix at integration point */
-		    	   	check = brickB((shg+npel*(nsd+1)*j),B);
-                    	   	if(!check) printf( "Problems with brickB \n");
+				   check = brickB((shg+npel*(nsd+1)*j),B);
+				   if(!check) printf( "Problems with brickB \n");
 			   }
 			   else
 			   {
 /* Calculate B matrix at nodal point */
-		    	   	check = brickB((shg_node+npel*(nsd+1)*j),B);
-                    	   	if(!check) printf( "Problems with brickB \n");
+				   check = brickB((shg_node+npel*(nsd+1)*j),B);
+				   if(!check) printf( "Problems with brickB \n");
 			   }
 
 /* Calculation of the local strain matrix */
 
-                	   check=matX(strain_el, B, U_el, sdim, 1, neqel );
-                    	   if(!check) printf( "Problems with matX \n");
+			   check=matX(strain_el, B, U_el, sdim, 1, neqel );
+			   if(!check) printf( "Problems with matX \n");
 
 /* Update of the global strain matrix */
 
-		       	   strain[k].pt[j].xx += *(strain_el);
-		     	   strain[k].pt[j].yy += *(strain_el+1);
-		    	   strain[k].pt[j].zz += *(strain_el+2);
-		    	   strain[k].pt[j].xy += *(strain_el+3);
-		    	   strain[k].pt[j].zx += *(strain_el+4);
-		    	   strain[k].pt[j].yz += *(strain_el+5);
+			   strain[k].pt[j].xx += *(strain_el);
+			   strain[k].pt[j].yy += *(strain_el+1);
+			   strain[k].pt[j].zz += *(strain_el+2);
+			   strain[k].pt[j].xy += *(strain_el+3);
+			   strain[k].pt[j].zx += *(strain_el+4);
+			   strain[k].pt[j].yz += *(strain_el+5);
 
 /* Calculate the principal strians */
 
-                    	   memset(invariant,0,nsd*sof);
+			   memset(invariant,0,nsd*sof);
 			   xysq = strain[k].pt[j].xy*strain[k].pt[j].xy;
 			   zxsq = strain[k].pt[j].zx*strain[k].pt[j].zx;
 			   yzsq = strain[k].pt[j].yz*strain[k].pt[j].yz;
@@ -495,23 +496,23 @@ int br2Kassemble(double *A, int *connect, int *connect_surf, double *coord, int 
 				yzsq*strain[k].pt[j].xx + zxsq*strain[k].pt[j].yy +
 				xysq*strain[k].pt[j].zz;
 				
-			   check = brcubic(invariant);
+			   check = cubic(invariant);
 
-		    	   strain[k].pt[j].I = *(invariant);
-		    	   strain[k].pt[j].II = *(invariant+1);
-		    	   strain[k].pt[j].III = *(invariant+2);
+			   strain[k].pt[j].I = *(invariant);
+			   strain[k].pt[j].II = *(invariant+1);
+			   strain[k].pt[j].III = *(invariant+2);
 
 /* Add all the strains for a particular node from all the elements which share that node */
 
-		    	   strain_node[node].xx += strain[k].pt[j].xx;
-		    	   strain_node[node].yy += strain[k].pt[j].yy;
-		    	   strain_node[node].zz += strain[k].pt[j].zz;
-		    	   strain_node[node].xy += strain[k].pt[j].xy;
-		    	   strain_node[node].zx += strain[k].pt[j].zx;
-		    	   strain_node[node].yz += strain[k].pt[j].yz;
-		    	   strain_node[node].I += strain[k].pt[j].I;
-		    	   strain_node[node].II += strain[k].pt[j].II;
-		    	   strain_node[node].III += strain[k].pt[j].III;
+			   strain_node[node].xx += strain[k].pt[j].xx;
+			   strain_node[node].yy += strain[k].pt[j].yy;
+			   strain_node[node].zz += strain[k].pt[j].zz;
+			   strain_node[node].xy += strain[k].pt[j].xy;
+			   strain_node[node].zx += strain[k].pt[j].zx;
+			   strain_node[node].yz += strain[k].pt[j].yz;
+			   strain_node[node].I += strain[k].pt[j].I;
+			   strain_node[node].II += strain[k].pt[j].II;
+			   strain_node[node].III += strain[k].pt[j].III;
 
 /* Calculation of the local stress matrix */
 
@@ -527,16 +528,16 @@ int br2Kassemble(double *A, int *connect, int *connect_surf, double *coord, int 
 
 /* Update of the global stress matrix */
 
-		       	   stress[k].pt[j].xx += *(stress_el);
-		     	   stress[k].pt[j].yy += *(stress_el+1);
-		    	   stress[k].pt[j].zz += *(stress_el+2);
-		    	   stress[k].pt[j].xy += *(stress_el+3);
-		    	   stress[k].pt[j].zx += *(stress_el+4);
-		    	   stress[k].pt[j].yz += *(stress_el+5);
+			   stress[k].pt[j].xx += *(stress_el);
+			   stress[k].pt[j].yy += *(stress_el+1);
+			   stress[k].pt[j].zz += *(stress_el+2);
+			   stress[k].pt[j].xy += *(stress_el+3);
+			   stress[k].pt[j].zx += *(stress_el+4);
+			   stress[k].pt[j].yz += *(stress_el+5);
 
 /* Calculate the principal stresses */
 
-                    	   memset(invariant,0,nsd*sof);
+			   memset(invariant,0,nsd*sof);
 			   xysq = stress[k].pt[j].xy*stress[k].pt[j].xy;
 			   zxsq = stress[k].pt[j].zx*stress[k].pt[j].zx;
 			   yzsq = stress[k].pt[j].yz*stress[k].pt[j].yz;
@@ -553,32 +554,32 @@ int br2Kassemble(double *A, int *connect, int *connect_surf, double *coord, int 
 				yzsq*stress[k].pt[j].xx + zxsq*stress[k].pt[j].yy +
 				xysq*stress[k].pt[j].zz;
 				
-			   check = brcubic(invariant);
+			   check = cubic(invariant);
 
-		    	   stress[k].pt[j].I = *(invariant);
-		    	   stress[k].pt[j].II = *(invariant+1);
-		    	   stress[k].pt[j].III = *(invariant+2);
+			   stress[k].pt[j].I = *(invariant);
+			   stress[k].pt[j].II = *(invariant+1);
+			   stress[k].pt[j].III = *(invariant+2);
 
 /* Add all the stresses for a particular node from all the elements which share that node */
 
-		    	   stress_node[node].xx += stress[k].pt[j].xx;
-		    	   stress_node[node].yy += stress[k].pt[j].yy;
-		    	   stress_node[node].zz += stress[k].pt[j].zz;
-		    	   stress_node[node].xy += stress[k].pt[j].xy;
-		    	   stress_node[node].zx += stress[k].pt[j].zx;
-		    	   stress_node[node].yz += stress[k].pt[j].yz;
-		    	   stress_node[node].I += stress[k].pt[j].I;
-		    	   stress_node[node].II += stress[k].pt[j].II;
-		    	   stress_node[node].III += stress[k].pt[j].III;
+			   stress_node[node].xx += stress[k].pt[j].xx;
+			   stress_node[node].yy += stress[k].pt[j].yy;
+			   stress_node[node].zz += stress[k].pt[j].zz;
+			   stress_node[node].xy += stress[k].pt[j].xy;
+			   stress_node[node].zx += stress[k].pt[j].zx;
+			   stress_node[node].yz += stress[k].pt[j].yz;
+			   stress_node[node].I += stress[k].pt[j].I;
+			   stress_node[node].II += stress[k].pt[j].II;
+			   stress_node[node].III += stress[k].pt[j].III;
 
 /*
-           		   printf("%14.6e ",stress[k].pt[j].xx);
-           		   printf("%14.6e ",stress[k].pt[j].yy);
-           		   printf("%14.6e ",stress[k].pt[j].zz);
-           		   printf("%14.6e ",stress[k].pt[j].yz);
-           		   printf("%14.6e ",stress[k].pt[j].zx);
-           		   printf("%14.6e ",stress[k].pt[j].xy);
-           		   printf( "\n");
+			   printf("%14.6e ",stress[k].pt[j].xx);
+			   printf("%14.6e ",stress[k].pt[j].yy);
+			   printf("%14.6e ",stress[k].pt[j].zz);
+			   printf("%14.6e ",stress[k].pt[j].yz);
+			   printf("%14.6e ",stress[k].pt[j].zx);
+			   printf("%14.6e ",stress[k].pt[j].xy);
+			   printf( "\n");
 */
 			}
 
@@ -624,25 +625,25 @@ int br2Kassemble(double *A, int *connect, int *connect_surf, double *coord, int 
 
           for( i = 0; i < numnp ; ++i )
           {
-	    	   strain_node[i].xx /= *(node_counter + i);
-	    	   strain_node[i].yy /= *(node_counter + i);
-	    	   strain_node[i].zz /= *(node_counter + i);
-	    	   strain_node[i].xy /= *(node_counter + i);
-	    	   strain_node[i].zx /= *(node_counter + i);
-	    	   strain_node[i].yz /= *(node_counter + i);
-	    	   strain_node[i].I /= *(node_counter + i);
-	    	   strain_node[i].II /= *(node_counter + i);
-	    	   strain_node[i].III /= *(node_counter + i);
+		strain_node[i].xx /= *(node_counter + i);
+		strain_node[i].yy /= *(node_counter + i);
+		strain_node[i].zz /= *(node_counter + i);
+		strain_node[i].xy /= *(node_counter + i);
+		strain_node[i].zx /= *(node_counter + i);
+		strain_node[i].yz /= *(node_counter + i);
+		strain_node[i].I /= *(node_counter + i);
+		strain_node[i].II /= *(node_counter + i);
+		strain_node[i].III /= *(node_counter + i);
 
-	    	   stress_node[i].xx /= *(node_counter + i);
-	    	   stress_node[i].yy /= *(node_counter + i);
-	    	   stress_node[i].zz /= *(node_counter + i);
-	    	   stress_node[i].xy /= *(node_counter + i);
-	    	   stress_node[i].zx /= *(node_counter + i);
-	    	   stress_node[i].yz /= *(node_counter + i);
-	    	   stress_node[i].I /= *(node_counter + i);
-	    	   stress_node[i].II /= *(node_counter + i);
-	    	   stress_node[i].III /= *(node_counter + i);
+		stress_node[i].xx /= *(node_counter + i);
+		stress_node[i].yy /= *(node_counter + i);
+		stress_node[i].zz /= *(node_counter + i);
+		stress_node[i].xy /= *(node_counter + i);
+		stress_node[i].zx /= *(node_counter + i);
+		stress_node[i].yz /= *(node_counter + i);
+		stress_node[i].I /= *(node_counter + i);
+		stress_node[i].II /= *(node_counter + i);
+		stress_node[i].III /= *(node_counter + i);
           }
         }
 

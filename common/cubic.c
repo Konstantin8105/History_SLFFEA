@@ -9,8 +9,8 @@
 		Updated 10/27/00
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -29,7 +29,7 @@
 #define smallest  1.0e-44
 #define big       1.0e10
 
-int brcubic(double *coef)
+int cubic(double *coef)
 {
         int i, j, k;
 	double a, b, c, Q, Q3, rt2Q, R, theta, maxroot, midroot, minroot,

@@ -1,7 +1,7 @@
    numel numnp nmat nmode plane_stress_flag  (This is for a quad "q1")
-   1     4    1   0    0
+   1     4    1   -1 0
 matl no., E modulus, Poisson Ratio, mass
-0	30e6   0.3   92.2e2
+0	30e6   0.3   1.0
 el no., connectivity, matl no
 0    0    1    2    3   0
 node no., coordinates

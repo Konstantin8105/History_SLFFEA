@@ -5,8 +5,8 @@
    			Last Update 10/10/06
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -42,7 +42,7 @@ void shdisp_vectors0(int , BOUND , double *);
 
 void agvMakeAxesList(GLuint);
 
-int shset( BOUND, int *, double *, double *, XYZPhiF *, SDIM *,
+int shset( BOUND, int *, double *, XYZPhiF *, SDIM *,
         ISTRAIN *, SDIM *, ISTRESS *, double *U, int * );
 
 int shparameter( double *, SDIM *, SDIM *, double * );
@@ -398,7 +398,7 @@ int shGetNewMesh(void)
 	check = shparameter( coord, strain_node, stress_node, U );
         if(!check) printf( " Problems with shparameter \n");
 
-	check = shset( bc, connecter, coord, force, force_vec0, strain_node,
+	check = shset( bc, connecter, force, force_vec0, strain_node,
 		strain_color, stress_node, stress_color, U, U_color );
         if(!check) printf( " Problems with shset \n");
 

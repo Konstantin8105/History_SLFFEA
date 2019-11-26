@@ -3,11 +3,11 @@
     consistent mass matrix.  This is for a finite element program
     which does analysis on a shell.  It is for modal analysis.
 
-		Updated 12/15/00
+		Updated 9/26/01
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -35,7 +35,7 @@ int matX(double *, double *, double *, int, int, int);
 int shellB_mass(double *, double *, double *, double *);
 
 int shshg_mass( double *, int , SH , XL , double *, double *, double *,
-        double *, double *);
+        double *);
 
 int normcrossX(double *, double *, double *);
 
@@ -210,10 +210,8 @@ int shMassPassemble(int *connect, double *coord, int *el_matl, double *mass,
 /* The call to shshg_mass is only for calculating the determinent */
 
 		check = shshg_mass( det, k, shl, xl, zp1, zm1, znode,
-			dzdt_node, &fdum);
+			dzdt_node);
 		if(!check) printf( "Problems with shshg_mass \n");
-
-                /*printf("This is 3 X Volume %10.6f for element %4d\n",3.0*fdum,k);*/
 
 #if 0
                 for( i1 = 0; i1 < num_intb; ++i1 )

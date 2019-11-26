@@ -1,7 +1,7 @@
 /*
      SLFFEA source file
-     Version:  1.1
-     Copyright (C) 1999, 2000, 2001  San Le
+     Version:  1.2
+     Copyright (C) 1999, 2000, 2001, 2002  San Le
 
      The source code contained in this file is released under the
      terms of the GNU Library General Public License.
@@ -97,7 +97,7 @@ int shshl( double g, SH shl, double *w)
 }
 
 int shshg( double *det, int el, SH shl, SH shg, XL xl, double *zp1, double *zm1, 
-	double *znode, double *dzdt_node, ROTATE rotate, double *Vol)
+	double *znode, double *dzdt_node, ROTATE rotate)
 
 {
 /*
@@ -154,7 +154,7 @@ int shshg( double *det, int el, SH shl, SH shg, XL xl, double *zp1, double *zm1,
        num_intb    = NUMBER OF INTEGRATION POINTS FOR LAMINA, 4
        num_ints    = NUMBER OF INTEGRATION POINTS FOR FIBER, 2
 	
-			Updated 10/2/01
+			Updated 9/25/01
 */
         double xs[soxshat],temp[nsdsq],col1[nsdl],col2[nsdl],temp1,temp2;
 	double shlshl2_vec[npell],xfib2[2];
@@ -162,10 +162,6 @@ int shshg( double *det, int el, SH shl, SH shg, XL xl, double *zp1, double *zm1,
 		vecl_1[nsd],vecl_2[nsd],vecl_3[nsd];
 	XLXS xlxs;
 	int check,i,j,k,k2;
-
-/* initialize the Volume */
-
-	*Vol=0.0;
 
 /* 
    calculating the dN/dx,dy,dz dza/dx,dy,dz matrices for 2X2 
@@ -274,11 +270,7 @@ int shshg( double *det, int el, SH shl, SH shg, XL xl, double *zp1, double *zm1,
 			*(xs)*(*(temp))+*(xs+1)*(*(temp+3))+*(xs+2)*(*(temp+6));
                	/*printf(" %d %f\n", k, *(det+num_intb*k2+k));*/
  
-/* Calculate the Volume from determinant of the Jacobian */
- 
-               	*Vol += *(det+num_intb*k2+k);
- 
-               	if(*(det+num_intb*k2+k) < 0 )
+               	if(*(det+num_intb*k2+k) <= 0.0 )
                	{
                     printf("the element (%d) is inverted; det:%f; integ pt.:%d\n",
                         el,*(det+num_intb*k2+k),k);
@@ -425,7 +417,7 @@ int shshg( double *det, int el, SH shl, SH shg, XL xl, double *zp1, double *zm1,
 			*(xs)*(*(temp))+*(xs+1)*(*(temp+3))+*(xs+2)*(*(temp+6));
                	/*printf("%d %f\n", num_intb, *(det+num_int+k2));*/
  
-               	if(*(det+num_int+k2) < 0 )
+               	if(*(det+num_int+k2) <= 0.0 )
                	{
                     printf("the element (%d) is inverted; det:%f; fiber integ pt.:%d\n",
                         el,*(det+num_int+k2),k2);
@@ -481,7 +473,7 @@ int shshg( double *det, int el, SH shl, SH shg, XL xl, double *zp1, double *zm1,
 
 
 int shshg_mass( double *det, int el, SH shl, XL xl, double *zp1, double *zm1, 
-	double *znode, double *dzdt_node, double *Vol)
+	double *znode, double *dzdt_node)
 {
 /*
      This subroutine calculates the determinant for
@@ -520,16 +512,12 @@ int shshg_mass( double *det, int el, SH shl, XL xl, double *zp1, double *zm1,
        num_intb    = NUMBER OF INTEGRATION POINTS FOR LAMINA, 4
        num_ints    = NUMBER OF INTEGRATION POINTS FOR FIBER, 2
 	
-			Updated 10/2/01
+			Updated 9/26/01
 */
         double xs[soxshat],temp[nsdsq],col1[nsdl],col2[nsdl],temp1,temp2;
 	double shlshl2_vec[npell],xfib2[2];
 	XLXS xlxs;
 	int check,i,j,k,k2;
-
-/* initialize the Volume */
-
-	*Vol=0.0;
 
 /* 
    calculating the dN/dx,dy,dz dza/dx,dy,dz matrices for 2X2 
@@ -602,11 +590,7 @@ int shshg_mass( double *det, int el, SH shl, XL xl, double *zp1, double *zm1,
 			*(xs)*(*(temp))+*(xs+1)*(*(temp+3))+*(xs+2)*(*(temp+6));
                	/*printf(" %d %f\n", k, *(det+num_intb*k2+k));*/
  
-/* Calculate the Volume from determinant of the Jacobian */
- 
-               	*Vol += *(det+num_intb*k2+k);
- 
-               	if(*(det+num_intb*k2+k) < 0 )
+               	if(*(det+num_intb*k2+k) <= 0.0 )
                	{
                     printf("the element (%d) is inverted; det:%f; integ pt.:%d\n",
                         el,*(det+num_intb*k2+k),k);

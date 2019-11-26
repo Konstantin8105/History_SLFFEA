@@ -1,7 +1,7 @@
 /*
      SLFFEA source file
-     Version:  1.1
-     Copyright (C) 1999  San Le
+     Version:  1.2
+     Copyright (C) 1999, 2000, 2001, 2002  San Le
 
      The source code contained in this file is released under the
      terms of the GNU Library General Public License.
@@ -83,7 +83,7 @@ int qdshl_node2(double *shl_node2)
 
 
 
-int qdshg( double *det, int el, double *shl, double *shg, double *xl, double *Area)
+int qdshg( double *det, int el, double *shl, double *shg, double *xl)
 {
 /*
      This subroutine calculates the global shape function derivatives for
@@ -107,9 +107,9 @@ int qdshg( double *det, int el, double *shl, double *shg, double *xl, double *Ar
           i    = LOCAL NODE NUMBER OR GLOBAL COORDINATE NUMBER
           j    = GLOBAL COORDINATE NUMBER
           k    = INTEGRATION-POINT NUMBER
-       num_int    = NUMBER OF INTEGRATION POINTS, EQ. 4 
+       num_int    = NUMBER OF INTEGRATION POINTS, EQ.4 
 	
-			Updated 2/1/00
+			Updated 11/15/01
 */
 
         double xs[4],temp;
@@ -117,18 +117,14 @@ int qdshg( double *det, int el, double *shl, double *shg, double *xl, double *Ar
 
 	memcpy(shg,shl,sosh*sizeof(double));
 
-/* initialize the Area */
-
-	*(Area)=0.0;
-
         for( k = 0; k < num_int; ++k )
 	{
 
 /* The jacobian dx/dc is calculated below */
 
-           for( j = 0; j < 2; ++j )
+           for( j = 0; j < nsd; ++j )
 	   {
-        	for( i = 0; i < 2; ++i )
+        	for( i = 0; i < nsd; ++i )
         	{
 	     	   check=dotX((xs+nsd*i+j),(shg+npel*(nsd+1)*k+npel*j),
 			(xl+npel*i),npel);
@@ -140,11 +136,7 @@ int qdshg( double *det, int el, double *shl, double *shg, double *xl, double *Ar
 		*(xs),*(xs+1),*(xs+nsd*1),*(xs+nsd*1+1));
            printf("%d %f\n", k, *(det+k));*/
 
-/* Calculate the Area from determinant of the Jacobian */
-
-	   *Area += *(det+k);
-
-           if(*(det+k) <= 0 ) 
+           if(*(det+k) <= 0.0 ) 
 	   {
                 printf("the element (%d) is inverted; det:%f; integ pt.:%d\n",
                         el,*(det+k),k);
@@ -173,7 +165,7 @@ int qdshg( double *det, int el, double *shl, double *shg, double *xl, double *Ar
         return 1; 
 }
 
-int qdshg_mass( double *det, int el, double *shg, double *xl, double *Area)
+int qdshg_mass( double *det, int el, double *shg, double *xl)
 {
 /*
      This subroutine calculates the determinant for
@@ -198,26 +190,22 @@ int qdshg_mass( double *det, int el, double *shg, double *xl, double *Area)
           i    = LOCAL NODE NUMBER OR GLOBAL COORDINATE NUMBER
           j    = GLOBAL COORDINATE NUMBER
           k    = INTEGRATION-POINT NUMBER
-       num_int    = NUMBER OF INTEGRATION POINTS, EQ.1 OR  4
+       num_int    = NUMBER OF INTEGRATION POINTS, EQ.1 OR 4
 		
-			Updated 7/14/00
+			Updated 11/15/01
 */
 
         double xs[4],temp;
 	int check,i,j,k;
-
-/* initialize the Area */
-
-	*(Area)=0.0;
 
         for( k = 0; k < num_int; ++k )
 	{
 
 /* The jacobian dx/dc is calculated below */
 
-           for( j = 0; j < 2; ++j )
+           for( j = 0; j < nsd; ++j )
 	   {
-        	for( i = 0; i < 2; ++i )
+        	for( i = 0; i < nsd; ++i )
         	{
 	     	   check=dotX((xs+nsd*i+j),(shg+npel*(nsd+1)*k+npel*j),
 			(xl+npel*i),npel);
@@ -229,11 +217,7 @@ int qdshg_mass( double *det, int el, double *shg, double *xl, double *Area)
 		*(xs),*(xs+1),*(xs+nsd*1),*(xs+nsd*1+1));
            printf("%d %f\n", k, *(det+k));*/
 
-/* Calculate the Area from determinant of the Jacobian */
-
-	   *Area += *(det+k);
-
-           if(*(det+k) <= 0 ) 
+           if(*(det+k) <= 0.0 ) 
 	   {
                 printf("the element (%d) is inverted; det:%f; integ pt.:%d\n",
                         el,*(det+k),k);

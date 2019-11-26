@@ -5,8 +5,8 @@
 		Updated 9/25/06
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -28,14 +28,12 @@ extern SH shg, shg_node, shl, shl_node;
 extern ROTATE rotate, rotate_node;
 extern double w[num_int];
 
-int brcubic( double *);
+int cubic( double *);
 
 int globalConjKassemble(double *, int *, int , double *,
         double *, int , int , int );
 
 int globalKassemble(double *, int *, double *, int *, int );
-
-int normal(double *);
 
 int matX( double *,double *,double *, int ,int ,int );
 
@@ -48,14 +46,14 @@ int shellB1ptM(double *, double *, double *, double *);
 int shellB4pt(double *, double *,double *, double *, double *, double *);
 
 int shshg( double *, int , SH , SH , XL , double *, double *, double *,
-	double *, ROTATE , double *);
+	double *, ROTATE );
 
 int normcrossX(double *, double *, double *);
 
 int shKassemble(double *A, int *connect, double *coord, int *el_matl, double *force,
 	int *id, int *idiag, double *K_diag, int *lm, MATL *matl,
 	double *node_counter, STRAIN *strain, SDIM *strain_node, STRESS *stress,
-	SDIM *stress_node, double *U, double *Voln)
+	SDIM *stress_node, double *U)
 {
         int i, i1, i2, i3, i4, i5, j, k, dof_el[neqel], sdof_el[npel*nsd];
 	int check, counter, node;
@@ -70,7 +68,7 @@ int shKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
 	double stress_el[sdim], strain_el[sdim], xxaddyy, xxsubyy, xysq, invariant[nsd],
                 yzsq, zxsq, xxyy;
         double vec_dum[nsd];
-        double det[num_int+num_ints];
+        double det[num_int+num_ints], wXdet;
 	XL xl;
 
         for( k = 0; k < numel; ++k )
@@ -201,7 +199,7 @@ int shKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
 /* Assembly of the shg matrix for each integration point */
 
 		check=shshg( det, k, shl, shg, xl, zp1, zm1, znode,
-			dzdt_node, rotate, (Voln + k));
+			dzdt_node, rotate);
 		if(!check) printf( "Problems with shshg \n");
 
 		memset(U_el,0,neqel*sof);
@@ -276,13 +274,15 @@ int shKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
                    	    }
                 	}
 #endif
+
+			wXdet = *(w+num_intb*i4+j)*(*(det+num_intb*i4+j));
+
                     	check=matXT(K_temp, B, DB, neqel, neqel, sdim);
                     	if(!check) printf( "Problems with matXT \n");
 
                     	for( i2 = 0; i2 < neqlsq; ++i2 )
                     	{
-                           *(K_el+i2) +=
-				*(K_temp+i2)*(*(w+num_intb*i4+j))*(*(det+num_intb*i4+j));
+                           *(K_el+i2) += *(K_temp+i2)*wXdet;
                     	}
                    }
                 }
@@ -326,37 +326,30 @@ int shKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
 /* Calculate the element reaction forces */
 
 			for( j = 0; j < neqel; ++j )
-                        {
+			{
 				*(force + *(dof_el+j)) += *(force_el + j);
 			}
 
 /* Calculate the element stresses */
 
-/* Assembly of the shstress_shg matrix for each nodal point */
-
-/*
-   shstress_shg calculates shg at the nodes.  It is more efficient than shshg
-   because it removes all the zero multishications from the calculation of shg. 
-   You can use either function when calculating shg at the nodes.  Because stress
-   is calculated at the Gauss points, shshg is used.
-
-			check=shshg( det, k, shl_node, shg, xl, zp1, zm1, znode,
-				dzdt_node, rotate, (Voln + k));
-			check=shstress_shg(det, k, shl_node2, shg, coord_el_trans);
+/* Unlike the brick or quad, there is no assembly of the of the shstress_shg matrix
+   for each nodal point.  The complexity of this element, with all the geometric
+   transformation terms, makes such calculations prohibitive and of questionable
+   value. 
 */
 
 			if(gauss_stress_flag)
 			{
 /* Calculate shg at integration point */
 			    check=shshg( det, k, shl, shg, xl, zp1, zm1, znode,
-				dzdt_node, rotate, (Voln + k));
+				dzdt_node, rotate);
 			    if(!check) printf( "Problems with shshg \n");
 			}
 			else
 			{
 /* Calculate shg at nodal point */
 			    check=shshg( det, k, shl_node, shg_node, xl, zp1, zm1, znode,
-				dzdt_node, rotate_node, (Voln + k));
+				dzdt_node, rotate_node);
 			    if(!check) printf( "Problems with shshg \n");
 			}
 
@@ -364,16 +357,16 @@ int shKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
 /* The loop over i4 below calculates the 2 fiber points of the gaussian integration */
 
 			for( i4 = 0; i4 < num_ints; ++i4 )
-                	{
+			{
 
 /* The loop over j below calculates the 2X2 points of the gaussian integration
    over the lamina for several quantities */
 
-                   	    for( j = 0; j < num_intb; ++j )
-                   	    {
-        	       		memset(B,0,soB*sof);
-                           	memset(stress_el,0,sdim*sof);
-                           	memset(strain_el,0,sdim*sof);
+			    for( j = 0; j < num_intb; ++j )
+			    {
+				memset(B,0,soB*sof);
+				memset(stress_el,0,sdim*sof);
+				memset(strain_el,0,sdim*sof);
 
 				node = *(connect+npell*k+j) + i4*numnp;
 
@@ -426,27 +419,27 @@ int shKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
 
 /* Calculation of the local strain matrix */
 
-                	   	check=matX(strain_el, B, U_el, sdim, 1, neqel );
-                    	   	if(!check) printf( "Problems with matX \n");
+				check=matX(strain_el, B, U_el, sdim, 1, neqel );
+				if(!check) printf( "Problems with matX \n");
 #if 0
-                    	   	for( i1 = 0; i1 < sdim; ++i1 )
-                    	   	{
-                          	     printf("%12.8f ",*(stress_el+i1));
-                          	     /*printf("%12.2f ",*(stress_el+i1));
-                          	     printf("%12.8f ",*(B+i1));*/
-                    	   	}
-                    	   	printf("\n");
+				for( i1 = 0; i1 < sdim; ++i1 )
+				{
+				       printf("%12.8f ",*(stress_el+i1));
+				       /*printf("%12.2f ",*(stress_el+i1));
+				       printf("%12.8f ",*(B+i1));*/
+				}
+				printf("\n");
 #endif
 
 /* Update of the global strain matrix */
 
 				i5 = num_intb*i4+j;
 
-		       	   	strain[k].pt[i5].xx = *(strain_el);
-		     	   	strain[k].pt[i5].yy = *(strain_el+1);
-		    	   	strain[k].pt[i5].xy = *(strain_el+2);
-		    	   	strain[k].pt[i5].zx = *(strain_el+3);
-		    	   	strain[k].pt[i5].yz = *(strain_el+4);
+				strain[k].pt[i5].xx = *(strain_el);
+				strain[k].pt[i5].yy = *(strain_el+1);
+				strain[k].pt[i5].xy = *(strain_el+2);
+				strain[k].pt[i5].zx = *(strain_el+3);
+				strain[k].pt[i5].yz = *(strain_el+4);
 
 /* Calculate the principal straines */
 
@@ -454,15 +447,15 @@ int shKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
 /* The code below assumed a plane state of stress which I now feel is incorrect.  So I
    calculate all 3 principal stresses and strains.
 */
-			   	xxaddyy = .5*(strain[k].pt[i5].xx + strain[k].pt[i5].yy);
-			   	xxsubyy = .5*(strain[k].pt[i5].xx - strain[k].pt[i5].yy);
-			   	xysq = strain[k].pt[i5].xy*strain[k].pt[i5].xy;
+				xxaddyy = .5*(strain[k].pt[i5].xx + strain[k].pt[i5].yy);
+				xxsubyy = .5*(strain[k].pt[i5].xx - strain[k].pt[i5].yy);
+				xysq = strain[k].pt[i5].xy*strain[k].pt[i5].xy;
 
-		    	   	strain[k].pt[i5].I = xxaddyy + sqrt( xxsubyy*xxsubyy
+				strain[k].pt[i5].I = xxaddyy + sqrt( xxsubyy*xxsubyy
 					+ xysq);
-		    	   	strain[k].pt[i5].II = xxaddyy - sqrt( xxsubyy*xxsubyy
+				strain[k].pt[i5].II = xxaddyy - sqrt( xxsubyy*xxsubyy
 					+ xysq);
-           		   	/*printf("%14.6e %14.6e %14.6e\n",xxaddyy,xxsubyy,xysq);*/
+				/*printf("%14.6e %14.6e %14.6e\n",xxaddyy,xxsubyy,xysq);*/
 #endif
 #if 1
 				memset(invariant,0,nsd*sof);
@@ -477,13 +470,14 @@ int shKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
 				*(invariant+2) = -
 				     2*strain[k].pt[i5].yz*strain[k].pt[i5].zx*strain[k].pt[i5].xy +
 				     yzsq*strain[k].pt[i5].xx + zxsq*strain[k].pt[i5].yy;
-				     
-				check = brcubic(invariant);
+
+				check = cubic(invariant);
 
 				strain[k].pt[i5].I = *(invariant);
 				strain[k].pt[i5].II = *(invariant+1);
 				strain[k].pt[i5].III = *(invariant+2);
 #endif
+
 
 /* Add all the strains for a particular node from all the elements which share that node */
 
@@ -498,21 +492,21 @@ int shKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
 
 /* Calculation of the local stress matrix */
 
-                        	*(stress_el)= strain[k].pt[i5].xx*D11 +
+				*(stress_el)= strain[k].pt[i5].xx*D11 +
 					strain[k].pt[i5].yy*D12;
-                        	*(stress_el+1)= strain[k].pt[i5].xx*D21 +
+				*(stress_el+1)= strain[k].pt[i5].xx*D21 +
 					strain[k].pt[i5].yy*D22;
-                        	*(stress_el+2)= strain[k].pt[i5].xy*G1;
-                            	*(stress_el+3)= strain[k].pt[i5].zx*G2;
-                            	*(stress_el+4)= strain[k].pt[i5].yz*G3;
+				*(stress_el+2)= strain[k].pt[i5].xy*G1;
+				    *(stress_el+3)= strain[k].pt[i5].zx*G2;
+				    *(stress_el+4)= strain[k].pt[i5].yz*G3;
 
 /* Update of the global stress matrix */
 
-		       	   	stress[k].pt[i5].xx += *(stress_el);
-		     	   	stress[k].pt[i5].yy += *(stress_el+1);
-		    	   	stress[k].pt[i5].xy += *(stress_el+2);
-		    	   	stress[k].pt[i5].zx += *(stress_el+3);
-		    	   	stress[k].pt[i5].yz += *(stress_el+4);
+				stress[k].pt[i5].xx += *(stress_el);
+				stress[k].pt[i5].yy += *(stress_el+1);
+				stress[k].pt[i5].xy += *(stress_el+2);
+				stress[k].pt[i5].zx += *(stress_el+3);
+				stress[k].pt[i5].yz += *(stress_el+4);
 
 /* Calculate the principal stresses */
 
@@ -520,14 +514,15 @@ int shKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
 /* The code below assumed a plane state of stress which I now feel is incorrect.  So I
    calculate all 3 principal stresses and strains.
 */
-			   	xxaddyy = .5*(stress[k].pt[i5].xx + stress[k].pt[i5].yy);
-			   	xxsubyy = .5*(stress[k].pt[i5].xx - stress[k].pt[i5].yy);
-			   	xysq = stress[k].pt[i5].xy*stress[k].pt[i5].xy;
+				xxaddyy = .5*(stress[k].pt[i5].xx + stress[k].pt[i5].yy);
+				xxsubyy = .5*(stress[k].pt[i5].xx - stress[k].pt[i5].yy);
+				xysq = stress[k].pt[i5].xy*stress[k].pt[i5].xy;
 
-		    	   	stress[k].pt[i5].I = xxaddyy + sqrt( xxsubyy*xxsubyy
+				stress[k].pt[i5].I = xxaddyy + sqrt( xxsubyy*xxsubyy
 					+ xysq);
-		    	   	stress[k].pt[i5].II = xxaddyy - sqrt( xxsubyy*xxsubyy
+				stress[k].pt[i5].II = xxaddyy - sqrt( xxsubyy*xxsubyy
 					+ xysq);
+
 #endif
 #if 1
 				memset(invariant,0,nsd*sof);
@@ -542,8 +537,8 @@ int shKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
 				*(invariant+2) = -
 				     2*stress[k].pt[i5].yz*stress[k].pt[i5].zx*stress[k].pt[i5].xy +
 				     yzsq*stress[k].pt[i5].xx + zxsq*stress[k].pt[i5].yy;
-				     
-				check = brcubic(invariant);
+
+				check = cubic(invariant);
 
 				stress[k].pt[i5].I = *(invariant);
 				stress[k].pt[i5].II = *(invariant+1);
@@ -562,14 +557,14 @@ int shKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
 				stress_node[node].III += stress[k].pt[i5].III;
 
 /*
-           		   	printf("%14.6e ",stress[k].pt[i5].xx);
-           		   	printf("%14.6e ",stress[k].pt[i5].yy);
-           		   	printf("%14.6e ",stress[k].pt[i5].xy);
-           		   	printf( "\n");
+				printf("%14.6e ",stress[k].pt[i5].xx);
+				printf("%14.6e ",stress[k].pt[i5].yy);
+				printf("%14.6e ",stress[k].pt[i5].xy);
+				printf( "\n");
 */
-                	    }
-           		    /*printf( "\n");*/
-                	}
+			    }
+			    /*printf( "\n");*/
+			}
 		}
 	}
 

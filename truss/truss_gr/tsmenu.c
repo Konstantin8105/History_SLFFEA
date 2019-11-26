@@ -1,11 +1,11 @@
 /*
     This program draws the drag down menus.  It works with a truss FEM code.
   
-   			Last Update 7/4/00
+   			Last Update 6/9/01
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -47,7 +47,7 @@ extern int Before_flag, After_flag,
     Both_flag, Amplify_flag;
 extern double amplify_factor, amplify_step, amplify_step0;
 
-int tsset( BOUND , double *, double *, XYZF *, STRAIN *, ISTRAIN *, STRESS *,
+int tsset( BOUND , double *, XYZF *, STRAIN *, ISTRAIN *, STRESS *,
 	ISTRESS *, double *, int *);
 
 void tsReGetparameter( void);
@@ -107,7 +107,7 @@ void tsMenuSelect(int value)
 	    break;
 	case 4:
 	    tsReGetparameter();
-	    check = tsset( bc, coord, force, force_vec0, strain, strain_color,
+	    check = tsset( bc, force, force_vec0, strain, strain_color,
 		stress, stress_color, U, U_color );
 	    if(!check) printf( " Problems with tsset \n");
 	    break;

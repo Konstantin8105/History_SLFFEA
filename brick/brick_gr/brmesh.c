@@ -5,11 +5,11 @@
 
 			San Le
 
- 		Last Update 3/10/01
+ 		Last Update 6/25/01
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -36,18 +36,14 @@
 #include <GL/glu.h>
 #include <GL/glut.h>
 
-/* graphics globals */
-
-extern choice2, choice3;
-
 /* FEA globals */
 
 extern double *coord, *coord0;
 extern NORM *norm, *norm0;
 extern int *connecter;
 extern int nmat, numnp, numel;
-extern GLfloat MeshColor[boxnumber+5][3];
-extern GLfloat wire_color[3], black[3], green[3], yellow[3];
+extern GLfloat MeshColor[boxnumber+5][4];
+extern GLfloat wire_color[4], black[4], green[4], yellow[4];
 extern GLfloat RenderColor[4];
 extern ISTRESS *stress_color;
 extern ISTRAIN *strain_color;
@@ -58,10 +54,12 @@ extern int *T_color, *Q_color;
 extern int color_choice, input_flag, post_flag;
 extern int input_color_flag;
 extern int Solid_flag, Perspective_flag, Render_flag, AppliedDisp_flag,
-        AppliedForce_flag, Material_flag, Node_flag, Element_flag, Axes_flag;
+        AppliedForce_flag, Material_flag, Node_flag, Element_flag, Axes_flag,
+	CrossSection_flag;
 extern int Before_flag, After_flag, Both_flag, Amplify_flag;
 extern int stress_flag, strain_flag, stress_strain, disp_flag;
 extern int matl_choice, node_choice, ele_choice;
+extern double cross_sec_left_right, cross_sec_up_down, cross_sec_in_out;
 
 void brmeshdraw(void)
 {
@@ -70,7 +68,8 @@ void brmeshdraw(void)
 	int l,m,n;
 	int c0,c1,c2,c3,c4,c5,c6,c7;
 	int matl_number, node_number;
-	int After_gr_flag = 0, Before_gr_flag = 0;
+	int After_gr_flag = 0, Before_gr_flag = 0,
+		After_element_draw_flag = 1, Before_element_draw_flag = 1;
         double coord_el[npel*3], coord0_el[npel*3],
 		fpointx, fpointy, fpointz;
 	GLfloat d1[3], d2[3], norm_temp[3];
@@ -85,6 +84,9 @@ void brmeshdraw(void)
 
         for( k = 0; k < numel; ++k )
         {
+		After_element_draw_flag = 1;
+		Before_element_draw_flag = 1;
+
 		for( j = 0; j < npel; ++j )
                 {
 
@@ -106,23 +108,40 @@ void brmeshdraw(void)
 
 		    if( post_flag )
 		    {
-                        *(coord_el+3*j)=*(coord+*(sdof_el+nsd*j));
-                        *(coord_el+3*j+1)=*(coord+*(sdof_el+nsd*j+1));
-                        *(coord_el+3*j+2)=*(coord+*(sdof_el+nsd*j+2));
+			*(coord_el+3*j)=*(coord+*(sdof_el+nsd*j));
+			*(coord_el+3*j+1)=*(coord+*(sdof_el+nsd*j+1));
+			*(coord_el+3*j+2)=*(coord+*(sdof_el+nsd*j+2));
+			if( *(coord_el+3*j) > cross_sec_left_right)
+				After_element_draw_flag = 0;
+			if( *(coord_el+3*j + 1) > cross_sec_up_down)
+				After_element_draw_flag = 0;
+			if( *(coord_el+3*j + 2) > cross_sec_in_out)
+				After_element_draw_flag = 0;
 		    }
 
 /* Calculate local undeformed coordinates */
 
 		    if( input_flag )
 		    {
-                        *(coord0_el+3*j)=*(coord0+*(sdof_el+nsd*j));
-                        *(coord0_el+3*j+1)=*(coord0+*(sdof_el+nsd*j+1));
-                        *(coord0_el+3*j+2)=*(coord0+*(sdof_el+nsd*j+2));
+			*(coord0_el+3*j)=*(coord0+*(sdof_el+nsd*j));
+			*(coord0_el+3*j+1)=*(coord0+*(sdof_el+nsd*j+1));
+			*(coord0_el+3*j+2)=*(coord0+*(sdof_el+nsd*j+2));
+			if( *(coord0_el+3*j) > cross_sec_left_right)
+				Before_element_draw_flag = 0;
+			if( *(coord0_el+3*j + 1) > cross_sec_up_down)
+				Before_element_draw_flag = 0;
+			if( *(coord0_el+3*j + 2) > cross_sec_in_out)
+				Before_element_draw_flag = 0;
 		    }
 
     			/*printf( "%9.5f %9.5f %9.5f \n",*(coord_el+3*j),
 				*(coord_el+3*j+1),*(coord_el+3*j+2));*/
                 }
+		if(!CrossSection_flag)
+		{
+		    After_element_draw_flag = 1;
+		    Before_element_draw_flag = 1;
+		}
 
 /* Calculate element material number */
 
@@ -417,159 +436,196 @@ void brmeshdraw(void)
 
 /* Draw the mesh after deformation */
 
-    		if( After_gr_flag )
+    		if( After_gr_flag && After_element_draw_flag )
 		{
+
     		   if( Solid_flag )
 		   {
+
+/* Triangle face 0 */
+
 			*(norm_temp) = norm[k].face[0].x;
 			*(norm_temp+1) = norm[k].face[0].y;
 			*(norm_temp+2) = norm[k].face[0].z;
 			glBegin(GL_TRIANGLES);
 				glNormal3fv(norm_temp);
-				glColor3fv(MeshColor[c0]);
-				glVertex3dv((coord_el));
-				glColor3fv(MeshColor[c3]);
-				glVertex3dv((coord_el+9));
-				glColor3fv(MeshColor[c1]);
+				glColor4fv(MeshColor[c1]);
 				glVertex3dv((coord_el+3));
+				glColor4fv(MeshColor[c0]);
+				glVertex3dv((coord_el));
+				glColor4fv(MeshColor[c2]);
+				glVertex3dv((coord_el+6));
 			glEnd();
+
+/* Triangle face 1 */
+
 			*(norm_temp) = norm[k].face[1].x;
 			*(norm_temp+1) = norm[k].face[1].y;
 			*(norm_temp+2) = norm[k].face[1].z;
 			glBegin(GL_TRIANGLES);
 				glNormal3fv(norm_temp);
-				glColor3fv(MeshColor[c2]);
-				glVertex3dv((coord_el+6));
-				glColor3fv(MeshColor[c1]);
-				glVertex3dv((coord_el+3));
-				glColor3fv(MeshColor[c3]);
+				glColor4fv(MeshColor[c3]);
 				glVertex3dv((coord_el+9));
+				glColor4fv(MeshColor[c2]);
+				glVertex3dv((coord_el+6));
+				glColor4fv(MeshColor[c0]);
+				glVertex3dv((coord_el));
 			glEnd();
+
+/* Triangle face 2 */
+
 			*(norm_temp) = norm[k].face[2].x;
 			*(norm_temp+1) = norm[k].face[2].y;
 			*(norm_temp+2) = norm[k].face[2].z;
 			glBegin(GL_TRIANGLES);
 				glNormal3fv(norm_temp);
-				glColor3fv(MeshColor[c0]);
-				glVertex3dv((coord_el));
-				glColor3fv(MeshColor[c1]);
+				glColor4fv(MeshColor[c1]);
 				glVertex3dv((coord_el+3));
-				glColor3fv(MeshColor[c4]);
-				glVertex3dv((coord_el+12));
+				glColor4fv(MeshColor[c5]);
+				glVertex3dv((coord_el+15));
+				glColor4fv(MeshColor[c0]);
+				glVertex3dv((coord_el));
 			glEnd();
+
+/* Triangle face 3 */
+
 			*(norm_temp) = norm[k].face[3].x;
 			*(norm_temp+1) = norm[k].face[3].y;
 			*(norm_temp+2) = norm[k].face[3].z;
 			glBegin(GL_TRIANGLES);
 				glNormal3fv(norm_temp);
-				glColor3fv(MeshColor[c5]);
-				glVertex3dv((coord_el+15));
-				glColor3fv(MeshColor[c4]);
+				glColor4fv(MeshColor[c4]);
 				glVertex3dv((coord_el+12));
-				glColor3fv(MeshColor[c1]);
-				glVertex3dv((coord_el+3));
+				glColor4fv(MeshColor[c0]);
+				glVertex3dv((coord_el));
+				glColor4fv(MeshColor[c5]);
+				glVertex3dv((coord_el+15));
 			glEnd();
+
+/* Triangle face 4 */
+
 			*(norm_temp) = norm[k].face[4].x;
 			*(norm_temp+1) = norm[k].face[4].y;
 			*(norm_temp+2) = norm[k].face[4].z;
 			glBegin(GL_TRIANGLES);
 				glNormal3fv(norm_temp);
-				glColor3fv(MeshColor[c1]);
+				glColor4fv(MeshColor[c1]);
 				glVertex3dv((coord_el+3));
-				glColor3fv(MeshColor[c2]);
+				glColor4fv(MeshColor[c2]);
 				glVertex3dv((coord_el+6));
-				glColor3fv(MeshColor[c5]);
+				glColor4fv(MeshColor[c5]);
 				glVertex3dv((coord_el+15));
 			glEnd();
+
+/* Triangle face 5 */
+
 			*(norm_temp) = norm[k].face[5].x;
 			*(norm_temp+1) = norm[k].face[5].y;
 			*(norm_temp+2) = norm[k].face[5].z;
 			glBegin(GL_TRIANGLES);
 				glNormal3fv(norm_temp);
-				glColor3fv(MeshColor[c6]);
+				glColor4fv(MeshColor[c6]);
 				glVertex3dv((coord_el+18));
-				glColor3fv(MeshColor[c5]);
+				glColor4fv(MeshColor[c5]);
 				glVertex3dv((coord_el+15));
-				glColor3fv(MeshColor[c2]);
+				glColor4fv(MeshColor[c2]);
 				glVertex3dv((coord_el+6));
 			glEnd();
+
+/* Triangle face 6 */
+
 			*(norm_temp) = norm[k].face[6].x;
 			*(norm_temp+1) = norm[k].face[6].y;
 			*(norm_temp+2) = norm[k].face[6].z;
 			glBegin(GL_TRIANGLES);
 				glNormal3fv(norm_temp);
-				glColor3fv(MeshColor[c6]);
-				glVertex3dv((coord_el+18));
-				glColor3fv(MeshColor[c2]);
-				glVertex3dv((coord_el+6));
-				glColor3fv(MeshColor[c7]);
+				glColor4fv(MeshColor[c7]);
 				glVertex3dv((coord_el+21));
+				glColor4fv(MeshColor[c6]);
+				glVertex3dv((coord_el+18));
+				glColor4fv(MeshColor[c3]);
+				glVertex3dv((coord_el+9));
 			glEnd();
+
+/* Triangle face 7 */
+
 			*(norm_temp) = norm[k].face[7].x;
 			*(norm_temp+1) = norm[k].face[7].y;
 			*(norm_temp+2) = norm[k].face[7].z;
 			glBegin(GL_TRIANGLES);
 				glNormal3fv(norm_temp);
-				glColor3fv(MeshColor[c3]);
-				glVertex3dv((coord_el+9));
-				glColor3fv(MeshColor[c7]);
-				glVertex3dv((coord_el+21));
-				glColor3fv(MeshColor[c2]);
+				glColor4fv(MeshColor[c2]);
 				glVertex3dv((coord_el+6));
+				glColor4fv(MeshColor[c3]);
+				glVertex3dv((coord_el+9));
+				glColor4fv(MeshColor[c6]);
+				glVertex3dv((coord_el+18));
 			glEnd();
+
+/* Triangle face 8 */
+
 			*(norm_temp) = norm[k].face[8].x;
 			*(norm_temp+1) = norm[k].face[8].y;
 			*(norm_temp+2) = norm[k].face[8].z;
 			glBegin(GL_TRIANGLES);
 				glNormal3fv(norm_temp);
-				glColor3fv(MeshColor[c7]);
+				glColor4fv(MeshColor[c7]);
 				glVertex3dv((coord_el+21));
-				glColor3fv(MeshColor[c3]);
+				glColor4fv(MeshColor[c3]);
 				glVertex3dv((coord_el+9));
-				glColor3fv(MeshColor[c4]);
+				glColor4fv(MeshColor[c4]);
 				glVertex3dv((coord_el+12));
 			glEnd();
+
+/* Triangle face 9 */
+
 			*(norm_temp) = norm[k].face[9].x;
 			*(norm_temp+1) = norm[k].face[9].y;
 			*(norm_temp+2) = norm[k].face[9].z;
 			glBegin(GL_TRIANGLES);
 				glNormal3fv(norm_temp);
-				glColor3fv(MeshColor[c0]);
+				glColor4fv(MeshColor[c0]);
 				glVertex3dv((coord_el));
-				glColor3fv(MeshColor[c4]);
+				glColor4fv(MeshColor[c4]);
 				glVertex3dv((coord_el+12));
-				glColor3fv(MeshColor[c3]);
+				glColor4fv(MeshColor[c3]);
 				glVertex3dv((coord_el+9));
 			glEnd();
+
+/* Triangle face 10 */
+
 			*(norm_temp) = norm[k].face[10].x;
 			*(norm_temp+1) = norm[k].face[10].y;
 			*(norm_temp+2) = norm[k].face[10].z;
 			glBegin(GL_TRIANGLES);
 				glNormal3fv(norm_temp);
-				glColor3fv(MeshColor[c4]);
-				glVertex3dv((coord_el+12));
-				glColor3fv(MeshColor[c5]);
+				glColor4fv(MeshColor[c5]);
 				glVertex3dv((coord_el+15));
-				glColor3fv(MeshColor[c7]);
-				glVertex3dv((coord_el+21));
+				glColor4fv(MeshColor[c6]);
+				glVertex3dv((coord_el+18));
+				glColor4fv(MeshColor[c4]);
+				glVertex3dv((coord_el+12));
 			glEnd();
+
+/* Triangle face 11 */
+
 			*(norm_temp) = norm[k].face[11].x;
 			*(norm_temp+1) = norm[k].face[11].y;
 			*(norm_temp+2) = norm[k].face[11].z;
 			glBegin(GL_TRIANGLES);
 				glNormal3fv(norm_temp);
-				glColor3fv(MeshColor[c6]);
-				glVertex3dv((coord_el+18));
-				glColor3fv(MeshColor[c7]);
+				glColor4fv(MeshColor[c7]);
 				glVertex3dv((coord_el+21));
-				glColor3fv(MeshColor[c5]);
-				glVertex3dv((coord_el+15));
+				glColor4fv(MeshColor[c4]);
+				glVertex3dv((coord_el+12));
+				glColor4fv(MeshColor[c6]);
+				glVertex3dv((coord_el+18));
 			glEnd();
 		   }
    
 /* Draw the wire frame around the mesh */
    
-		   glColor3fv( black );
+		   glColor4fv( black );
 		     glBegin(GL_LINE_LOOP);
 			   glVertex3dv((coord_el+9));
 			   glVertex3dv((coord_el+6));
@@ -624,159 +680,195 @@ void brmeshdraw(void)
 
 /* Draw the mesh before deformation */
 
-    		if( Before_gr_flag )
+    		if( Before_gr_flag && Before_element_draw_flag )
 		{
     		   if( Solid_flag )
 		   {
+
+/* Triangle face 0 */
+
 			*(norm_temp) = norm0[k].face[0].x;
 			*(norm_temp+1) = norm0[k].face[0].y;
 			*(norm_temp+2) = norm0[k].face[0].z;
 			glBegin(GL_TRIANGLES);
 				glNormal3fv(norm_temp);
-				glColor3fv(MeshColor[c0]);
-				glVertex3dv((coord0_el));
-				glColor3fv(MeshColor[c3]);
-				glVertex3dv((coord0_el+9));
-				glColor3fv(MeshColor[c1]);
+				glColor4fv(MeshColor[c1]);
 				glVertex3dv((coord0_el+3));
+				glColor4fv(MeshColor[c0]);
+				glVertex3dv((coord0_el));
+				glColor4fv(MeshColor[c2]);
+				glVertex3dv((coord0_el+6));
 			glEnd();
+
+/* Triangle face 1 */
+
 			*(norm_temp) = norm0[k].face[1].x;
 			*(norm_temp+1) = norm0[k].face[1].y;
 			*(norm_temp+2) = norm0[k].face[1].z;
 			glBegin(GL_TRIANGLES);
 				glNormal3fv(norm_temp);
-				glColor3fv(MeshColor[c2]);
-				glVertex3dv((coord0_el+6));
-				glColor3fv(MeshColor[c1]);
-				glVertex3dv((coord0_el+3));
-				glColor3fv(MeshColor[c3]);
+				glColor4fv(MeshColor[c3]);
 				glVertex3dv((coord0_el+9));
+				glColor4fv(MeshColor[c2]);
+				glVertex3dv((coord0_el+6));
+				glColor4fv(MeshColor[c0]);
+				glVertex3dv((coord0_el));
 			glEnd();
+
+/* Triangle face 2 */
+
 			*(norm_temp) = norm0[k].face[2].x;
 			*(norm_temp+1) = norm0[k].face[2].y;
 			*(norm_temp+2) = norm0[k].face[2].z;
 			glBegin(GL_TRIANGLES);
 				glNormal3fv(norm_temp);
-				glColor3fv(MeshColor[c0]);
-				glVertex3dv((coord0_el));
-				glColor3fv(MeshColor[c1]);
+				glColor4fv(MeshColor[c1]);
 				glVertex3dv((coord0_el+3));
-				glColor3fv(MeshColor[c4]);
-				glVertex3dv((coord0_el+12));
+				glColor4fv(MeshColor[c5]);
+				glVertex3dv((coord0_el+15));
+				glColor4fv(MeshColor[c0]);
+				glVertex3dv((coord0_el));
 			glEnd();
+
+/* Triangle face 3 */
+
 			*(norm_temp) = norm0[k].face[3].x;
 			*(norm_temp+1) = norm0[k].face[3].y;
 			*(norm_temp+2) = norm0[k].face[3].z;
 			glBegin(GL_TRIANGLES);
 				glNormal3fv(norm_temp);
-				glColor3fv(MeshColor[c5]);
-				glVertex3dv((coord0_el+15));
-				glColor3fv(MeshColor[c4]);
+				glColor4fv(MeshColor[c4]);
 				glVertex3dv((coord0_el+12));
-				glColor3fv(MeshColor[c1]);
-				glVertex3dv((coord0_el+3));
+				glColor4fv(MeshColor[c0]);
+				glVertex3dv((coord0_el));
+				glColor4fv(MeshColor[c5]);
+				glVertex3dv((coord0_el+15));
 			glEnd();
+
+/* Triangle face 4 */
+
 			*(norm_temp) = norm0[k].face[4].x;
 			*(norm_temp+1) = norm0[k].face[4].y;
 			*(norm_temp+2) = norm0[k].face[4].z;
 			glBegin(GL_TRIANGLES);
 				glNormal3fv(norm_temp);
-				glColor3fv(MeshColor[c1]);
+				glColor4fv(MeshColor[c1]);
 				glVertex3dv((coord0_el+3));
-				glColor3fv(MeshColor[c2]);
+				glColor4fv(MeshColor[c2]);
 				glVertex3dv((coord0_el+6));
-				glColor3fv(MeshColor[c5]);
+				glColor4fv(MeshColor[c5]);
 				glVertex3dv((coord0_el+15));
 			glEnd();
+
+/* Triangle face 5 */
+
 			*(norm_temp) = norm0[k].face[5].x;
 			*(norm_temp+1) = norm0[k].face[5].y;
 			*(norm_temp+2) = norm0[k].face[5].z;
 			glBegin(GL_TRIANGLES);
 				glNormal3fv(norm_temp);
-				glColor3fv(MeshColor[c6]);
+				glColor4fv(MeshColor[c6]);
 				glVertex3dv((coord0_el+18));
-				glColor3fv(MeshColor[c5]);
+				glColor4fv(MeshColor[c5]);
 				glVertex3dv((coord0_el+15));
-				glColor3fv(MeshColor[c2]);
+				glColor4fv(MeshColor[c2]);
 				glVertex3dv((coord0_el+6));
 			glEnd();
+
+/* Triangle face 6 */
+
 			*(norm_temp) = norm0[k].face[6].x;
 			*(norm_temp+1) = norm0[k].face[6].y;
 			*(norm_temp+2) = norm0[k].face[6].z;
 			glBegin(GL_TRIANGLES);
 				glNormal3fv(norm_temp);
-				glColor3fv(MeshColor[c6]);
-				glVertex3dv((coord0_el+18));
-				glColor3fv(MeshColor[c2]);
-				glVertex3dv((coord0_el+6));
-				glColor3fv(MeshColor[c7]);
+				glColor4fv(MeshColor[c7]);
 				glVertex3dv((coord0_el+21));
+				glColor4fv(MeshColor[c6]);
+				glVertex3dv((coord0_el+18));
+				glColor4fv(MeshColor[c3]);
+				glVertex3dv((coord0_el+9));
 			glEnd();
+
+/* Triangle face 7 */
+
 			*(norm_temp) = norm0[k].face[7].x;
 			*(norm_temp+1) = norm0[k].face[7].y;
 			*(norm_temp+2) = norm0[k].face[7].z;
 			glBegin(GL_TRIANGLES);
 				glNormal3fv(norm_temp);
-				glColor3fv(MeshColor[c3]);
-				glVertex3dv((coord0_el+9));
-				glColor3fv(MeshColor[c7]);
-				glVertex3dv((coord0_el+21));
-				glColor3fv(MeshColor[c2]);
+				glColor4fv(MeshColor[c2]);
 				glVertex3dv((coord0_el+6));
+				glColor4fv(MeshColor[c3]);
+				glVertex3dv((coord0_el+9));
+				glColor4fv(MeshColor[c6]);
+				glVertex3dv((coord0_el+18));
 			glEnd();
+
+/* Triangle face 8 */
+
 			*(norm_temp) = norm0[k].face[8].x;
 			*(norm_temp+1) = norm0[k].face[8].y;
 			*(norm_temp+2) = norm0[k].face[8].z;
 			glBegin(GL_TRIANGLES);
 				glNormal3fv(norm_temp);
-				glColor3fv(MeshColor[c7]);
+				glColor4fv(MeshColor[c7]);
 				glVertex3dv((coord0_el+21));
-				glColor3fv(MeshColor[c3]);
+				glColor4fv(MeshColor[c3]);
 				glVertex3dv((coord0_el+9));
-				glColor3fv(MeshColor[c4]);
+				glColor4fv(MeshColor[c4]);
 				glVertex3dv((coord0_el+12));
 			glEnd();
+
+/* Triangle face 9 */
+
 			*(norm_temp) = norm0[k].face[9].x;
 			*(norm_temp+1) = norm0[k].face[9].y;
 			*(norm_temp+2) = norm0[k].face[9].z;
 			glBegin(GL_TRIANGLES);
 				glNormal3fv(norm_temp);
-				glColor3fv(MeshColor[c0]);
+				glColor4fv(MeshColor[c0]);
 				glVertex3dv((coord0_el));
-				glColor3fv(MeshColor[c4]);
+				glColor4fv(MeshColor[c4]);
 				glVertex3dv((coord0_el+12));
-				glColor3fv(MeshColor[c3]);
+				glColor4fv(MeshColor[c3]);
 				glVertex3dv((coord0_el+9));
 			glEnd();
+
+/* Triangle face 10 */
+
 			*(norm_temp) = norm0[k].face[10].x;
 			*(norm_temp+1) = norm0[k].face[10].y;
 			*(norm_temp+2) = norm0[k].face[10].z;
 			glBegin(GL_TRIANGLES);
 				glNormal3fv(norm_temp);
-				glColor3fv(MeshColor[c4]);
-				glVertex3dv((coord0_el+12));
-				glColor3fv(MeshColor[c5]);
+				glColor4fv(MeshColor[c5]);
 				glVertex3dv((coord0_el+15));
-				glColor3fv(MeshColor[c7]);
-				glVertex3dv((coord0_el+21));
+				glColor4fv(MeshColor[c6]);
+				glVertex3dv((coord0_el+18));
+				glColor4fv(MeshColor[c4]);
+				glVertex3dv((coord0_el+12));
 			glEnd();
+
+/* Triangle face 11 */
+
 			*(norm_temp) = norm0[k].face[11].x;
 			*(norm_temp+1) = norm0[k].face[11].y;
 			*(norm_temp+2) = norm0[k].face[11].z;
 			glBegin(GL_TRIANGLES);
 				glNormal3fv(norm_temp);
-				glColor3fv(MeshColor[c6]);
-				glVertex3dv((coord0_el+18));
-				glColor3fv(MeshColor[c7]);
+				glColor4fv(MeshColor[c7]);
 				glVertex3dv((coord0_el+21));
-				glColor3fv(MeshColor[c5]);
-				glVertex3dv((coord0_el+15));
+				glColor4fv(MeshColor[c4]);
+				glVertex3dv((coord0_el+12));
+				glColor4fv(MeshColor[c6]);
+				glVertex3dv((coord0_el+18));
 			glEnd();
 		   }
    
 /* Draw the wire frame around the mesh */
    
-		   glColor3fv( wire_color );
+		   glColor4fv( wire_color );
 		     glBegin(GL_LINE_LOOP);
 			   glVertex3dv((coord0_el+9));
 			   glVertex3dv((coord0_el+6));
@@ -828,7 +920,7 @@ void brmeshdraw(void)
 	    	fpointy = *(coord+nsd*node_number+1);
 	    	fpointz = *(coord+nsd*node_number+2);
               	glBegin(GL_POINTS);
-        	    glColor3fv(yellow);
+        	    glColor4fv(yellow);
                	    glVertex3f(fpointx, fpointy, fpointz);
     	   	glEnd();
 	    }
@@ -838,7 +930,7 @@ void brmeshdraw(void)
 	    	fpointy = *(coord0+nsd*node_number+1);
 	    	fpointz = *(coord0+nsd*node_number+2);
               	glBegin(GL_POINTS);
-        	    glColor3fv(yellow);
+        	    glColor4fv(yellow);
                	    glVertex3f(fpointx, fpointy, fpointz);
     	   	glEnd();
 	    }

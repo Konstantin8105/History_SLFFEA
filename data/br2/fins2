@@ -1,5 +1,5 @@
    numel numnp nmat numel_film disp_analysis thermal_analysis
-42 120 3 36 1 1
+42 120 1 36 1 1
 matl no., thermal cond x, y, z, thermal expan x, y, z, film coeff, E modulus x, y, z, and Poisson Ratio xy, xz, xz
    0      1.6000e-01 1.6000e-01 1.6000e-01  2.3200e-05 2.3200e-05 2.3200e-05  2.0000e-04  73000.00 73000.00 73000.00  0.33 0.33 0.33
  el no.,connectivity, matl no

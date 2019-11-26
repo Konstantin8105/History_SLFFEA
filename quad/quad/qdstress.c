@@ -2,11 +2,11 @@
     This subroutine calculates the global shape function derivatives for
     a quadrilateral element at the nodal points.
 
-        Updated 2/1/00
+        Updated 9/22/01
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -24,7 +24,7 @@ extern int sof;
 
 int dotX(double *,double *, double *, int );
 
-int qdstress_shg(double *det, int el, double *shl_node, double *shg, double *xl )
+int qdstress_shg(double *det, int el, double *shl_node2, double *shg, double *xl )
 {
 /*
  ....  CALCULATE GLOBAL DERIVATIVES OF SHAPE FUNCTIONS AND
@@ -35,9 +35,9 @@ int qdstress_shg(double *det, int el, double *shl_node, double *shg, double *xl 
    *(xl+npel*(0,1,2)+*(node_eta+2*k+(0,1))) = GLOBAL COORDINATES CORRESPONDING TO
 					      NONZERO SHAPE FUNCTION dN/deta
        *(det+k)  = JACOBIAN DETERMINANT
-       *(shl_node+2*nsd*k+i) = LOCAL ("XI") DERIVATIVE OF SHAPE FUNCTION
-       *(shl_node+2*nsd*k+2*1+i) = LOCAL ("ETA") DERIVATIVE OF SHAPE FUNCTION
-       *(shl_node+2*nsd*k+2*2+i) = LOCAL SHAPE FUNCTION
+       *(shl_node2+2*nsd*k+i) = LOCAL ("XI") DERIVATIVE OF SHAPE FUNCTION
+       *(shl_node2+2*nsd*k+2*1+i) = LOCAL ("ETA") DERIVATIVE OF SHAPE FUNCTION
+       *(shl_node2+2*nsd*k+2*2+i) = LOCAL SHAPE FUNCTION
 
        2 has replaced "npel" because there are only 2 non-zero shape function
        derivatives when evaluating at a node.
@@ -58,7 +58,7 @@ int qdstress_shg(double *det, int el, double *shl_node, double *shg, double *xl 
 		for dN/deta
 
 		1111
-			Updated 2/1/00 */
+			Updated 9/22/01 */
 
         int node_xi[]  = {0,1,0,1,2,3,2,3};
         int node_eta[] = {0,3,1,2,1,2,0,3};
@@ -76,17 +76,17 @@ int qdstress_shg(double *det, int el, double *shl_node, double *shg, double *xl 
            for( j = 0; j < nsd; ++j )
 	   {
 	    	*(xs+nsd*j) = 
-	           *(shl_node+2*nsd*k)*(*(xl+npel*j+*(node_xi+2*k))) +
-	           *(shl_node+2*nsd*k+1)*(*(xl+npel*j+*(node_xi+2*k+1)));
+	           *(shl_node2+2*nsd*k)*(*(xl+npel*j+*(node_xi+2*k))) +
+	           *(shl_node2+2*nsd*k+1)*(*(xl+npel*j+*(node_xi+2*k+1)));
 	    	*(xs+nsd*j+1) = 
-	           *(shl_node+2*nsd*k+2*1)*(*(xl+npel*j+*(node_eta+2*k))) +
-	           *(shl_node+2*nsd*k+2*1+1)*(*(xl+npel*j+*(node_eta+2*k+1)));
+	           *(shl_node2+2*nsd*k+2*1)*(*(xl+npel*j+*(node_eta+2*k))) +
+	           *(shl_node2+2*nsd*k+2*1+1)*(*(xl+npel*j+*(node_eta+2*k+1)));
 	   }
 
            *(det+k)=*(xs)*(*(xs+3))-*(xs+2)*(*(xs+1));
            /*printf("%d %f\n", k, *(det+k));*/
 
-           if(*(det+k) < 0 ) 
+           if(*(det+k) <= 0.0 ) 
 	   {
                 printf("the element (%6d) is inverted: %f %d\n", el,*(det+k),k);
 		return 1;
@@ -101,24 +101,24 @@ int qdstress_shg(double *det, int el, double *shl_node, double *shg, double *xl 
            *(xs+3)=temp/(*(det+k));
 
 	   *(shg+npel*(nsd+1)*k+*(node_xi+2*k)) =
-		*(shl_node+4*k)*(*(xs));
+		*(shl_node2+4*k)*(*(xs));
 	   *(shg+npel*(nsd+1)*k+npel*1+*(node_xi+2*k)) =
-		*(shl_node+4*k)*(*(xs+1));
+		*(shl_node2+4*k)*(*(xs+1));
 
 	   *(shg+npel*(nsd+1)*k+*(node_xi+2*k+1)) =
-		*(shl_node+4*k+1)*(*(xs));
+		*(shl_node2+4*k+1)*(*(xs));
 	   *(shg+npel*(nsd+1)*k+npel*1+*(node_xi+2*k+1)) =
-		*(shl_node+4*k+1)*(*(xs+1));
+		*(shl_node2+4*k+1)*(*(xs+1));
 
 	   *(shg+npel*(nsd+1)*k+*(node_eta+2*k)) +=
-		*(shl_node+4*k+2*1)*(*(xs+2));
+		*(shl_node2+4*k+2*1)*(*(xs+2));
 	   *(shg+npel*(nsd+1)*k+npel*1+*(node_eta+2*k)) +=
-		*(shl_node+4*k+2*1)*(*(xs+3));
+		*(shl_node2+4*k+2*1)*(*(xs+3));
 
 	   *(shg+npel*(nsd+1)*k+*(node_eta+2*k+1)) +=
-		*(shl_node+4*k+2*1+1)*(*(xs+2));
+		*(shl_node2+4*k+2*1+1)*(*(xs+2));
 	   *(shg+npel*(nsd+1)*k+npel*1+*(node_eta+2*k+1)) +=
-		*(shl_node+4*k+2*1+1)*(*(xs+3));
+		*(shl_node2+4*k+2*1+1)*(*(xs+3));
 
 	}
         return 1; 

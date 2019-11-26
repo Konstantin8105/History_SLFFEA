@@ -1,5 +1,5 @@
    numel numnp nmat nmode  (This is for a brick "tensile")
-	6   28  1  0
+	6   28  1  -5
 matl no., E modulus, Poisson Ratio, density
 0    3000000.0   0.29  2770.0000
 el no.,connectivity, matl no

@@ -6,8 +6,8 @@
 		Updated 1/15/03
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -108,7 +108,7 @@ int tsMassPassemble(int *connect, double *coord, int *el_matl, double *mass,
 		Lxysq = sqrt(Lxysq);
 
 /* Assembly of the 3X3 rotation matrix for the 6X6 global rotation
-   matrix.   The mechanism below for calculating rotations is based on the method
+   matrix.  The mechanism below for calculating rotations is based on the method
    givin in the book, "A First Course in the Finite Element
    Method 2nd Ed." by Daryl L. Logan and my own.  See pages 236-239 in:
 

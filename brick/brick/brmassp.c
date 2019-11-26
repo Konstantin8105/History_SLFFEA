@@ -3,11 +3,11 @@
     consistent mass matrix.  This is for a finite element program
     which does analysis on a brick.  It is for modal analysis.
 
-		Updated 9/21/00
+		Updated 9/25/01
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -32,7 +32,7 @@ int matX(double *, double *, double *, int, int, int);
 
 int brickB_mass(double *,double *);
 
-int brshg_mass( double *, int, double *, double *, double *);
+int brshg_mass( double *, int, double *, double *);
 
 int brMassPassemble(int *connect, double *coord, int *el_matl, double *mass,
 	MATL *matl, double *P_global, double *U) 
@@ -122,7 +122,7 @@ int brMassPassemble(int *connect, double *coord, int *el_matl, double *mass,
 
 /* The call to brshg_mass is only for calculating the determinent */
 
-		check = brshg_mass(det, k, shg, coord_el_trans, &fdum);
+		check = brshg_mass(det, k, shg, coord_el_trans);
        		if(!check) printf( "Problems with brshg_mass \n");
 
 #if 0

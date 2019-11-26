@@ -2,11 +2,11 @@
     This program reads in the new input file and prepares it
     for graphical display.
   
-   			Last Update 12/15/00
+   			Last Update 6/9/01
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -42,7 +42,7 @@ void brdisp_vectors0(int , BOUND , double *);
 
 void agvMakeAxesList(GLuint);
 
-int br2set(BOUND , double *, int *, double *, XYZF *,  double *, int *, SDIM *,
+int br2set(BOUND , int *, double *, XYZF *,  double *, int *, SDIM *,
 	ISTRAIN *, SDIM *, ISTRESS *, double *, int *, double *, int *);
 
 int br2parameter( double *, double *, SDIM *, SDIM *, double *, double *);
@@ -380,7 +380,7 @@ int br2GetNewMesh(void)
 	check = br2parameter( coord, Q, strain_node, stress_node, T, U);
         if(!check) printf( " Problems with br2parameter \n");
 
-	check = br2set( bc, coord, connecter, force, force_vec0, Q, Q_color, strain_node,
+	check = br2set( bc, connecter, force, force_vec0, Q, Q_color, strain_node,
 		strain_color, stress_node, stress_color, T, T_color, U, U_color);
         if(!check) printf( " Problems with br2set \n");
 

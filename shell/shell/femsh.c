@@ -4,11 +4,10 @@
     for a 4 node doubly curved shell element.  The shell itself is
     defined by 8 nodes.
 
-
         Updated 11/4/09
 
     SLFFEA source file
-    Version:  1.1
+    Version:  1.2
     Copyright (C) 1999-2009  San Le 
 
     The source code contained in this file is released under the
@@ -25,6 +24,8 @@
 #include "../../common/eigen.h"
 #include "shconst.h"
 #include "shstruct.h"
+
+int shVolume( int *, double *, double *);
 
 int shwriter( BOUND , int *, double *, int *, double *, int *, MATL *,
 	char *, STRAIN *, SDIM *, STRESS *, SDIM *, double *, double *);
@@ -47,7 +48,7 @@ int shMassemble(int *, double *, int *, int *, double *, MATL *);
 
 int shKassemble(double *, int *, double *, int *, double *, int *, int *,
 	double *, int *, MATL *, double *, STRAIN *, SDIM *, STRESS *,
-	SDIM *, double *, double *);
+	SDIM *, double *);
 
 int diag( int *, int *, int, int, int, int);
 
@@ -281,7 +282,7 @@ int main(int argc, char** argv)
 /* The criteria for over-calculating the number of desired eigenvalues is
    taken from "The Finite Element Method" by Thomas Hughes, page 578.  It
    is actually given for subspace iteration, but I find it works well
-   for the Lanczos Method as well.  I have also modified the factors
+   for the Lanczos Method.  I have also modified the factors
    given in Hughes from 2.0 to 3.0 and 8 to 10.
 */
 		num_eigen = (int)(3.0*nmode);
@@ -554,8 +555,7 @@ int main(int argc, char** argv)
 	analysis_flag = 1;
 	memset(A,0,sofmA*sof);
 	check = shKassemble(A, connect, coord, el_matl, force, id, idiag, K_diag,
-		lm, matl, node_counter, strain, strain_node, stress, stress_node,
-		U, Voln);
+		lm, matl, node_counter, strain, strain_node, stress, stress_node, U);
         if(!check) printf( " Problems with shKassembler \n");
 /*
         printf( "\n\n This is the force matrix \n");
@@ -667,8 +667,7 @@ int main(int argc, char** argv)
 	    analysis_flag = 2;
 	    memset(force,0,dof*sof);
 	    check = shKassemble(A, connect, coord, el_matl, force, id, idiag, K_diag,
-		lm, matl, node_counter, strain, strain_node, stress, stress_node,
-		U, Voln);
+		lm, matl, node_counter, strain, strain_node, stress, stress_node, U);
 	    if(!check) printf( " Problems with shKassembler \n");
 
 /* Calcuate the local z fiber displacement on each node */
@@ -816,7 +815,7 @@ int main(int argc, char** argv)
 
 		check = shKassemble(A, connect, coord, el_matl, vector_dum, id,
 		    idiag, K_diag, lm, matl, node_counter, strain, strain_node,
-		    stress, stress_node, U, Voln);
+		    stress, stress_node, U);
 		if(!check) printf( " Problems with shKassembler \n");
 
 /* Calcuate the local z fiber displacement on each node */
@@ -849,6 +848,19 @@ int main(int argc, char** argv)
 
 	    }
 	}
+
+/* Calculating the value of the Volumes */
+
+	check = shVolume( connect, coord, Voln);
+	if(!check) printf( " Problems with shVolume \n");
+
+/*
+	printf("\nThis is the Volume\n");
+	for( i = 0; i < numel; ++i )
+	{
+		printf("%4i %12.4e\n",i, *(Voln + i));
+	}
+*/
 
     	timec = clock();
 	printf("\n\n elapsed CPU = %lf\n\n",( (double)timec)/800.);

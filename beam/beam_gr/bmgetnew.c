@@ -2,11 +2,11 @@
     This program reads in the new input file and prepares it
     for graphical display.
   
-   			Last Update 12/21/00
+   			Last Update 6/9/01
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -46,9 +46,9 @@ void bmdisp_vectors0(int , BOUND , double *);
 
 void agvMakeAxesList(GLuint);
 
-int bmset( BOUND , double *, CURVATURE *, ICURVATURE *, double *, QYQZ *, int *,
-	double * , XYZPhiF *, MOMENT *, IMOMENT *, STRAIN *, ISTRAIN *, STRESS *,
-	ISTRESS *, double *, int * );
+int bmset( BOUND , CURVATURE *, ICURVATURE *, double *, QYQZ *, int *,
+	double * , XYZPhiF *, MOMENT *, IMOMENT *, STRAIN *, ISTRAIN *,
+	STRESS *, ISTRESS *, double *, int * );
 
 int bmparameter(double *, CURVATURE *, MOMENT *, STRAIN *, STRESS *, double * );
 
@@ -325,7 +325,7 @@ int bmGetNewMesh(void)
 	check = bmparameter( coord, curve, moment, strain, stress, U );
         if(!check) printf( " Problems with bmparameter \n");
 
-	check = bmset( bc, coord, curve, curve_color, dist_load, dist_load_vec0,
+	check = bmset( bc, curve, curve_color, dist_load, dist_load_vec0,
 		el_type, force , force_vec0, moment, moment_color, strain,
 		strain_color, stress, stress_color, U, U_color );
 

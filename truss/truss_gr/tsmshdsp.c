@@ -2,11 +2,11 @@
     This program contains the mesh display routine for the FEM GUI
     for truss elements.
   
-   			Last Update 5/14/00
+   			Last Update 5/28/01
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -39,6 +39,15 @@ extern GLuint AxesList, DispList, ForceList;   /* Display lists */
 extern XYZF *force_vec;
 extern int Render_flag, AppliedDisp_flag, AppliedForce_flag,
     Axes_flag, Before_flag, After_flag; 
+extern int CrossSection_flag;
+
+void AxesNumbers2(void);
+
+void AxesNumbers(void);
+
+void AxesLabel(void);
+
+void CrossSetionPlaneDraw(void);
 
 void tsMeshDisplay(void)
 {
@@ -68,9 +77,18 @@ void tsMeshDisplay(void)
 		if(After_flag )
   			tsforce_vectors(bc, coord, force_vec);
 	}
+	if(CrossSection_flag)
+	{
+		CrossSetionPlaneDraw();
+	}
     	glPushMatrix ();
 	glLineWidth (2.0);
 	tsmeshdraw();
+	if(Axes_flag)
+	{
+		/*AxesNumbers();*/
+		AxesNumbers2();
+	}
     	glPopMatrix ();
 	glFlush();
   	glutSwapBuffers();

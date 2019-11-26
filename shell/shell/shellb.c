@@ -6,7 +6,7 @@
      "The Finite Element Method" by Thomas Hughes, page 780.
 
      SLFFEA source file
-     Version:  1.1
+     Version:  1.2
      Copyright (C) 1999, 2000  San Le
 
      The source code contained in this file is released under the

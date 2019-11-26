@@ -1,5 +1,5 @@
 # SLFFEA Makefile
-# Version:  1.1
+# Version:  1.2
 # Copyright (C) 1999, 2000  San Le (slffea@yahoo.com)
 # http://slffea.com/
 #
@@ -30,10 +30,10 @@ LIBS = -lm
 COMMON = ../../common
 BRICK = ../brick
 OBJECTS = $(COMMON)/matxt.o $(COMMON)/matx.o $(COMMON)/crossx.o \
-	$(COMMON)/dotx.o 
+	$(COMMON)/dotx.o $(COMMON)/cubic.o 
 OBJECTS2 = $(COMMON)/crossx.o 
 OBJECTS_BR = $(BRICK)/brmemory.o $(BRICK)/brreader.o $(BRICK)/brid.o $(BRICK)/brshape.o \
-	$(BRICK)/brickb.o $(BRICK)/brcubic.o $(BRICK)/brwriter.o $(BRICK)/brwriter2.o 
+	$(BRICK)/brickb.o $(BRICK)/brwriter.o $(BRICK)/brvolume.o  $(BRICK)/brwriter2.o 
 
 #PROGS = nbr pvv
 PROGS = nbr

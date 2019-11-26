@@ -6,7 +6,7 @@
 		Updated 8/22/06
 
     SLFFEA source file
-    Version:  1.1
+    Version:  1.2
     Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
 
     The source code contained in this file is released under the
@@ -29,10 +29,10 @@ int matXT(double *, double *, double *, int, int, int);
 
 int brickB(double *,double *);
 
-int brshg( double *, int, double *, double *, double *, double *);
+int brshg( double *, int, double *, double *, double *);
 
 int brFMassemble(int *connect, double *coord, double *coordh, int *el_matl,
-	double *force, double *mass, MATL *matl, double *U, double *Voln) 
+	double *force, double *mass, MATL *matl, double *U) 
 	
 {
         int i, i1, i2, i3, j, k, dof_el[neqel], sdof_el[npel*nsd];
@@ -44,7 +44,7 @@ int brFMassemble(int *connect, double *coord, double *coordh, int *el_matl,
         double K_temp[neqlsq], K_el[neqlsq];
 	double force_el[neqel], U_el[neqel];
         double coord_el_trans[neqel], coordh_el_trans[neqel];
-        double det[num_int], deth[num_int];
+        double det[num_int], deth[num_int], volume_el, wXdet;
         double mass_el[neqel];
 
 /*      initialize all variables  */
@@ -60,6 +60,8 @@ int brFMassemble(int *connect, double *coord, double *coordh, int *el_matl,
 
                 K=Emod/(1.0-2*Pois)/3.0;
                 G=Emod/(1.0+Pois)/2.0;
+
+		volume_el = 0.0;
 
         	lamda = Emod*Pois/((1.0+Pois)*(1.0-2.0*Pois));
         	mu = Emod/(1.0+Pois)/2.0;
@@ -96,11 +98,11 @@ int brFMassemble(int *connect, double *coord, double *coordh, int *el_matl,
 
 /* Assembly of the shg matrix for each integration point at 1/2 time */
 
-		brshg(deth, k, shl, shgh, coordh_el_trans, (Voln+k));
+		brshg(deth, k, shl, shgh, coordh_el_trans);
 
 /* Assembly of the shgh matrix for each integration point at full time */
 
-		brshg(det, k, shl, shg, coord_el_trans, (Voln+k));
+		brshg(det, k, shl, shg, coord_el_trans);
 
 /* The loop over j below calculates the 8 points of the gaussian integration
    for several quantities */
@@ -130,11 +132,18 @@ int brFMassemble(int *connect, double *coord, double *coordh, int *el_matl,
                         *(DB+neqel*4+i1) = *(Bh+neqel*4+i1)*mu;
                         *(DB+neqel*5+i1) = *(Bh+neqel*5+i1)*mu;
                     }
+
+		    wXdet = *(w+j)*(*(det+j));
+
+/* Calculate the Volume from determinant of the Jacobian */
+
+		    volume_el += wXdet;
+
                     check=matXT(K_temp, B, DB, neqel, neqel, sdim);
                     if(!check) printf( "Problems with matXT\n");
                     for( i2 = 0; i2 < neqlsq; ++i2 )
                     {
-                          *(K_el+i2) += *(K_temp+i2)*(*(w+j))*(*(det+j));
+                          *(K_el+i2) += *(K_temp+i2)*wXdet;
                     }
                 }
 

@@ -5,8 +5,8 @@
                         Last Update 5/16/01
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -26,7 +26,7 @@
 
 
 extern int Render_flag;
-extern GLfloat MeshColor[boxnumber+5][3];
+extern GLfloat MeshColor[boxnumber+5][4];
 extern double near, ratio;
 extern int Perspective_flag;
 extern double left_right, up_down, in_out, left_right0, up_down0, in_out0;
@@ -71,11 +71,11 @@ extern int mesh_scale_current_width, mesh_scale_current_height;
 extern int mesh_scale_height, mesh_scale_width;
 extern int stress_flag, strain_flag, stress_strain, disp_flag, thermal_flag;
 
-extern GLfloat yellow[3], orangeRed[3], red[3], green[3],
-        violetRed[3], magenta[3], purple[3], blue[3],
-        white[3], grey[3], darkGrey[3], black[3];
+extern GLfloat yellow[4], orangeRed[4], red[4], green[4],
+        violetRed[4], magenta[4], purple[4], blue[4],
+        white[4], grey[4], darkGrey[4], black[4];
 
-extern GLfloat yellowRed[3], blueGreen[3], aqua[3], greenYellow[3];
+extern GLfloat yellowRed[4], blueGreen[4], aqua[4], greenYellow[4];
 
 extern char RotateData[3][10];
 extern char MoveData[3][10];
@@ -97,7 +97,7 @@ void ScaleDisplay(void)
     	glClear(GL_COLOR_BUFFER_BIT);
     	glMatrixMode(GL_MODELVIEW);
     	glPushMatrix();
-    	glColor3fv(white);
+    	glColor4fv(white);
 
         for( i = 0 ; i < (boxnumber+1)*2 ; ++i)
         {
@@ -110,7 +110,7 @@ void ScaleDisplay(void)
 
 /* Text lable for Color Scale Boxes */
 
-    	glColor3fv(white);
+    	glColor4fv(white);
 	boxTextMove_x = (int)(scale_ratio2*scale_boxTextMove_x0);
         /*for( i = 27 ; i < 28 ; ++i)*/
         for( i = 0 ; i < 1 ; ++i)
@@ -124,7 +124,7 @@ void ScaleDisplay(void)
 /* Text for Color Scale Boxes */
 
         dum = 0;
-    	glColor3fv(white);
+    	glColor4fv(white);
         /*for( i = 29 ; i < rowdim ; i += 2)*/
         for( i = 0 ; i < 2*(boxnumber+1) ; i += 1)
         {
@@ -145,28 +145,28 @@ void ScaleDisplay(void)
     	glLoadIdentity();
     	glTranslatef (boxMove_x,boxMove_y,0);
     	glScalef( scale_ratio2, scale_ratio2, 1.0);
-    	glColor3fv(MeshColor[0]);
+    	glColor4fv(MeshColor[0]);
     	glRects(0,0,boxdim,boxdim);
     	glTranslatef (0,boxHeight,0);
-    	glColor3fv(MeshColor[1]);
+    	glColor4fv(MeshColor[1]);
     	glRects(0,0,boxdim,boxdim);
     	glTranslatef (0,boxHeight,0);
-    	glColor3fv(MeshColor[2]);
+    	glColor4fv(MeshColor[2]);
     	glRects(0,0,boxdim,boxdim);
     	glTranslatef (0,boxHeight,0);
-    	glColor3fv(MeshColor[3]);
+    	glColor4fv(MeshColor[3]);
     	glRects(0,0,boxdim,boxdim);
     	glTranslatef (0,boxHeight,0);
-    	glColor3fv(MeshColor[4]);
+    	glColor4fv(MeshColor[4]);
     	glRects(0,0,boxdim,boxdim);
     	glTranslatef (0,boxHeight,0);
-    	glColor3fv(MeshColor[5]);
+    	glColor4fv(MeshColor[5]);
     	glRects(0,0,boxdim,boxdim);
     	glTranslatef (0,boxHeight,0);
-    	glColor3fv(MeshColor[6]);
+    	glColor4fv(MeshColor[6]);
     	glRects(0,0,boxdim,boxdim);
     	glTranslatef (0,boxHeight,0);
-    	glColor3fv(MeshColor[7]);
+    	glColor4fv(MeshColor[7]);
     	glRects(0,0,boxdim,boxdim);
 
     	glutSwapBuffers();
@@ -246,7 +246,7 @@ void MeshScaleDisplay(void)
 	double coord_box[12], fpointx, fpointy, fpointz;
 
         glLoadIdentity();
-    	glColor3fv(white);
+    	glColor4fv(white);
 
 /* Begin Drawing the Color Scale Boxes */
 	
@@ -290,7 +290,7 @@ void MeshScaleDisplay(void)
 		coord_box[11] = fpointz;
 
         	glBegin(GL_QUADS);
-    		    if(!Render_flag) glColor3fv(MeshColor[i]);
+    		    if(!Render_flag) glColor4fv(MeshColor[i]);
 		    if(Render_flag) glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[i]);
                     glNormal3fv(norm_temp);
                     glVertex3dv((coord_box));
@@ -302,7 +302,7 @@ void MeshScaleDisplay(void)
 	}
 
 
-    	if(!Render_flag) glColor3fv(white);
+    	if(!Render_flag) glColor4fv(white);
 	if(Render_flag) glMaterialfv(GL_FRONT, GL_DIFFUSE, white);
 	glLineWidth (1.0);
         glLoadIdentity();

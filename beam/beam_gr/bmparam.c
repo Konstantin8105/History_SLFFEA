@@ -2,11 +2,11 @@
     This program calculates and writes the parameters for
     the FEM GUI for beam elements.
   
-   			Last Update 3/17/00
+   			Last Update 5/27/01
 
     SLFFEA source file
-    Version:  1.1
-    Copyright (C) 1999  San Le 
+    Version:  1.2
+    Copyright (C) 1999, 2000, 2001  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -29,6 +29,8 @@
 extern int nmat, numnp, numel, dof;
 extern double step_sizex, step_sizey, step_sizez;
 extern double left, right, top, bottom, near, far, fscale;
+extern double cross_sec_left_right, cross_sec_up_down, cross_sec_in_out,
+	cross_sec_left_right0, cross_sec_up_down0, cross_sec_in_out0;
 extern int control_height, control_width, mesh_height, mesh_width;
 extern double ortho_left, ortho_right, ortho_top, ortho_bottom,
 	ortho_left0, ortho_right0, ortho_top0, ortho_bottom0;
@@ -430,6 +432,16 @@ int bmparameter(double *coord, CURVATURE *curve, MOMENT *moment,
 	left_right = left_right0;
 	up_down = up_down0;
 	in_out = in_out0;
+
+/* Set the Cross Section Plane parameters */
+
+	cross_sec_left_right0 = AxisMax_x;
+	cross_sec_up_down0 = AxisMax_y;
+	cross_sec_in_out0 = AxisMax_z;
+
+	cross_sec_left_right = cross_sec_left_right0;
+	cross_sec_up_down = cross_sec_up_down0;
+	cross_sec_in_out = cross_sec_in_out0;
 
     	mesh_width=mesh_width0;
     	mesh_height=mesh_height0;

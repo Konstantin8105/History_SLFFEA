@@ -5,7 +5,7 @@ Maximum number of iterations
 Amount of RAM in megabytes
 64.0
 element stress read flag
-0
+1
 element stress print flag
 0
 node or gauss stress ( 0 = node, 1 = gauss )

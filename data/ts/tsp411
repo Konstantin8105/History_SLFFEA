@@ -1,5 +1,5 @@
    numel numnp nmat nmode  (This is for a truss)
-     9   6  1   -5
+     9   6  1   0
 matl no., E modulus, density, and Area
 0    70.0e9   92.292e2  4.0e-4
 el no.,connectivity, matl no 
