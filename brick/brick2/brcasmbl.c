@@ -14,7 +14,7 @@
 		Updated 9/26/01
 
     SLFFEA source file
-    Version:  1.2
+    Version:  1.3
     Copyright (C) 1999, 2000  San Le 
 
     The source code contained in this file is released under the
@@ -31,7 +31,7 @@
 #include "br2struct.h"
 
 extern int temp_analysis_flag, dof, Tdof, numel, numel_film, numnp, sof;
-extern int Tlin_algebra_flag, Tnumel_K, TBnumel_K, Tnumel_P;
+extern int TLU_decomp_flag, Tnumel_K, TBnumel_K, Tnumel_P;
 extern double shg[sosh], shl[sosh], shl_film[sosh_film], shl_node[sosh],
 	shl_node2[sosh_node2], w[num_int], *Vol0;
 
@@ -94,15 +94,15 @@ int brCassemble(double *A, int *connect, int *connect_film, double *coord, int *
                 {
 			node = *(connect+npel*k+j);
 
-                	*(sdof_el+nsd*j) = nsd*node;
-                	*(sdof_el+nsd*j+1) = nsd*node+1;
-                	*(sdof_el+nsd*j+2) = nsd*node+2;
+			*(sdof_el+nsd*j) = nsd*node;
+			*(sdof_el+nsd*j+1) = nsd*node+1;
+			*(sdof_el+nsd*j+2) = nsd*node+2;
 
-                        *(coord_el_trans+j)=*(coord+*(sdof_el+nsd*j));
-                        *(coord_el_trans+npel*1+j)=*(coord+*(sdof_el+nsd*j+1));
-                        *(coord_el_trans+npel*2+j)=*(coord+*(sdof_el+nsd*j+2));
+			*(coord_el_trans+j)=*(coord+*(sdof_el+nsd*j));
+			*(coord_el_trans+npel*1+j)=*(coord+*(sdof_el+nsd*j+1));
+			*(coord_el_trans+npel*2+j)=*(coord+*(sdof_el+nsd*j+2));
 
-                	*(Tdof_el+Tndof*j) = Tndof*node;
+			*(Tdof_el+Tndof*j) = Tndof*node;
 		}
 
 
@@ -211,7 +211,7 @@ int brCassemble(double *A, int *connect, int *connect_film, double *coord, int *
 /* Assembly of either the global skylined conductivity matrix or Tnumel_K of the
    element conductivity matrices if the Conjugate Gradient method is used */
 
-		  if(Tlin_algebra_flag)
+		  if(TLU_decomp_flag)
 		  {
 			check = globalKassemble(A, Tidiag, K_el, (Tlm + k*Tneqel),
 			    Tneqel);
@@ -326,7 +326,7 @@ int brCassemble(double *A, int *connect, int *connect_film, double *coord, int *
 /* Assembly of either the global skylined conductivity matrix or TBnumel_K of the
    element convection matrices if the Conjugate Gradient method is used */
 
-		if(Tlin_algebra_flag)
+		if(TLU_decomp_flag)
 		{
 			check = globalKassemble(A, Tidiag, K_el, (TBlm + k*TBneqel),
 			    TBneqel);
@@ -349,10 +349,10 @@ int brCassemble(double *A, int *connect, int *connect_film, double *coord, int *
 	if(temp_analysis_flag == 1)
 	{
 
-/* Contract the global heat matrix using the id array only if linear
-   algebra is used. */
+/* Contract the global heat matrix using the id array only if LU decomposition
+   is used. */
 
-	  if(Tlin_algebra_flag)
+	  if(TLU_decomp_flag)
           {
              counter = 0;
              for( i = 0; i < Tdof ; ++i )

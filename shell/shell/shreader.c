@@ -5,8 +5,8 @@
 		Updated 10/17/06
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le 
+    Version:  1.3
+    Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -21,14 +21,15 @@
 #include "shstruct.h"
 
 extern int dof, nmat, nmode, numel, numnp;
-extern int stress_read_flag, element_stress_read_flag;
+extern int stress_read_flag, element_stress_read_flag, doubly_curved_flag;
 
 int shreader( BOUND bc, int *connect, double *coord, int *el_matl, double *force,
 	MATL *matl, char *name, FILE *o1, STRESS *stress, SDIM *stress_node,
 	double *U)
 {
-        int i,j,dum,dum2, name_length;
-	char *ccheck;
+	int i, j, dum, dum2, name_length, file_loc;
+	double fdum1, fdum2, fdum3;
+	char *ccheck, one_char;
 	char buf[ BUFSIZ ];
 	char text, stress_dat[30];
 	FILE *o4;
@@ -55,177 +56,254 @@ int shreader( BOUND bc, int *connect, double *coord, int *el_matl, double *force
 		}
 	}
 
-        printf( "number of elements:%d nodes:%d materials:%d modes:%d dof:%d\n",
-                numel,numnp,nmat,nmode,dof);
-        fgets( buf, BUFSIZ, o1 );
-        printf( "\n");
+	printf( "number of elements:%d nodes:%d materials:%d modes:%d dof:%d\n",
+		numel,numnp,nmat,nmode,dof);
+	fgets( buf, BUFSIZ, o1 );
+	printf( "\n");
 
-        for( i = 0; i < nmat; ++i )
-        {
-           fscanf( o1, "%d ",&dum);
-           printf( "material (%3d) Emod, nu, density, shear fac.: ",dum);
-           fscanf( o1, " %lf %lf %lf %lf\n", &matl[dum].E, &matl[dum].nu,
-		&matl[dum].rho, &matl[dum].shear);
-           printf( " %9.4f %9.4f %9.4f %9.4f\n", matl[dum].E, matl[dum].nu,
-		matl[dum].rho, matl[dum].shear);
-        }
-        fgets( buf, BUFSIZ, o1 );
-        printf( "\n");
+	for( i = 0; i < nmat; ++i )
+	{
+	   fscanf( o1, "%d ",&dum);
+	   printf( "material (%3d) Emod, nu, density: ",dum);
+	   fscanf( o1, " %lf %lf %lf", &matl[dum].E, &matl[dum].nu,
+		&matl[dum].rho);
+	   printf( " %7.3e %7.3e %7.3e", matl[dum].E, matl[dum].nu,
+		matl[dum].rho);
 
-        for( i = 0; i < numel; ++i )
-        {
-           fscanf( o1,"%d ",&dum);
-           printf( "connectivity for element (%4d) ",dum);
-           for( j = 0; j < npell; ++j )
-           {
-                fscanf( o1, "%d",(connect+npell*dum+j));
-                printf( "%4d ",*(connect+npell*dum+j));
-           }
-           fscanf( o1,"%d\n",(el_matl+dum));
-           printf( " with matl %3d\n",*(el_matl+dum));
-        }
-        fgets( buf, BUFSIZ, o1 );
-        printf( "\n");
+/* Check if there is additional material data for thickness and read the data if
+   it exists.  Note that the thickness data, if it exists, should be between the
+   density and the shear correction factor.
+*/
+	   fscanf( o1, "%lf", &fdum1);
+	   while(( one_char = (unsigned char) fgetc(o1)) != '\n')
+	   {
+		matl[dum].extrathick = 0;
+		matl[dum].thick = 0.0;
+		if(one_char != ' ' )
+		{
+		    ungetc( one_char, o1);
+		    fscanf( o1,"%lf", &fdum2);
+		    matl[dum].extrathick = 1;
+		    break;
+		}
+	   }
+	   if( matl[dum].extrathick )
+	   {
+		matl[dum].thick = fdum1;
+		matl[dum].shear = fdum2;
+		printf( " thickness, shear fac.: %7.3e %7.3e",
+			matl[dum].thick, matl[dum].shear);
+	   }
+	   else
+	   {
+		matl[dum].thick = 0.0;
+		matl[dum].shear = fdum1;
+		printf( " shear fac.: %7.3e", matl[dum].shear);
+	   }
+	   fscanf( o1,"\n");
+	   printf( "\n");
 
-        for( i = 0; i < numnp; ++i )
-        {
-           fscanf( o1,"%d ",&dum);
-           printf( "coordinate (%d) ",dum);
-           printf( "coordinates ");
-           for( j = 0; j < nsd; ++j )
-           {
-                fscanf( o1, "%lf ",(coord+nsd*dum+j));
-                printf( "%9.4f ",*(coord+nsd*dum+j));
-           }
-           fscanf( o1,"\n");
-           printf( "\n");
-        }
-        fgets( buf, BUFSIZ, o1 );
-        printf( "\n");
-        printf( "The corresponding top nodes are:\n");
-        for( i = 0; i < numnp; ++i )
-        {
-           fscanf( o1,"%d ",&dum);
-           printf( "coordinate (%d) ",dum);
-           printf( "coordinates ");
-           for( j = 0; j < nsd; ++j )
-           {
-                fscanf( o1, "%lf ",(coord+nsd*(dum+numnp)+j));
-                printf( "%9.4f ",*(coord+nsd*(dum+numnp)+j));
-           }
-           fscanf( o1,"\n");
-           printf( "\n");
-        }
-        fgets( buf, BUFSIZ, o1 );
-        printf( "\n");
+	}
+	fgets( buf, BUFSIZ, o1 );
+	printf( "\n");
 
-        dum= 0;
-        fscanf( o1,"%d",&bc.fix[dum].x);
-        printf( "node (%4d) has a x prescribed displacement of: ",bc.fix[dum].x);
-        while( bc.fix[dum].x > -1 )
-        {
-                fscanf( o1,"%lf\n%d",(U+ndof*bc.fix[dum].x),
-                        &bc.fix[dum+1].x);
-                printf( "%14.6e\n",*(U+ndof*bc.fix[dum].x));
-                printf( "node (%4d) has a x prescribed displacement of: ",
-                        bc.fix[dum+1].x);
-                ++dum;
-        }
-        bc.num_fix[0].x=dum;
-        fscanf( o1,"%d",&dum);
-        fgets( buf, BUFSIZ, o1 );
-        printf( "\n\n");
+	for( i = 0; i < numel; ++i )
+	{
+	   fscanf( o1,"%d ",&dum);
+	   printf( "connectivity for element (%4d) ",dum);
+	   for( j = 0; j < npell; ++j )
+	   {
+		fscanf( o1, "%d",(connect+npell*dum+j));
+		printf( "%4d ",*(connect+npell*dum+j));
+	   }
+	   fscanf( o1,"%d\n",(el_matl+dum));
+	   printf( " with matl %3d\n",*(el_matl+dum));
+	}
+	fgets( buf, BUFSIZ, o1 );
+	printf( "\n");
 
-        dum= 0;
-        fscanf( o1,"%d",&bc.fix[dum].y);
-        printf( "node (%4d) has a y prescribed displacement of: ",bc.fix[dum].y);
-        while( bc.fix[dum].y > -1 )
-        {
-                fscanf( o1,"%lf\n%d",(U+ndof*bc.fix[dum].y+1),
-                        &bc.fix[dum+1].y);
-                printf( "%14.6e\n",*(U+ndof*bc.fix[dum].y+1));
-                printf( "node (%4d) has a y prescribed displacement of: ",
-                        bc.fix[dum+1].y);
-                ++dum;
-        }
-        bc.num_fix[0].y=dum;
-        fscanf( o1,"%d",&dum);
-        fgets( buf, BUFSIZ, o1 );
-        printf( "\n\n");
+	for( i = 0; i < numnp; ++i )
+	{
+	   fscanf( o1,"%d ",&dum);
+	   printf( "coordinate (%d) ",dum);
+	   printf( "coordinates ");
+	   for( j = 0; j < nsd; ++j )
+	   {
+		fscanf( o1, "%lf ",(coord+nsd*dum+j));
+		printf( "%9.4f ",*(coord+nsd*dum+j));
+	   }
+	   fscanf( o1,"\n");
+	   printf( "\n");
+	}
+	fgets( buf, BUFSIZ, o1 );
+	printf( "\n");
 
-        dum= 0;
-        fscanf( o1,"%d",&bc.fix[dum].z);
-        printf( "node (%4d) has a z prescribed displacement of: ",bc.fix[dum].z);
-        while( bc.fix[dum].z > -1 )
-        {
-                fscanf( o1,"%lf\n%d",(U+ndof*bc.fix[dum].z+2),
-                        &bc.fix[dum+1].z);
-                printf( "%14.6e\n",*(U+ndof*bc.fix[dum].z+2));
-                printf( "node (%4d) has a z prescribed displacement of: ",
-                        bc.fix[dum+1].z);
-                ++dum;
-        }
-        bc.num_fix[0].z=dum;
-        fscanf( o1,"%d",&dum);
-        fgets( buf, BUFSIZ, o1 );
-        printf( "\n\n");
+/* Store this location in the input file. We start reading again from this point
+   after determing whether this is a 4 or 8 node file.
+*/
 
-        dum= 0;
-        fscanf( o1,"%d",&bc.fix[dum].phix);
-        printf( "node (%4d) has a prescribed angle phi x of: ",bc.fix[dum].phix);
-        while( bc.fix[dum].phix > -1 )
-        {
-                fscanf( o1,"%lf\n%d",(U+ndof*bc.fix[dum].phix+3),
-                        &bc.fix[dum+1].phix);
-                printf( "%14.6e\n",*(U+ndof*bc.fix[dum].phix+3));
-                printf( "node (%4d) has a prescribed angle phi x of: ",
-                        bc.fix[dum+1].phix);
-                ++dum;
-        }
-        bc.num_fix[0].phix=dum;
-        fscanf( o1,"%d",&dum);
-        fgets( buf, BUFSIZ, o1 );
-        printf( "\n\n");
+	file_loc = ftell(o1);
 
-        dum= 0;
-        fscanf( o1,"%d",&bc.fix[dum].phiy);
-        printf( "node (%4d) has a prescribed angle phi y of: ",bc.fix[dum].phiy);
-        while( bc.fix[dum].phiy > -1 )
-        {
-                fscanf( o1,"%lf\n%d",(U+ndof*bc.fix[dum].phiy+4),
-                        &bc.fix[dum+1].phiy);
-                printf( "%14.6e\n",*(U+ndof*bc.fix[dum].phiy+4));
-                printf( "node (%4d) has a prescribed angle phi y of: ",
-                        bc.fix[dum+1].phiy);
-                ++dum;
-        }
-        bc.num_fix[0].phiy=dum;
-        fscanf( o1,"%d",&dum);
-        fgets( buf, BUFSIZ, o1 );
-        printf( "\n\n");
+	doubly_curved_flag = 0;
+	fscanf( o1,"%d ",&dum2);
+	if( dum2 > -1 )
+	{
 
-        dum= 0;
-        printf("force vector for node: ");
-        fscanf( o1,"%d",&bc.force[dum]);
-        printf( "(%4d)",bc.force[dum]);
-        while( bc.force[dum] > -1 )
-        {
-           for( j = 0; j < ndof; ++j )
-           {
-                fscanf( o1,"%lf ",(force+ndof*bc.force[dum]+j));
-                printf("%14.4f ",*(force+ndof*bc.force[dum]+j));
-           }
-           fscanf( o1,"\n");
-           printf( "\n");
-           printf("force vector for node: ");
-           ++dum;
-           fscanf( o1,"%d",&bc.force[dum]);
-           printf( "(%4d)",bc.force[dum]);
-        }
-        bc.num_force[0]=dum;
-        fscanf( o1,"%d",&dum);
-        fgets( buf, BUFSIZ, o1 );
-        printf( "\n\n");
+/* Check if this is a 4 node or 8 node shell data file.  If it is an 8 node file,
+   then the corresponding top nodes are read in.  If it is a 4 node file, then we
+   immediately begin reading prescribed displacement in x.
+*/
+
+	    fscanf( o1,"%lf", &fdum1);
+	    while(( one_char = (unsigned char) fgetc(o1)) != '\n')
+	    {
+	       doubly_curved_flag = 0;
+	       fdum2 = 0.0;
+	       fdum3 = 0.0;
+	       if(one_char != ' ' )
+	       {
+		    ungetc( one_char, o1);
+		    fscanf( o1,"%lf %lf", &fdum2, &fdum3);
+		    doubly_curved_flag = 1;
+		    break;
+	       }
+	    }
+	}
+	else
+	{
+		doubly_curved_flag = 0;
+	}
+
+	fseek(o1, file_loc, 0);
+
+	if(doubly_curved_flag)
+	{
+	    printf( "The corresponding top nodes are:\n");
+	    for( i = 0; i < numnp; ++i )
+	    {
+		fscanf( o1,"%d ",&dum);
+		printf( "coordinate (%d) ",dum);
+		printf( "coordinates ");
+		for( j = 0; j < nsd; ++j )
+		{
+		    fscanf( o1, "%lf ",(coord+nsd*(dum+numnp)+j));
+		    printf( "%9.4f ",*(coord+nsd*(dum+numnp)+j));
+		}
+		fscanf( o1,"\n");
+		printf( "\n");
+	    }
+	    fgets( buf, BUFSIZ, o1 );
+	    printf( "\n");
+	}
+
+	dum= 0;
+	fscanf( o1,"%d",&bc.fix[dum].x);
+	printf( "node (%4d) has a x prescribed displacement of: ",bc.fix[dum].x);
+	while( bc.fix[dum].x > -1 )
+	{
+		fscanf( o1,"%lf\n%d",(U+ndof*bc.fix[dum].x),
+			&bc.fix[dum+1].x);
+		printf( "%14.6e\n",*(U+ndof*bc.fix[dum].x));
+		printf( "node (%4d) has a x prescribed displacement of: ",
+			bc.fix[dum+1].x);
+		++dum;
+	}
+	bc.num_fix[0].x=dum;
+	fscanf( o1,"%d",&dum);
+	fgets( buf, BUFSIZ, o1 );
+	printf( "\n\n");
+
+
+	dum= 0;
+	fscanf( o1,"%d",&bc.fix[dum].y);
+	printf( "node (%4d) has a y prescribed displacement of: ",bc.fix[dum].y);
+	while( bc.fix[dum].y > -1 )
+	{
+		fscanf( o1,"%lf\n%d",(U+ndof*bc.fix[dum].y+1),
+			&bc.fix[dum+1].y);
+		printf( "%14.6e\n",*(U+ndof*bc.fix[dum].y+1));
+		printf( "node (%4d) has a y prescribed displacement of: ",
+			bc.fix[dum+1].y);
+		++dum;
+	}
+	bc.num_fix[0].y=dum;
+	fscanf( o1,"%d",&dum);
+	fgets( buf, BUFSIZ, o1 );
+	printf( "\n\n");
+
+	dum= 0;
+	fscanf( o1,"%d",&bc.fix[dum].z);
+	printf( "node (%4d) has a z prescribed displacement of: ",bc.fix[dum].z);
+	while( bc.fix[dum].z > -1 )
+	{
+		fscanf( o1,"%lf\n%d",(U+ndof*bc.fix[dum].z+2),
+			&bc.fix[dum+1].z);
+		printf( "%14.6e\n",*(U+ndof*bc.fix[dum].z+2));
+		printf( "node (%4d) has a z prescribed displacement of: ",
+			bc.fix[dum+1].z);
+		++dum;
+	}
+	bc.num_fix[0].z=dum;
+	fscanf( o1,"%d",&dum);
+	fgets( buf, BUFSIZ, o1 );
+	printf( "\n\n");
+
+	dum= 0;
+	fscanf( o1,"%d",&bc.fix[dum].phix);
+	printf( "node (%4d) has a prescribed angle phi x of: ",bc.fix[dum].phix);
+	while( bc.fix[dum].phix > -1 )
+	{
+		fscanf( o1,"%lf\n%d",(U+ndof*bc.fix[dum].phix+3),
+			&bc.fix[dum+1].phix);
+		printf( "%14.6e\n",*(U+ndof*bc.fix[dum].phix+3));
+		printf( "node (%4d) has a prescribed angle phi x of: ",
+			bc.fix[dum+1].phix);
+		++dum;
+	}
+	bc.num_fix[0].phix=dum;
+	fscanf( o1,"%d",&dum);
+	fgets( buf, BUFSIZ, o1 );
+	printf( "\n\n");
+
+	dum= 0;
+	fscanf( o1,"%d",&bc.fix[dum].phiy);
+	printf( "node (%4d) has a prescribed angle phi y of: ",bc.fix[dum].phiy);
+	while( bc.fix[dum].phiy > -1 )
+	{
+		fscanf( o1,"%lf\n%d",(U+ndof*bc.fix[dum].phiy+4),
+			&bc.fix[dum+1].phiy);
+		printf( "%14.6e\n",*(U+ndof*bc.fix[dum].phiy+4));
+		printf( "node (%4d) has a prescribed angle phi y of: ",
+			bc.fix[dum+1].phiy);
+		++dum;
+	}
+	bc.num_fix[0].phiy=dum;
+	fscanf( o1,"%d",&dum);
+	fgets( buf, BUFSIZ, o1 );
+	printf( "\n\n");
+
+	dum= 0;
+	printf("force vector for node: ");
+	fscanf( o1,"%d",&bc.force[dum]);
+	printf( "(%4d)",bc.force[dum]);
+	while( bc.force[dum] > -1 )
+	{
+	   for( j = 0; j < ndof; ++j )
+	   {
+		fscanf( o1,"%lf ",(force+ndof*bc.force[dum]+j));
+		printf("%14.6e ",*(force+ndof*bc.force[dum]+j));
+	   }
+	   fscanf( o1,"\n");
+	   printf( "\n");
+	   printf("force vector for node: ");
+	   ++dum;
+	   fscanf( o1,"%d",&bc.force[dum]);
+	   printf( "(%4d)",bc.force[dum]);
+	}
+	bc.num_force[0]=dum;
+	fscanf( o1,"%d",&dum);
+	fgets( buf, BUFSIZ, o1 );
+	printf( "\n\n");
 
 	if(stress_read_flag)
 	{
@@ -251,7 +329,7 @@ int shreader( BOUND bc, int *connect, double *coord, int *el_matl, double *force
 		printf( "(%4d)",dum);
 	   }
 	}
-        printf( "\n\n");
+	printf( "\n\n");
 
 	if(element_stress_read_flag)
 	{

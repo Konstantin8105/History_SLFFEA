@@ -2,11 +2,11 @@
     This program contains the mesh key routine for the FEM GUI
     for wedge elements.
   
-                        Last Update 6/9/01
+                        Last Update 7/23/02
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le 
+    Version:  1.3
+    Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -41,6 +41,7 @@ extern ISTRESS *stress_color;
 extern ISTRAIN *strain_color;
 extern int *U_color;
 
+extern GLfloat MeshColor[boxnumber+5][4];
 extern double step_sizex, step_sizey, step_sizez;
 extern int choice_stress;
 extern NORM *norm;
@@ -60,7 +61,7 @@ extern int input_color_flag;
 extern int Solid_flag, Perspective_flag, Render_flag,
     AppliedDisp_flag, AppliedForce_flag,
     Material_flag, Node_flag, Element_flag, Axes_flag,
-    CrossSection_flag;
+    Outline_flag, Transparent_flag, CrossSection_flag;
 extern int Before_flag, After_flag,
     Both_flag, Amplify_flag;
 extern double amplify_factor, amplify_step, amplify_step0;
@@ -423,6 +424,9 @@ void weMeshKeys( unsigned char key, int x, int y )
 				glutGet(GLUT_WINDOW_HEIGHT));
 		}
 		break;
+	    case 'j':
+		Outline_flag = 1 - Outline_flag;
+		break;
   	    case 'p':
 		Perspective_flag = 1 - Perspective_flag;
 		MeshReshape( glutGet(GLUT_WINDOW_WIDTH),
@@ -448,8 +452,12 @@ void weMeshKeys( unsigned char key, int x, int y )
 	    case 's':
 		CrossSection_flag = 1 - CrossSection_flag;
 		break;
+	    case 't':
+		Transparent_flag = 1 - Transparent_flag;
+		break;
   	    case 'w':
 		Solid_flag = 1 - Solid_flag;
+		if(!Solid_flag) Outline_flag = 1;
 	    	break;
   	    case 'x':
 		Axes_flag = 1 - Axes_flag;

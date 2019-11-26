@@ -6,11 +6,11 @@
     I am using the trig formula as given by Numerical Recipes in C, 2nd ed.
     page 184-185;
 
-		Updated 10/27/00
+		Updated 5/3/02
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le 
+    Version:  1.3
+    Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -22,32 +22,35 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define third      .333333333 
-#define pi        3.141592654 
-#define small     1.0e-8
-#define smaller   1.0e-14
-#define smallest  1.0e-44
-#define big       1.0e10
+#define THIRD      .333333333 
+#define PI        3.141592654 
+#define SMALL     1.0e-8
+#define SMALLER   1.0e-14
+#define SMALLEST  1.0e-44
+#define BIG       1.0e10
 
 int cubic(double *coef)
 {
         int i, j, k;
 	double a, b, c, Q, Q3, rt2Q, R, theta, maxroot, midroot, minroot,
 		b2, c2, quad, signb, power, scale, scalesq,
-		maga, magb, magc, dum, dum1, dum2, dum3, ratio;
+		maga, magb, magc, fdum, fdum1, fdum2, fdum3, ratio;
 
+	fdum = fabs(*(coef)) + fabs(*(coef+1)) + fabs(*(coef+2)); 
 
-/* Scale equations for case of very large or small coefficients */
-
-	dum = fabs(*(coef)); 
-	if( dum < smaller )
+	if( fdum < SMALLER )
 	{
 		*(coef) = 0.0;
 		*(coef+1) = 0.0;
 		*(coef+2) = 0.0;
 		return 1;
 	}
-	power = (double)((int)(log10(dum)));
+
+/* Scale equations for case of very large or small coefficients */
+
+	fdum = fabs(*(coef)) + SMALLER; 
+
+	power = (double)((int)(log10(fdum)));
 	scale = 1.0;
 
 /* The line below is the difference between brcubic.c and the utility
@@ -59,19 +62,19 @@ int cubic(double *coef)
 	a = *(coef)/scale; b = *(coef+1)/scalesq; c = *(coef+2)/scalesq/scale;
 
 	maga = fabs(a);
-	magb = fabs(b+maga*maga*smaller);
-	magc = fabs(c+maga*magb*smaller);
+	magb = fabs(b+maga*maga*SMALLER);
+	magc = fabs(c+maga*magb*SMALLER);
         /*printf("a, b, c, scale, power %e %e %e %e %e\n", a, b, c, scale, power);
         printf("maga, magb, magc %e %e %e \n", maga, magb, magc);*/
 
 	Q = (a*a - 3.0*b)/9.0;
 
-	if( Q < smallest )
+	if( Q < SMALLEST )
 	{
 /* All three roots are equal */
-		*(coef) = a*scale*third;
-		*(coef+1) = a*scale*third;
-		*(coef+2) = a*scale*third;
+		*(coef) = a*scale*THIRD;
+		*(coef+1) = a*scale*THIRD;
+		*(coef+2) = a*scale*THIRD;
 		return 1;
 	}
 
@@ -80,7 +83,7 @@ int cubic(double *coef)
 	R = (2.0*a*a*a - 9.0*a*b+27.0*c)/54.0;
         /*printf("Q,Q3,rt2Q,R %e %e %e %e \n", Q,Q3,rt2Q,R);*/
 
-	if( Q3 + small < R*R )
+	if( Q3 + SMALL < R*R )
 	{
 		printf( "2 roots are complex %e %e\n",R*R, Q3);
 		/*exit(1);*/
@@ -95,8 +98,8 @@ int cubic(double *coef)
         /*printf("theta %e \n", theta);*/
 
 	*(coef) = -2.0*rt2Q*cos(theta/3.0) - a/3;
-	*(coef+1) = -2.0*rt2Q*cos((theta+2*pi)/3.0) - a/3;
-	*(coef+2) = -2.0*rt2Q*cos((theta-2*pi)/3.0) - a/3;
+	*(coef+1) = -2.0*rt2Q*cos((theta+2*PI)/3.0) - a/3;
+	*(coef+2) = -2.0*rt2Q*cos((theta-2*PI)/3.0) - a/3;
 
 /* Put roots in order */
 
@@ -122,22 +125,22 @@ int cubic(double *coef)
 		midroot = fabs(*(coef+k));
 		k = j; j = 2; 
 	}
-	dum1 = *(coef+i);
-	dum2 = *(coef+j);
-	dum3 = *(coef+k);
-	*(coef) = dum1;
-	*(coef+1) = dum2;
-	*(coef+2) = dum3;
+	fdum1 = *(coef+i);
+	fdum2 = *(coef+j);
+	fdum3 = *(coef+k);
+	*(coef) = fdum1;
+	*(coef+1) = fdum2;
+	*(coef+2) = fdum3;
 
 /* If there is a large difference in order of b and c, set smallest
    root to zero */
-	if ( magc < magb*maga*small )
+	if ( magc < magb*maga*SMALL )
 	{
 		
 		*(coef+2) = 0.0;
 /* If there is a large difference in order of a and b, set second smallest
    root to zero */
-		if ( magb < maga*maga*small )
+		if ( magb < maga*maga*SMALL )
 		{
 			*(coef+1) = 0.0;
 		}

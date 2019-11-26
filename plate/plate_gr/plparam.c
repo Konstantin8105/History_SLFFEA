@@ -2,11 +2,11 @@
     This program calculates and writes the parameters for
     the FEM GUI for plate elements.
   
-   			Last Update 5/27/01
+   			Last Update 1/23/02
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le 
+    Version:  1.3
+    Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -28,7 +28,7 @@
 
 extern int nmat, numnp, numel, dof;
 extern double step_sizex, step_sizey, step_sizez;
-extern double left, right, top, bottom, near, far, fscale;
+extern double left, right, top, bottom, near, far, fscale, coord_rescale;
 extern double cross_sec_left_right, cross_sec_up_down, cross_sec_in_out,
 	cross_sec_left_right0, cross_sec_up_down0, cross_sec_in_out0;
 extern int control_height, control_width, mesh_height, mesh_width;
@@ -50,7 +50,7 @@ extern MDIM del_moment, del_curve, max_moment, min_moment,
 extern SDIM del_stress, del_strain, max_stress, min_stress,
 	max_strain, min_strain;
 extern double max_Uphi_x, min_Uphi_x, del_Uphi_x, max_Uphi_y, min_Uphi_y, del_Uphi_y,
-       	max_Uz, min_Uz, del_Uz, absolute_max_U;
+       	max_Uz, min_Uz, del_Uz, absolute_max_U, absolute_max_coord;
 
 int plparameter( double *coord, MDIM *curve_node, MDIM *moment_node, SDIM *strain_node,
 	SDIM *stress_node, double *U )
@@ -171,6 +171,52 @@ int plparameter( double *coord, MDIM *curve_node, MDIM *moment_node, SDIM *strai
 			node_Uphi_y_min = i;
 		}
         }
+
+/* Because Mesa has problems with Meshes that have dimensions larger than 1000
+   or smaller than .1, I am rescaling everything so that things are on the order
+   of 10.0.
+*/
+
+	absolute_max_coord = fabs(init_left);
+	if(absolute_max_coord < fabs(init_right)) absolute_max_coord = fabs(init_right);
+	if(absolute_max_coord < fabs(init_bottom)) absolute_max_coord = fabs(init_bottom);
+	if(absolute_max_coord < fabs(init_top)) absolute_max_coord = fabs(init_top);
+
+	coord_rescale = 1.0;
+	if( absolute_max_coord > 10.0 )     coord_rescale = 10.0;
+	if( absolute_max_coord > 100.0 )    coord_rescale = 100.0;
+	if( absolute_max_coord > 1000.0 )   coord_rescale = 1000.0;
+	if( absolute_max_coord > 10000.0 )  coord_rescale = 10000.0;
+	if( absolute_max_coord > 100000.0 ) coord_rescale = 100000.0;
+
+	if( absolute_max_coord < 1.0 )     coord_rescale = 0.1;
+	if( absolute_max_coord < 0.1 )     coord_rescale = 0.01;
+	if( absolute_max_coord < 0.01 )    coord_rescale = 0.001;
+	if( absolute_max_coord < 0.001 )   coord_rescale = 0.0001;
+	if( absolute_max_coord < 0.0001 )  coord_rescale = 0.00001;
+	if( absolute_max_coord < 0.00001 ) coord_rescale = 0.000001;
+
+/* Rescale coordinates and displacements */
+
+	
+	if( coord_rescale > 1.01 || coord_rescale < .99 )
+	{
+		for( i = 0; i < numnp; ++i )
+		{
+                        *(coord+nsd*i) /= coord_rescale;
+                        *(coord+nsd*i+1) /= coord_rescale;
+
+                        *(U+ndof*i) /= coord_rescale;
+		}
+
+		init_left /= coord_rescale;
+		init_right /= coord_rescale;
+		init_bottom /= coord_rescale;
+		init_top /= coord_rescale;
+
+		min_Uz /= coord_rescale;
+		max_Uz /= coord_rescale;
+	}
 
 /* Search for largest absolute value of displacement U */
 
@@ -435,7 +481,7 @@ int plparameter( double *coord, MDIM *curve_node, MDIM *moment_node, SDIM *strai
 	fprintf( pldata, "                            node\n");
 	fprintf( pldata, "                          min  max       min            max\n");
 	fprintf( pldata,"displacement Uz        %5d %5d   %14.6e %14.6e\n", node_Uz_min,
-		node_Uz_max, min_Uz, max_Uz);
+		node_Uz_max, min_Uz*coord_rescale, max_Uz*coord_rescale);
 	fprintf( pldata,"angle phi x            %5d %5d   %14.6e %14.6e\n", node_Uphi_x_min,
 		node_Uphi_x_max, min_Uphi_x, max_Uphi_x);
 	fprintf( pldata,"angle phi y            %5d %5d   %14.6e %14.6e\n", node_Uphi_y_min,

@@ -3,8 +3,8 @@
     for every FEM GUI program.
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le 
+    Version:  1.3
+    Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -142,7 +142,7 @@ void MeshReshape(int w, int h)
  *  This program contains the mesh init routine for every FEM GUI
  *  program.
  *
- *                      Last Update 3/10/01
+ *                      Last Update 1/25/02
  */
 
 void MeshInit(void)
@@ -152,6 +152,8 @@ void MeshInit(void)
    glEnable(GL_LIGHT0);
    glDepthFunc(GL_LEQUAL);
    glEnable(GL_DEPTH_TEST);
+   glEnable (GL_BLEND);
+   glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 /* I had to make the modification below because Mesa-3.4.1 changed
    the background color from light to dark grey with:

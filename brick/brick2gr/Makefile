@@ -1,7 +1,7 @@
 # SLFFEA Makefile
-# Version:  1.2
+# Version:  1.3
 # Copyright (C) 1999, 2000  San Le (slffea@yahoo.com)
-# http://www.geocities.com/slffea/slffea.html
+# http://slffea.com/
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Library General Public

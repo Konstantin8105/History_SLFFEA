@@ -4,10 +4,10 @@
     then solving the linear system for a thermal
     brick element.
 
-        Updated 9/27/01
+        Updated 4/27/05
 
     SLFFEA source file
-    Version:  1.2
+    Version:  1.3
     Copyright (C) 1999, 2000  San Le 
 
     The source code contained in this file is released under the
@@ -73,13 +73,13 @@ int brshl( double, double *, double * );
 
 int brshl_node2(double * );
 
-int analysis_flag, temp_analysis_flag, dof, Tdof, modal_flag, neqn, Tneqn, nmat, nmode,
+int analysis_flag, temp_analysis_flag, dof, sdof, Tdof, modal_flag, neqn, Tneqn, nmat, nmode,
 	numel, numel_film, numnp, sof;
 int stress_read_flag, element_stress_read_flag, element_stress_print_flag,
 	gauss_stress_flag, disp_analysis, thermal_analysis;
 
-int lin_algebra_flag, Tlin_algebra_flag, TBlin_algebra_flag, numel_K, numel_P, Tnumel_K,
-	Tnumel_P, TBnumel_K, numel_surf, numnp_linear_max, Tnumnp_linear_max;
+int LU_decomp_flag, TLU_decomp_flag, TBLU_decomp_flag, numel_K, numel_P, Tnumel_K,
+	Tnumel_P, TBnumel_K, numel_surf, numnp_LUD_max, Tnumnp_LUD_max;
 int iteration_max, iteration_const, iteration;
 double tolerance;
 	
@@ -186,13 +186,14 @@ int main(int argc, char** argv)
 		&disp_analysis, &thermal_analysis);
         Tdof=numnp*Tndof;
         dof=numnp*ndof;
+        sdof=numnp*nsd;
 
-	numnp_linear_max = 750;
-	Tnumnp_linear_max = 3*numnp_linear_max;
+	numnp_LUD_max = 750;
+	Tnumnp_LUD_max = 3*numnp_LUD_max;
 
 /* Assuming Conjugate gradient method is used, determine how much RAM is needed.
    This determines the largest problem that can be run on this machine.
-   If problem small enough that linear algebra is used, then calculation below
+   If problem small enough that LU decoomposition is used, then calculation below
    is irrelevant.
 
    RAM variables given in bytes
@@ -251,19 +252,19 @@ int main(int argc, char** argv)
 		TBnumel_K = 0;
 	}
 
-	lin_algebra_flag = 1;
-	if(numnp > numnp_linear_max) lin_algebra_flag = 0;
-	Tlin_algebra_flag = 1;
-	TBlin_algebra_flag = 1;
-	if(numnp > Tnumnp_linear_max)
+	LU_decomp_flag = 1;
+	if(numnp > numnp_LUD_max) LU_decomp_flag = 0;
+	TLU_decomp_flag = 1;
+	TBLU_decomp_flag = 1;
+	if(numnp > Tnumnp_LUD_max)
 	{
-		Tlin_algebra_flag = 0;
-		TBlin_algebra_flag = 0;
+		TLU_decomp_flag = 0;
+		TBLU_decomp_flag = 0;
 	}
 
 #if 0
-	lin_algebra_flag = 0;
-	Tlin_algebra_flag = 0;
+	LU_decomp_flag = 0;
+	TLU_decomp_flag = 0;
 #endif
 
 /*   Begin allocation of meomory */
@@ -271,7 +272,7 @@ int main(int argc, char** argv)
 	MemoryCounter = 0;
 
 /* For the doubles */
-	sofmf=numnp*nsd + dof + numel + 4*Tdof + dof + numel_film + 2*numel +
+	sofmf=sdof + dof + numel + 4*Tdof + dof + numel_film + 2*numel +
 		numnp + dof + Tdof;
 	MemoryCounter += sofmf*sizeof(double);
         printf( "\n Memory requrement for doubles is %15d bytes\n",MemoryCounter);
@@ -304,7 +305,7 @@ int main(int argc, char** argv)
 
 /* For the doubles */
 					        ptr_inc=0; 
-	coord=(mem_double+ptr_inc); 	        ptr_inc += numnp*nsd;
+	coord=(mem_double+ptr_inc); 	        ptr_inc += sdof;
 	force=(mem_double+ptr_inc); 	        ptr_inc += dof;
 	heat_el=(mem_double+ptr_inc); 	        ptr_inc += numel;
 	heat_node=(mem_double+ptr_inc);         ptr_inc += Tdof;
@@ -475,12 +476,12 @@ int main(int argc, char** argv)
      calculation, so we need to find which calculation will require more memory.  There
      are 3 possibilities:
 
-     1) Linear algebra for both, in which case allocate for the displacement calculation
+     1) LU decoomposition for both, in which case allocate for the displacement calculation
         which is bigger.
           1a)Skyline storage of global conductivity matrix
           1b)Skyline storage of global stiffness mmatrix
 
-     2) linear algebra for temperature and conjugate gradient for displacement.  For this
+     2) LU decoomposition for temperature and conjugate gradient for displacement.  For this
         case, we need to carefully examine which needs more memory.
           2a)Skyline storage of global conductivity matrix
           2b)storage of numel_K element stiffness matrices
@@ -495,13 +496,13 @@ int main(int argc, char** argv)
 	if( sofmA < dum ) sofmA = dum; 
 	mem_case = 3;
 
-	if(Tlin_algebra_flag)
+	if(TLU_decomp_flag)
 	{
 		dum = *(Tidiag+Tneqn-1)+1;     /* case 2 */
 		if( sofmA < dum ) sofmA = dum; 
 		mem_case = 2;
 	}
-	if(lin_algebra_flag)
+	if(LU_decomp_flag)
 	{
 		sofmA = *(idiag+neqn-1)+1;       /* case 1 */
 		mem_case = 1;
@@ -510,7 +511,7 @@ int main(int argc, char** argv)
 	if( sofmA*sof > (int)RAM_usable )
 	{
 
-/* Even if linear algebra flags are on because there are only a few nodes, there
+/* Even if LU decoomposition flags are on because there are only a few nodes, there
    is a possibility that there is not enough memory because of poor node numbering.
    If this is the case, then we have to use the conjugate gradient method.
  */
@@ -519,20 +520,20 @@ int main(int argc, char** argv)
 		dum = Tnumel_K*Tneqlsq + TBnumel_K*TBneqlsq; 
 		if( sofmA < dum ) sofmA = dum; 
 
-		lin_algebra_flag = 0;
-		Tlin_algebra_flag = 0;
-		TBlin_algebra_flag = 0;
+		LU_decomp_flag = 0;
+		TLU_decomp_flag = 0;
+		TBLU_decomp_flag = 0;
 		mem_case = 3;
 	}
 
         printf( "\n We are in case %3d\n\n", mem_case);
 	switch (mem_case) {
 		case 1:
-        		printf( " Linear algebra for both\n\n");
+        		printf( " LU decoomposition for both\n\n");
 		break;
 		case 2:
-        		printf( " Linear algebra for temperature\n");
-        		printf( " conjugate gradient for displacement\n\n");
+        		printf( " LU decoomposition for temperature\n");
+        		printf( " Conjugate gradient for displacement\n\n");
 		break;
 		case 3:
         		printf( " Conjugate gradient for both\n\n");
@@ -569,7 +570,7 @@ int main(int argc, char** argv)
 		heat_el, heat_node, Tid, Tidiag, Tlm, TBlm, matl, Q, T, TB, TK_diag);
        	   if(!check) printf( " Problems with brCassemble \n");
 
-	   if(Tlin_algebra_flag)
+	   if(TLU_decomp_flag)
 	   {
 /*
         	printf( "\n\n This is the heat Q matrix \n");
@@ -600,7 +601,7 @@ int main(int argc, char** argv)
 
 /* Using Conjugate gradient method to find temperature distribution */
 
-	   if(!Tlin_algebra_flag)
+	   if(!TLU_decomp_flag)
 	   {
 		check = brTConjGrad( A, bc, connect, connect_film, coord, el_matl,
 			el_matl_film, Q, matl, T, TK_diag);
@@ -647,7 +648,7 @@ int main(int argc, char** argv)
 		strain_node, stress, stress_node, T, U);
 	   if(!check) printf( " Problems with br2Kassemble \n");
 
-	   if(lin_algebra_flag)
+	   if(LU_decomp_flag)
 	   {
 /* Perform LU Crout decompostion on the system */
 
@@ -672,7 +673,7 @@ int main(int argc, char** argv)
 
 /* Using Conjugate gradient method to find displacements */
 
-	   if(!lin_algebra_flag)
+	   if(!LU_decomp_flag)
 	   {
 		check = br2ConjGrad( A, bc, connect, coord, el_matl, force, K_diag,
 			matl, U);

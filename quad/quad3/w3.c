@@ -21,7 +21,7 @@
 #include "qd3struct.h"
 
 extern int dof, nmat, nmode, numed, numel, numnp, plane_stress_flag;
-extern int standard_flag, element_stress_print_flag, gauss_stress_flag;
+extern int static_flag, element_stress_print_flag, gauss_stress_flag;
 
 int qd3writer ( BOUND bc, int *connect, int *edge_connect, int *el_edge_connect,
 	double *coord, int *el_matl, double *force, int *id, MATL *matl, char *name,
@@ -107,7 +107,7 @@ int qd3writer ( BOUND bc, int *connect, int *edge_connect, int *el_edge_connect,
 
         fprintf( o3, "node with point load and load vector in x,y \n");
 
-	if( standard_flag)
+	if( static_flag)
 	{
             for( i = 0; i < bc.num_force[0] ; ++i )
             {

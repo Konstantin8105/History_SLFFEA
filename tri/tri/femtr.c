@@ -3,10 +3,10 @@
     the data, doing assembling, and then solving the linear system
     for a 3 node triangle element.
 
-        Updated 9/2/09
+        Updated 11/2/09
 
     SLFFEA source file
-    Version:  1.2
+    Version:  1.3
     Copyright (C) 1999-2009  San Le 
 
     The source code contained in this file is released under the
@@ -61,14 +61,14 @@ int trshl( int, double *, double * );
 
 int trshl_node2(double * );
 
-int analysis_flag, dof, modal_flag, neqn, nmat, nmode, numel, numnp, plane_stress_flag,
+int analysis_flag, dof, sdof, modal_flag, neqn, nmat, nmode, numel, numnp, plane_stress_flag,
 	sof, stress_read_flag;
 int gauss_stress_flag = 1;
-int standard_flag, consistent_mass_flag, consistent_mass_store, eigen_print_flag,
+int static_flag, consistent_mass_flag, consistent_mass_store, eigen_print_flag,
         lumped_mass_flag, stress_read_flag, element_stress_read_flag,
         element_stress_print_flag;
 
-int lin_algebra_flag, numel_K, numel_P, numnp_linear_max;
+int LU_decomp_flag, numel_K, numel_P, numnp_LUD_max;
 int iteration_max, iteration_const, iteration;
 double tolerance;
 
@@ -161,12 +161,13 @@ int main(int argc, char** argv)
         fscanf( o1, "%d %d %d %d %d\n ",
 		&numel,&numnp,&nmat,&nmode,&plane_stress_flag);
         dof=numnp*ndof;
+        sdof=numnp*nsd;
 
-	numnp_linear_max = 1125;
+	numnp_LUD_max = 1125;
 
 /* Assuming Conjugate gradient method is used, determine how much RAM is needed.
    This determines the largest problem that can be run on this machine.
-   If problem small enough that linear algebra is used, then calculation below
+   If problem small enough that LU decomposition is used, then calculation below
    is irrelevant.
 
    RAM variables given in bytes
@@ -192,10 +193,10 @@ int main(int argc, char** argv)
 	        numel_K = numel - numel_P;
 	}
 
-	lin_algebra_flag = 1;
-	if(numnp > numnp_linear_max) lin_algebra_flag = 0;
+	LU_decomp_flag = 1;
+	if(numnp > numnp_LUD_max) LU_decomp_flag = 0;
 
-	standard_flag = 1;
+	static_flag = 1;
 	modal_flag = 0;
 
 	lumped_mass_flag = 1;
@@ -221,12 +222,12 @@ int main(int argc, char** argv)
 	        num_eigen = (int)(2.6*nmode);
 	        num_eigen = MIN(nmode + 8, num_eigen);
 	        num_eigen = MIN(dof, num_eigen);
-	        standard_flag = 0;
+	        static_flag = 0;
 	        modal_flag = 1;
 	}
 
 #if 0
-        lin_algebra_flag = 0;
+        LU_decomp_flag = 0;
 #endif
 
 
@@ -235,10 +236,10 @@ int main(int argc, char** argv)
         MemoryCounter = 0;
 
 /* For the doubles */
-        sofmf=numnp*nsd + 3*dof + 2*numel + numnp + dof;
+        sofmf=sdof + 3*dof + 2*numel + numnp + dof;
 	if(modal_flag)
 	{
-		sofmf = numnp*nsd + 3*dof + 2*numel + numnp + dof + num_eigen*dof;
+		sofmf = sdof + 3*dof + 2*numel + numnp + dof + num_eigen*dof;
 	}
 	MemoryCounter += sofmf*sizeof(double);
 	printf( "\n Memory requrement for doubles is %15d bytes\n",MemoryCounter);
@@ -270,7 +271,7 @@ int main(int argc, char** argv)
 
 /* For the doubles */
                                                 ptr_inc=0;
-        coord=(mem_double+ptr_inc);    	        ptr_inc += numnp*nsd;
+        coord=(mem_double+ptr_inc);    	        ptr_inc += sdof;
 	vector_dum=(mem_double+ptr_inc);        ptr_inc += dof;
         force=(mem_double+ptr_inc);             ptr_inc += dof;
         U=(mem_double+ptr_inc);                 ptr_inc += dof;
@@ -371,7 +372,7 @@ int main(int argc, char** argv)
 	sofmA = numel_K*neqlsq;                 /* case 2 */
 	mem_case = 2;
 
-	if(lin_algebra_flag)
+	if(LU_decomp_flag)
 	{
 	        sofmA = *(idiag+neqn-1)+1;       /* case 1 */
 	        mem_case = 1;
@@ -380,23 +381,23 @@ int main(int argc, char** argv)
 	if( sofmA*sof > (int)RAM_usable )
 	{
 
-/* Even if the linear algebra flag is on because there are only a few nodes, there
+/* Even if the LU decomposition flag is on because there are only a few nodes, there
    is a possibility that there is not enough memory because of poor node numbering.
    If this is the case, then we have to use the conjugate gradient method.
  */
 
 	        sofmA = numel_K*neqlsq;
-	        lin_algebra_flag = 0;
+	        LU_decomp_flag = 0;
 	        mem_case = 2;
 	}
 
 	printf( "\n We are in case %3d\n\n", mem_case);
 	switch (mem_case) {
 	        case 1:
-	                printf( " linear algebra\n\n");
+	                printf( " LU decomposition\n\n");
 	        break;
 	        case 2:
-	                printf( " conjugate gradient \n\n");
+	                printf( " Conjugate gradient \n\n");
 	        break;
 	}
 
@@ -518,7 +519,7 @@ int main(int argc, char** argv)
 	    }
 	}
 
-	if(lin_algebra_flag)
+	if(LU_decomp_flag)
 	{
 
 /* Perform LU Crout decompostion on the system */
@@ -527,9 +528,9 @@ int main(int argc, char** argv)
 		if(!check) printf( " Problems with decomp \n");
 	}
 
-	if(standard_flag)
+	if(static_flag)
 	{
-	    if(lin_algebra_flag)
+	    if(LU_decomp_flag)
 	    {
 
 /* Using LU decomposition to solve the system */
@@ -551,7 +552,7 @@ int main(int argc, char** argv)
 /* Using Conjugate gradient method to solve the system */
 
 #if 1
-	    if(!lin_algebra_flag)
+	    if(!LU_decomp_flag)
 	    {
 		check = trConjGrad( A, bc, connect, coord, el_matl, force, K_diag,
 			matl, U);

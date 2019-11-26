@@ -2,11 +2,11 @@
     This program calculates and writes the parameters for
     the FEM GUI for plate elements.
   
-   			Last Update 6/5/00
+   			Last Update 1/23/01
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le 
+    Version:  1.3
+    Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -28,7 +28,7 @@
 
 extern int nmat, numnp, numel, dof;
 extern double step_sizex, step_sizey, step_sizez;
-extern double left, right, top, bottom, near, far, fscale;
+extern double left, right, top, bottom, near, far, fscale, coord_rescale;
 extern int control_height, control_width, mesh_height, mesh_width;
 extern double ortho_left, ortho_right, ortho_top, ortho_bottom;
 extern double left_right, up_down, in_out, left_right0, up_down0, in_out0;
@@ -47,7 +47,7 @@ extern MDIM del_moment, del_curve, max_moment, min_moment,
 extern SDIM del_stress, del_strain, max_stress, min_stress,
 	max_strain, min_strain;
 extern double max_Uphi_x, min_Uphi_x, del_Uphi_x, max_Uphi_y, min_Uphi_y, del_Uphi_y,
-       	max_Uz, min_Uz, del_Uz, absolute_max_U;
+       	max_Uz, min_Uz, del_Uz, absolute_max_U, absolute_max_coord;
 
 void plReGetparameter(void)
 {
@@ -72,6 +72,12 @@ void plReGetparameter(void)
 	fgets( buf, BUFSIZ, pldata );
 	fscanf( pldata,"%20s %5s      %d %d   %lf %lf\n", char_dum, char_dum2, &node_Uz_min,
 		&node_Uz_max, &min_Uz, &max_Uz);
+
+/* Rescale the displacement data */
+
+	min_Uz /= coord_rescale;
+	max_Uz /= coord_rescale;
+
 	fscanf( pldata,"%20s %5s %5s  %d %d   %lf %lf\n", char_dum, char_dum2, char_dum3,
 		&node_Uphi_x_min, &node_Uphi_x_max, &min_Uphi_x, &max_Uphi_x);
 	fscanf( pldata,"%20s %5s %5s  %d %d   %lf %lf\n", char_dum, char_dum2, char_dum3,
@@ -138,7 +144,7 @@ void plReGetparameter(void)
 	printf( "                            node\n");
 	printf( "                          min  max       min            max\n");
 	printf( "displacement Uz        %5d %5d   %14.6e %14.6e\n", node_Uz_min,
-		node_Uz_max, min_Uz, max_Uz);
+		node_Uz_max, min_Uz*coord_rescale, max_Uz*coord_rescale);
 	printf( "angle phi x            %5d %5d   %14.6e %14.6e\n", node_Uphi_x_min,
 		node_Uphi_x_max, min_Uphi_x, max_Uphi_x);
 	printf( "angle phi y            %5d %5d   %14.6e %14.6e\n", node_Uphi_y_min,

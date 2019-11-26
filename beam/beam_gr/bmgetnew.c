@@ -2,11 +2,11 @@
     This program reads in the new input file and prepares it
     for graphical display.
   
-   			Last Update 6/9/01
+   			Last Update 4/27/05
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le 
+    Version:  1.3
+    Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -36,7 +36,7 @@
 
 /******** Data management and calculations ********/
 
-int rotater( double *, double *, double *);
+int bmrotate( double *, double *, double *);
 
 void bmdist_load_vectors0(int , BOUND , int *, double *, XYZF_GR * );
 
@@ -69,7 +69,7 @@ int filecheck( char *, char *, FILE **, FILE **, FILE **, char * );
 /******************************* GLOBAL VARIABLES **************************/
 
 /****** FEA globals ******/
-extern int dof, nmat, nmode, numel, numnp;
+extern int dof, sdof, nmat, nmode, numel, numnp;
 extern int stress_read_flag, element_stress_read_flag;
 extern XYZPhiI *mem_XYZPhiI;
 extern XYZPhiF *mem_XYZPhiF;
@@ -105,6 +105,9 @@ extern GLuint AxesList, DispList, ForceList, Dist_LoadList;   /* Display lists *
 extern XYZPhiF *force_vec, *force_vec0;
 extern QYQZ *dist_load_vec0;
 extern XYZF_GR *dist_load_vec;
+
+/****** For drawing the Mesh Window ******/
+extern double coord_rescale;
 
 extern int input_flag, post_flag, matl_choice, node_choice, ele_choice, mode_choice;
 extern int Before_flag, After_flag;
@@ -171,6 +174,7 @@ int bmGetNewMesh(void)
         fgets( buf, BUFSIZ, o2 );
         fscanf( o2, "%d %d %d %d\n ",&numel,&numnp,&nmat,&nmode);
         dof=numnp*ndof;
+	sdof=numnp*nsd;
 	nmode = abs(nmode);
 
 /* Begin exmaining and checking for the existence of data files */
@@ -196,7 +200,7 @@ int bmGetNewMesh(void)
 /*   Begin allocation of meomory */
 
 /* For the doubles */
-        sofmf=2*numnp*nsd+numnp*(nsd-1)+numnp+2*dof+2*numel*nsd;
+        sofmf=2*sdof+numnp*(nsd-1)+numnp+2*dof+2*numel*nsd;
 
 /* For the integers */
         sofmi= numel*npel+2*numel+numnp+1+numel+1+2+dof;
@@ -221,8 +225,8 @@ int bmGetNewMesh(void)
 
 /* For the doubles */
                                            ptr_inc=0;
-        coord=(mem_double+ptr_inc);        ptr_inc += numnp*nsd;
-        coord0=(mem_double+ptr_inc);       ptr_inc += numnp*nsd;
+        coord=(mem_double+ptr_inc);        ptr_inc += sdof;
+        coord0=(mem_double+ptr_inc);       ptr_inc += sdof;
         dist_load=(mem_double+ptr_inc);    ptr_inc += numnp*(nsd-1);
         force=(mem_double+ptr_inc);        ptr_inc += dof;
         U=(mem_double+ptr_inc);            ptr_inc += dof;
@@ -288,15 +292,6 @@ int bmGetNewMesh(void)
         	if(!check) printf( " Problems with bmreader \n");
 
 	}
-	if( !input_flag )
-	{
-	    for ( i = 0; i < numnp; ++i)
-	    {
-		*(coord0 + nsd*i) = *(coord+nsd*i) - *(U+ndof*i);
-		*(coord0 + nsd*i + 1) = *(coord+nsd*i + 1) - *(U+ndof*i+1);
-		*(coord0 + nsd*i + 2) = *(coord+nsd*i + 2) - *(U+ndof*i+2);
-	    }
-	}
 
 /* For the XYZPhiF doubles */
         sofmXYZPhiF=2*bc.num_force[0];
@@ -306,6 +301,11 @@ int bmGetNewMesh(void)
 
 /* For the QYQZ doubles */
         sofmQYQZ=bc.num_dist_load[0];
+/*
+   This is allocated seperately from bmReGetMemory2_gr because we need to know the
+   number of force vectors read from bmreader and stored in bc.num_force[0] and
+   bc.num_dist_load[0].
+*/
 
 	check = bmReGetMemory2_gr( &mem_XYZPhiF, sofmXYZPhiF, &dist_load_vec, sofmXYZF_GR,
         	&dist_load_vec0, sofmQYQZ);
@@ -324,6 +324,31 @@ int bmGetNewMesh(void)
 
 	check = bmparameter( coord, curve, moment, strain, stress, U );
         if(!check) printf( " Problems with bmparameter \n");
+
+/* Rescale undeformed coordinates */
+
+	if( coord_rescale > 1.01 || coord_rescale < .99 )
+	{
+	   if( input_flag && post_flag )
+	   {
+		for( i = 0; i < numnp; ++i )
+		{
+			*(coord0+nsd*i) /= coord_rescale;
+			*(coord0+nsd*i+1) /= coord_rescale;
+			*(coord0+nsd*i+2) /= coord_rescale;
+		}
+	   }
+	}
+
+	if( !input_flag )
+	{
+	    for ( i = 0; i < numnp; ++i)
+	    {
+		*(coord0 + nsd*i) = *(coord+nsd*i) - *(U+ndof*i);
+		*(coord0 + nsd*i + 1) = *(coord+nsd*i + 1) - *(U+ndof*i+1);
+		*(coord0 + nsd*i + 2) = *(coord+nsd*i + 2) - *(U+ndof*i+2);
+	    }
+	}
 
 	check = bmset( bc, curve, curve_color, dist_load, dist_load_vec0,
 		el_type, force , force_vec0, moment, moment_color, strain,
@@ -377,8 +402,8 @@ int bmGetNewMesh(void)
 		*(vec_in+1) =  dist_load_vec0[k].qy;
 		*(vec_in+2) =  dist_load_vec0[k].qz;
 
-		check = rotater(coord0_el, vec_in, vec_out);
-        	if(!check) printf( " Problems with rotater \n");
+		check = bmrotate(coord0_el, vec_in, vec_out);
+        	if(!check) printf( " Problems with bmrotate \n");
 
 		dist_load_vec[k].x = *(vec_out);
 		dist_load_vec[k].y = *(vec_out+1);
@@ -429,8 +454,8 @@ int bmGetNewMesh(void)
 		*(vec_in+1) =  dist_load_vec0[k].qy;
 		*(vec_in+2) =  dist_load_vec0[k].qz;
 
-		check = rotater(coord_el, vec_in, vec_out);
-        	if(!check) printf( " Problems with rotater \n");
+		check = bmrotate(coord_el, vec_in, vec_out);
+        	if(!check) printf( " Problems with bmrotate \n");
 
 		dist_load_vec[k].x = *(vec_out);
 		dist_load_vec[k].y = *(vec_out+1);

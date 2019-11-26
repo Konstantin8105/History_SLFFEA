@@ -3,11 +3,11 @@
     Control Display Window for a beam.  It also gives you the
     structure of how the text is placed.
 
-              Updated 9/7/00
+              Updated 3/1/05
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le 
+    Version:  1.3
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -49,6 +49,8 @@ char ControlText[][90] = {
 " ZZ","    ZZ      ",
 " stress/","strain ",
 " XX","    XX      ",
+" XY","    XY      ",
+" ZX","    ZX      ",
 "","               ",
 " disp/","angle    ",
 " X  ","   X       ",

@@ -6,8 +6,8 @@
 		Updated 1/15/03
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le 
+    Version:  1.3
+    Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -88,8 +88,8 @@ int tsMassPassemble(int *connect, double *coord, int *el_matl, double *mass,
             for( k = 0; k < numel; ++k )
             {
 		matl_num = *(el_matl+k);
-        	rho = matl[matl_num].rho;
-        	area = matl[matl_num].area;
+		rho = matl[matl_num].rho;
+		area = matl[matl_num].area;
 
 		node0 = *(connect+k*npel);
 		node1 = *(connect+k*npel+1);
@@ -97,12 +97,12 @@ int tsMassPassemble(int *connect, double *coord, int *el_matl, double *mass,
 		Ly = *(coord+nsd*node1+1) - *(coord+nsd*node0+1);
 		Lz = *(coord+nsd*node1+2) - *(coord+nsd*node0+2);
 
-                /*printf(" Lx, Ly, Lz %f %f %f\n ", Lx, Ly, Lz);*/
+		/*printf(" Lx, Ly, Lz %f %f %f\n ", Lx, Ly, Lz);*/
 
-                Lsq = Lx*Lx+Ly*Ly+Lz*Lz;
-                L = sqrt(Lsq);
+		Lsq = Lx*Lx+Ly*Ly+Lz*Lz;
+		L = sqrt(Lsq);
 		Lx /= L; Ly /= L; Lz /= L;
-                jacob = L/2.0;
+		jacob = L/2.0;
 
 		Lxysq = Lx*Lx + Ly*Ly;
 		Lxysq = sqrt(Lxysq);
@@ -180,7 +180,7 @@ int tsMassPassemble(int *connect, double *coord, int *el_matl, double *mass,
 		*(dof_el+4)=ndof*node1+1;
 		*(dof_el+5)=ndof*node1+2;
 
-                memset(M_el,0,neqlsq*sof);
+		memset(M_el,0,neqlsq*sof);
 
 		fdum = .5*rho*area*L;
 

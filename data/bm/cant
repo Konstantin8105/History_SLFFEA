@@ -1,5 +1,5 @@
    numel numnp nmat nmode  (This is for a beam)
-	3   4   1  5
+	3   4   1  0
 matl no., E mod, Poiss. Ratio, mass, Area, Iy, Iz
 0    200000 0.0 22.2e2 .01 .001 .001
 el no.,connectivity, matl no, element type

@@ -3,7 +3,7 @@
 
                     Copyright (C) 1999 San Le
 
-                    email:     slffea@juno.com
+                    email:     slffea@yahoo.com
                     homepage:  http://www.geocities.com/Athens/2099/slffea.html
 
 
@@ -29,7 +29,7 @@ cubic elements which will probably give better results.
 
 Shell elements are definitely the hardest to implement, even harder than the
 non-linear brick.  I have also heard that there has been changes in the theory
-from the 1987 version given by Hughes in [8] which I have used.  So you may
+from the 1987 version given by Hughes in [12] which I have used.  So you may
 want to do some benchmark test for yourself to determine whether it meets
 your standards of accuracy.  My main issue with the theory as given in Hughes
 is that the local axes are treated as constants.  For instance, in equation

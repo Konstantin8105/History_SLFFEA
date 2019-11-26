@@ -5,8 +5,8 @@
         Updated 10/10/06
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le 
+    Version:  1.3
+    Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -21,7 +21,8 @@
 #include "../shell/shconst.h"
 #include "../shell/shstruct.h"
 
-int analysis_flag, dof, integ_flag, neqn, nmat, nmode, numel, numnp, sof;
+int analysis_flag, sdof, dof, integ_flag, doubly_curved_flag, neqn, nmat, nmode,
+	numel, numnp, sof;
 int element_stress_read_flag, stress_read_flag;
 
 int shreader( BOUND , int *, double *, int *, double *, MATL *, char *, FILE *,

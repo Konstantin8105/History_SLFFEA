@@ -6,8 +6,8 @@
 		Updated 11/2/09
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999-2009  San Le 
+    Version:  1.3
+    Copyright (C) 1999-2009 San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -66,15 +66,17 @@ int bmreader(double *, BOUND , int *, double *, double *, int *, int *, double *
 int bmMemory( double **, int , int **, int , MATL **, int , XYZPhiI **, int ,
 	CURVATURE **, MOMENT **, STRAIN **, STRESS **, int  );
 
-int analysis_flag, dof, modal_flag, neqn, nmat, nmode, numel, numnp, sof;
-int standard_flag, consistent_mass_flag, consistent_mass_store, eigen_print_flag,
-        lumped_mass_flag, stress_read_flag, gauss_stress_flag;
+int analysis_flag, dof, sdof, modal_flag, neqn, nmat, nmode, numel, numnp, sof;
+int static_flag, consistent_mass_flag, consistent_mass_store, eigen_print_flag,
+        lumped_mass_flag, stress_read_flag, gauss_stress_flag, stress_xyzx_flag;
 
-int lin_algebra_flag, numel_K, numel_P, numnp_linear_max;
+int LU_decomp_flag, numel_K, numel_P, numnp_LUD_max;
 int iteration_max, iteration_const, iteration;
 double tolerance;
 
-double x[num_int], x_node[num_int], w[num_int];
+double x[num_int], w[num_int];
+double x1[num_int1], w1[num_int1], x3[num_int3], w3[num_int3],
+	x4[num_int4], w4[num_int4], x_node[num_int];
 
 int main(int argc, char** argv)
 {
@@ -108,14 +110,53 @@ int main(int argc, char** argv)
 
         sof = sizeof(double);
 
-        *(x)= -1.0/sq3;
-        *(x+1)= 1.0/sq3;
+/* Create the nodal points */
 
         *(x_node)= -1.0;
         *(x_node+1)= 1.0;
 
+/* Create the Gauss integration points and weights */
+
+/* 1 pt. Gauss */
+
+        *(x1)= 0.0;
+
+        *(w1)= 2.0;
+
+/* 2 pt. Gauss */
+
+        *(x)= -1.0/sq3;
+        *(x+1)= 1.0/sq3;
+
         *(w)= 1.0;
         *(w+1)= 1.0;
+
+/* 3 pt. Gauss */
+
+        fdum = 3.0/5.0;
+        *(x3) = -sqrt(fdum);
+        *(x3+1) =  0.0;
+        *(x3+2) =  sqrt(fdum);
+
+        *(w3)= 5.0/9.0;
+        *(w3+1)= 8.0/9.0;
+        *(w3+2)= 5.0/9.0;
+
+/* 4 pt. Gauss */
+
+        fdum = 1/7.0*(3.0 - 4.0*sqpt3);
+        *(x4) = -sqrt(fdum);
+        *(x4+2) =  sqrt(fdum);
+
+        fdum = 1/7.0*(3.0 + 4.0*sqpt3);
+        *(x4+1)= -sqrt(fdum);
+        *(x4+3)= sqrt(fdum);
+
+        *(w4)= .5 + 1.0/12.0*sq3pt33;
+        *(w4+1)= .5 - 1.0/12.0*sq3pt33;
+        *(w4+2)= .5 + 1.0/12.0*sq3pt33;
+        *(w4+3)= .5 - 1.0/12.0*sq3pt33;
+
 
 	memset(name,0,30*sizeof(char));
 
@@ -159,12 +200,13 @@ int main(int argc, char** argv)
 	fgets( buf, BUFSIZ, o1 );
         fscanf( o1, "%d %d %d %d\n ",&numel,&numnp,&nmat,&nmode);
         dof=numnp*ndof;
+        sdof=numnp*nsd;
 
-	numnp_linear_max = 500;
+	numnp_LUD_max = 500;
 
 /* Assuming Conjugate gradient method is used, determine how much RAM is needed.
    This determines the largest problem that can be run on this machine.
-   If problem small enough that linear algebra is used, then calculation below
+   If problem small enough that LU decomposition is used, then calculation below
    is irrelevant.
 
    RAM variables given in bytes
@@ -190,10 +232,10 @@ int main(int argc, char** argv)
 		numel_K = numel - numel_P;
 	}
 
-	lin_algebra_flag = 1;
-	if(numnp > numnp_linear_max) lin_algebra_flag = 0;
+	LU_decomp_flag = 1;
+	if(numnp > numnp_LUD_max) LU_decomp_flag = 0;
 
-	standard_flag = 1;
+	static_flag = 1;
 	modal_flag = 0;
 
 	lumped_mass_flag = 1;
@@ -218,12 +260,12 @@ int main(int argc, char** argv)
 		num_eigen = (int)(3.0*nmode);
 		num_eigen = MIN(nmode + 10, num_eigen);
 		num_eigen = MIN(dof, num_eigen);
-		standard_flag = 0;
+		static_flag = 0;
 		modal_flag = 1;
 	}
 
 #if 0
-	lin_algebra_flag = 0;
+	LU_decomp_flag = 0;
 #endif
 
 /*   Begin allocation of meomory */
@@ -231,10 +273,10 @@ int main(int argc, char** argv)
 	MemoryCounter = 0;
 
 /* For the doubles */
-        sofmf=numnp*nsd + numel*(nsd-1) + 3*dof + numel*nsd + dof;
+        sofmf=sdof + numel*(nsd-1) + 3*dof + numel*nsd + dof;
         if(modal_flag)
         {
-            sofmf = numnp*nsd + numel*(nsd-1) + 3*dof + numel*nsd + dof +
+            sofmf = sdof + numel*(nsd-1) + 3*dof + numel*nsd + dof +
 		num_eigen*dof;
 	}
 	MemoryCounter += sofmf*sizeof(double);
@@ -262,7 +304,7 @@ int main(int argc, char** argv)
 
 /* For the doubles */
                                                 ptr_inc=0;
-        coord=(mem_double+ptr_inc);             ptr_inc += numnp*nsd;
+        coord=(mem_double+ptr_inc);             ptr_inc += sdof;
         dist_load=(mem_double+ptr_inc);         ptr_inc += numel*(nsd-1);
 	vector_dum=(mem_double+ptr_inc);        ptr_inc += dof;
         force=(mem_double+ptr_inc);             ptr_inc += dof;
@@ -382,7 +424,7 @@ int main(int argc, char** argv)
 	sofmA = numel_K*neqlsq;		 /* case 2 */
 	mem_case = 2;
 
-	if(lin_algebra_flag)
+	if(LU_decomp_flag)
 	{
 		sofmA = *(idiag+neqn-1)+1;       /* case 1 */
 		mem_case = 1;
@@ -391,23 +433,23 @@ int main(int argc, char** argv)
 	if( sofmA*sof > (int)RAM_usable )
 	{
 
-/* Even if the linear algebra flag is on because there are only a few nodes, there
+/* Even if the LU decomposition flag is on because there are only a few nodes, there
    is a possibility that there is not enough memory because of poor node numbering.
    If this is the case, then we have to use the conjugate gradient method.
  */
 
 		sofmA = numel_K*neqlsq;
-		lin_algebra_flag = 0;
+		LU_decomp_flag = 0;
 		mem_case = 2;
 	}
 
 	printf( "\n We are in case %3d\n\n", mem_case);
 	switch (mem_case) {
 		case 1:
-			printf( " linear algebra\n\n");
+			printf( " LU decoomposition\n\n");
 		break;
 		case 2:
-			printf( " conjugate gradient \n\n");
+			printf( " Conjugate gradient \n\n");
 		break;
 	}
 
@@ -506,6 +548,7 @@ int main(int argc, char** argv)
         }
         printf(" \n");
 */
+
 	if(modal_flag)
 	{
 	    if( lumped_mass_flag || consistent_mass_store )
@@ -533,7 +576,7 @@ int main(int argc, char** argv)
 	    }
 	}
 
-	if(lin_algebra_flag)
+	if(LU_decomp_flag)
         {
 
 /* Perform LU Crout decompostion on the system */
@@ -544,9 +587,9 @@ int main(int argc, char** argv)
 
 /* If standard analysis desired, solve the system */
 
-	if(standard_flag)
+	if(static_flag)
 	{
-            if(lin_algebra_flag)
+            if(LU_decomp_flag)
             {
 
 /* Using LU decomposition to solve the system */
@@ -567,7 +610,7 @@ int main(int argc, char** argv)
 
 /* Using Conjugate gradient method to solve the system */
 
-	    if(!lin_algebra_flag)
+	    if(!LU_decomp_flag)
 	    {
 		check = bmConjGrad( A, axis_z, bc, connect, coord, el_matl, el_type,
 			force, K_diag, matl, U);

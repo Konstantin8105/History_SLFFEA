@@ -1,6 +1,6 @@
 # SLFFEA Makefile
-# Version:  1.2
-# Copyright (C) 1999, 2000, 2001  San Le (slffea@yahoo.com)
+# Version:  1.3
+# Copyright (C) 1999, 2000, 2001, 2002  San Le (slffea@yahoo.com)
 # http://slffea.sourceforge.net/
 #
 # This library is free software; you can redistribute it and/or
@@ -42,6 +42,7 @@ everything:
 	cd quad/quad ;  make
 	cd shell/shell ; make
 	cd truss/truss ;  make 
+	cd truss/truss_nl ;  make 
 	cd tetra/tetra ;  make 
 	cd tri/tri ;  make 
 	cd wedge/wedge ;  make 
@@ -71,6 +72,7 @@ science:
 	cd quad/quad ;  make
 	cd shell/shell ; make
 	cd truss/truss ;  make 
+	cd truss/truss_nl ;  make 
 	cd tetra/tetra ;  make 
 	cd tri/tri ;  make 
 	cd wedge/wedge ;  make 
@@ -101,6 +103,7 @@ clean:
 	cd quad/quad ;  make clean
 	cd shell/shell ; make clean
 	cd truss/truss ;  make clean
+	cd truss/truss_nl ;  make clean
 	cd tetra/tetra ;  make clean
 	cd tri/tri ;  make clean
 	cd wedge/wedge ;  make clean
@@ -131,6 +134,7 @@ clean_science:
 	cd quad/quad ; make clean
 	cd shell/shell ; make clean
 	cd truss/truss ; make clean
+	cd truss/truss_nl ; make clean
 	cd tetra/tetra ; make clean
 	cd tri/tri ; make clean
 	cd wedge/wedge ; make clean

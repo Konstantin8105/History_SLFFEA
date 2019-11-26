@@ -1,5 +1,5 @@
 # SLFFEA Makefile
-# Version:  1.2
+# Version:  1.3
 # Copyright (C) 1999, 2000  San Le (slffea@yahoo.com)
 # http://slffea.com/
 #
@@ -55,9 +55,9 @@ CC = /usr/bin/gcc -g
 plpost: plpost.o \
 		plmemgr.o \
 		plreadgr.o \
-		plset.o \
 		plparam.o \
 		plparam2.o \
+		plset.o \
 		plnorm_vec.o \
 		plbc_vec.o \
 		plmshdsp.o \
@@ -75,9 +75,9 @@ plpost: plpost.o \
 	$(CC) -o plpost $(LIB1) plpost.o \
 		plmemgr.o \
 		plreadgr.o \
-		plset.o \
 		plparam.o \
 		plparam2.o \
+		plset.o \
 		plnorm_vec.o \
 		plbc_vec.o \
 		plmshdsp.o \
@@ -90,14 +90,14 @@ plpost: plpost.o \
 		plrender.o \
 		$(OBJECTS_PL) $(OBJECTS_GR) $(OBJECTS2) $(LIB2) 
 
+plrender.o: plrender.c 
+	$(CC) -c plrender.c 
+
 plcrtlmse.o: plcrtlmse.c 
 	$(CC) -c plcrtlmse.c 
 
 plcrtldsp.o: plcrtldsp.c 
 	$(CC) -c plcrtldsp.c 
-
-plrender.o: plrender.c 
-	$(CC) -c plrender.c 
 
 plgetnew.o: plgetnew.c 
 	$(CC) -c plgetnew.c 

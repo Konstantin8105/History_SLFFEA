@@ -5,8 +5,8 @@
                         Last Update 10/20/01
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le 
+    Version:  1.3
+    Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -224,7 +224,7 @@ void bmControlDisplay(void)
                 printText( ControlText[2*i] );
                 printText( ControlText[2*i+1] );
         }
-    	for( i = 29 ; i < 34 ; ++i)
+    	for( i = 29 ; i < 36 ; ++i)
 	{
     	   	glLoadIdentity();
     	   	glTranslatef (0,textMove_y[i],0);
@@ -251,7 +251,7 @@ void bmControlDisplay(void)
 
 /* Displacement */
     	glColor4fv(white);
-        for( i = 34 ; i < 36 ; ++i)
+        for( i = 36 ; i < 38 ; ++i)
         {
                 glLoadIdentity();
                 glTranslatef (0,textMove_y[i],0);
@@ -259,7 +259,7 @@ void bmControlDisplay(void)
                 printText( ControlText[2*i] );
                 printText( ControlText[2*i+1] );
         }
-    	for( i = 36 ; i < 39 ; ++i)
+    	for( i = 38 ; i < 41 ; ++i)
 	{
     	   	glLoadIdentity();
     	   	glTranslatef (0,textMove_y[i],0);

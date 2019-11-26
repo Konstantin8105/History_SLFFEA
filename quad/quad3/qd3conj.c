@@ -28,7 +28,7 @@
 #define SMALL      1.e-20
 
 extern int analysis_flag, dof, numed, numel, numnp, plane_stress_flag, sof;
-extern int lin_algebra_flag, numel_EM, numel_P;
+extern int LU_decomp_flag, numel_EM, numel_P;
 extern double shg[sosh], shl[sosh], w[num_int], *Area0;
 extern int  iteration_max, iteration_const, iteration;
 extern double tolerance;
@@ -127,18 +127,18 @@ int qd3ConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL 
 
 /* Create the coord_el transpose vector for one element */
 
-                for( j = 0; j < npel; ++j )
-                {
+		for( j = 0; j < npel; ++j )
+		{
 			node = *(connect+npel*k+j);
 
-                	*(sdof_el+nsd*j) = nsd*node;
-                	*(sdof_el+nsd*j+1) = nsd*node+1;
+			*(sdof_el+nsd*j) = nsd*node;
+			*(sdof_el+nsd*j+1) = nsd*node+1;
 
-                        *(coord_el_trans+j)=*(coord+*(sdof_el+nsd*j));
-                        *(coord_el_trans+npel*1+j)=*(coord+*(sdof_el+nsd*j+1));
+			*(coord_el_trans+j)=*(coord+*(sdof_el+nsd*j));
+			*(coord_el_trans+npel*1+j)=*(coord+*(sdof_el+nsd*j+1));
 
-                	*(dof_el+ndof*j) = ndof*node;
-                	*(dof_el+ndof*j+1) = ndof*node+1;
+			*(dof_el+ndof*j) = ndof*node;
+			*(dof_el+ndof*j+1) = ndof*node+1;
 
 		}
 

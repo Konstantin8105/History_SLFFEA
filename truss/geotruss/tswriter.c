@@ -2,7 +2,7 @@
     This library function writes the resulting data for a finite element
     program which does analysis on a truss 
 
-		Updated 7/9/02
+		Updated 7/10/02
 
     SLFFEA source file
     Version:  1.1

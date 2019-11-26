@@ -2,10 +2,10 @@
     This program contains the mesh display routine for the FEM GUI
     for quad elements.
   
-   			Last Update 5/27/01
+   			Last Update 2/4/02
 
     SLFFEA source file
-    Version:  1.2
+    Version:  1.3
     Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
@@ -82,7 +82,6 @@ void qdMeshDisplay(void)
 		if(After_flag )
   			qdforce_vectors(bc, coord, force_vec);
 	}
-    	glPushMatrix ();
 	glLineWidth (2.0);
 	if(Render_flag)
 		qdrender();
@@ -90,11 +89,9 @@ void qdMeshDisplay(void)
 		qdmeshdraw();
 	if(Axes_flag)
 	{
-		/*AxesNumbers();*/
-		AxesNumbers2();
+		AxesNumbers();
+		/*AxesNumbers2();*/
 	}
-    	glPopMatrix ();
-	glFlush();
   	glutSwapBuffers();
 }
 

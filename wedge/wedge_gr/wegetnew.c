@@ -2,11 +2,11 @@
     This program reads in the new input file and prepares it
     for graphical display.
   
-   			Last Update 6/9/01
+   			Last Update 4/27/05
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le 
+    Version:  1.3
+    Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -68,7 +68,7 @@ int filecheck( char *, char *, FILE **, FILE **, FILE **, char * );
 /******************************* GLOBAL VARIABLES **************************/
 
 /****** FEA globals ******/
-extern int dof, nmat, nmode, numel, numnp;
+extern int dof, sdof, nmat, nmode, numel, numnp;
 extern int stress_read_flag, element_stress_read_flag;
 extern XYZI *mem_XYZI;
 extern XYZF *mem_XYZF;
@@ -102,6 +102,9 @@ extern GLuint AxesList, DispList, ForceList;   /* Display lists */
 
 /* Global variables for drawing the force vectors */
 extern XYZF *force_vec, *force_vec0;
+
+/****** For drawing the Mesh Window ******/
+extern double coord_rescale;
 
 extern int input_flag, post_flag, matl_choice, node_choice, ele_choice, mode_choice;
 extern int Before_flag, After_flag;
@@ -167,6 +170,7 @@ int weGetNewMesh(void)
 	fgets( buf, BUFSIZ, o2 );
 	fscanf( o2, "%d %d %d %d\n ",&numel,&numnp,&nmat,&nmode);
 	dof=numnp*ndof;
+	sdof=numnp*nsd;
 	nmode = abs(nmode);
 
 /* Begin exmaining and checking for the existence of data files */
@@ -192,7 +196,7 @@ int weGetNewMesh(void)
 /*   Begin allocation of meomory */
 
 /* For the doubles */
-        sofmf=2*numnp*nsd+2*dof;
+        sofmf=2*sdof+2*dof;
 
 /* For the integers */
         sofmi= numel*npel+numel+numnp+1+ndof*numnp;
@@ -224,8 +228,8 @@ int weGetNewMesh(void)
 
 /* For the doubles */
                                         ptr_inc=0;
-        coord=(mem_double+ptr_inc);     ptr_inc += numnp*nsd;
-        coord0=(mem_double+ptr_inc);    ptr_inc += numnp*nsd;
+        coord=(mem_double+ptr_inc);     ptr_inc += sdof;
+        coord0=(mem_double+ptr_inc);    ptr_inc += sdof;
         force=(mem_double+ptr_inc);     ptr_inc += dof;
         U=(mem_double+ptr_inc);         ptr_inc += dof;
 
@@ -311,18 +315,12 @@ int weGetNewMesh(void)
         	if(!check) printf( " Problems with wenormal_vectors \n");
 	}
 
-	if( !input_flag )
-	{
-	    for ( i = 0; i < numnp; ++i)
-	    {
-	    	*(coord0 + nsd*i) = *(coord + nsd*i) - *(U + ndof*i);
-	    	*(coord0 + nsd*i + 1) = *(coord + nsd*i + 1) - *(U + ndof*i + 1);
-	    	*(coord0 + nsd*i + 2) = *(coord + nsd*i + 2) - *(U + ndof*i + 2);
-	    }
-	}
-
 /* For the XYZF doubles */
         sofmXYZF=2*bc.num_force[0];
+/*
+   This is allocated seperately from weReGetMemory_gr because we need to know the
+   number of force vectors read from wereader and stored in bc.num_force[0].
+*/
 
 	check = weReGetMemory2_gr( &mem_XYZF, sofmXYZF );
 	if(!check) printf( " Problems with weReGetMemory2_gr \n");
@@ -339,6 +337,31 @@ int weGetNewMesh(void)
 
 	check = weparameter( coord, strain_node, stress_node, U);
         if(!check) printf( " Problems with weparameter \n");
+
+/* Rescale undeformed coordinates */
+
+	if( coord_rescale > 1.01 || coord_rescale < .99 )
+	{
+	   if( input_flag && post_flag )
+	   {
+		for( i = 0; i < numnp; ++i )
+		{
+			*(coord0+nsd*i) /= coord_rescale;
+			*(coord0+nsd*i+1) /= coord_rescale;
+			*(coord0+nsd*i+2) /= coord_rescale;
+		}
+	   }
+	}
+
+	if( !input_flag )
+	{
+	    for ( i = 0; i < numnp; ++i)
+	    {
+	    	*(coord0 + nsd*i) = *(coord + nsd*i) - *(U + ndof*i);
+	    	*(coord0 + nsd*i + 1) = *(coord + nsd*i + 1) - *(U + ndof*i + 1);
+	    	*(coord0 + nsd*i + 2) = *(coord + nsd*i + 2) - *(U + ndof*i + 2);
+	    }
+	}
 
 	check = weset( bc, connecter, force, force_vec0, strain_node,
 		strain_color, stress_node, stress_color, U, U_color);

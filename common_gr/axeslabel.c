@@ -3,8 +3,8 @@
     numbers the hash marks.
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le 
+    Version:  1.3
+    Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -33,6 +33,10 @@ extern double AxisMax_x, AxisMax_y, AxisMax_z,
         IAxisMin_x, IAxisMin_y, IAxisMin_z;
 extern double AxisLength_x, AxisLength_y, AxisLength_z,
 	AxisLength_max, AxisPoint_step;
+
+/****** For drawing the Mesh Window ******/
+extern double coord_rescale;
+
 extern int Perspective_flag;
 
 int PointLocate( double *, double, double, double);
@@ -45,7 +49,7 @@ void AxesNumbers(void)
     orientation of the labels always aligned with the
     viewers perspective.
 
- 		Last Update 6/21/01
+ 		Last Update 1/26/02
 */
 	double point_vec[3];
 	int check, i, j, k, dum;
@@ -77,7 +81,7 @@ void AxesNumbers(void)
 		glLoadIdentity();
 		glTranslatef( fpointx, fpointy, fpointz);
 		glScalef( fdum4, fdum4, 1.0);
-		sprintf( chardum, "%10.3e ", fdum);
+		sprintf( chardum, "%10.3e ", fdum*coord_rescale);
 		printText( chardum );
 
 		fdum += AxisPoint_step;
@@ -105,7 +109,7 @@ void AxesNumbers(void)
 		glLoadIdentity();
 		glTranslatef( fpointx, fpointy, fpointz);
 		glScalef( fdum4, fdum4, 1.0);
-		sprintf( chardum, "%10.3e ", fdum);
+		sprintf( chardum, "%10.3e ", fdum*coord_rescale);
 		printText( chardum );
 
 		fdum += AxisPoint_step;
@@ -133,7 +137,7 @@ void AxesNumbers(void)
 		glLoadIdentity();
 		glTranslatef( fpointx, fpointy, fpointz);
 		glScalef( fdum4, fdum4, 1.0);
-		sprintf( chardum, "%10.3e ", fdum);
+		sprintf( chardum, "%10.3e ", fdum*coord_rescale);
 		printText( chardum );
 
 		fdum += AxisPoint_step;
@@ -149,7 +153,7 @@ void AxesNumbers2(void)
     orientation of the labels aligned with its associate
     axis.
 
- 		Last Update 6/21/01
+ 		Last Update 1/26/02
 */
 	double point_vec[3];
 	int check, i, j, k, dum;
@@ -186,7 +190,7 @@ void AxesNumbers2(void)
 		glRotatef ( -90, 0, 1, 0);
 		glRotatef ( -90, 1, 0, 0);
 		glScalef( fdum4, fdum4, 1.0);
-		sprintf( chardum, "%10.3e ", fdum);
+		sprintf( chardum, "%10.3e ", fdum*coord_rescale);
 		printText( chardum );
 
 		fdum += AxisPoint_step;
@@ -217,7 +221,7 @@ void AxesNumbers2(void)
 		glRotatef (yAngle, 0, 1, 0);
 		glRotatef (zAngle, 0, 0, 1);
 		glScalef( fdum4, fdum4, 1.0);
-		sprintf( chardum, "%10.3e ", fdum);
+		sprintf( chardum, "%10.3e ", fdum*coord_rescale);
 		printText( chardum );
 
 		fdum += AxisPoint_step;
@@ -250,7 +254,7 @@ void AxesNumbers2(void)
 		glRotatef (  90, 1, 0, 0);
 		glRotatef (  180, 0, 1, 0);
 		glScalef( fdum4, fdum4, 1.0);
-		sprintf( chardum, "%10.3e ", fdum);
+		sprintf( chardum, "%10.3e ", fdum*coord_rescale);
 		printText( chardum );
 
 		fdum += AxisPoint_step;

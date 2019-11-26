@@ -2,11 +2,11 @@
     This program shows the 3 dimensional model of the finite
     element mesh for tetrahedral elements.
   
-   			Last Update 10/19/01
+   			Last Update 4/27/05
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le 
+    Version:  1.3
+    Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -146,7 +146,7 @@ void agvHandleMotion(int , int );
 /******************************* GLOBAL VARIABLES **************************/
 
 /****** FEA globals ******/
-int dof, nmat, nmode, numel, numnp;
+int dof, sdof, nmat, nmode, numel, numnp;
 int stress_read_flag, element_stress_read_flag;
 XYZI *mem_XYZI;
 XYZF *mem_XYZF;
@@ -209,7 +209,7 @@ double AxisLength_x, AxisLength_y, AxisLength_z, AxisLength_max, AxisPoint_step;
 XYZF *force_vec, *force_vec0;
 
 /****** For drawing the Mesh Window ******/
-double left, right, top, bottom, near, far, fscale;
+double left, right, top, bottom, near, far, fscale, coord_rescale;
 double ortho_left, ortho_right, ortho_top, ortho_bottom,
 	ortho_left0, ortho_right0, ortho_top0, ortho_bottom0;
 int mesh_width, mesh_height;
@@ -259,7 +259,7 @@ double init_right, init_left, init_top,
 STRESS del_stress, del_strain, max_stress, min_stress,
 	max_strain, min_strain;
 double max_Ux, min_Ux, del_Ux, max_Uy, min_Uy, del_Uy,
-	max_Uz, min_Uz, del_Uz, absolute_max_U;
+	max_Uz, min_Uz, del_Uz, absolute_max_U, absolute_max_coord;
 
 /* These are the flags */
 
@@ -284,6 +284,8 @@ int Solid_flag = 1,          /* Selects between wire frame or solid model */
     Node_flag = 0,           /* Turns Node ID on and off */
     Element_flag = 0,        /* Turns Element ID on and off */
     Axes_flag = 0,           /* Turns Axes on and off  */
+    Outline_flag = 1,        /* Turns Element Outline on and off  */
+    Transparent_flag = 0,    /* Turns Element Transparency on and off  */
     CrossSection_flag = 0;   /* Turns CrossSection_flag on and off  */
 int Before_flag = 0,         /* Turns before mesh on and off */
     After_flag = 1,          /* Turns after mesh on and off */
@@ -351,6 +353,7 @@ int main(int argc, char** argv)
         fgets( buf, BUFSIZ, o2 );
         fscanf( o2, "%d %d %d %d\n ",&numel,&numnp,&nmat,&nmode);
         dof=numnp*ndof;
+	sdof=numnp*nsd;
 	nmode = abs(nmode);
 
 /* Begin exmaining and checking for the existence of data files */
@@ -376,7 +379,7 @@ int main(int argc, char** argv)
 /*   Begin allocation of meomory */
 
 /* For the doubles */
-        sofmf=2*numnp*nsd+2*dof;
+        sofmf=2*sdof+2*dof;
 
 /* For the integers */
         sofmi= numel*npel+numel+numnp+1+1+dof;
@@ -409,8 +412,8 @@ int main(int argc, char** argv)
 
 /* For the doubles */
                                         ptr_inc=0;
-        coord=(mem_double+ptr_inc);     ptr_inc += numnp*nsd;
-        coord0=(mem_double+ptr_inc);    ptr_inc += numnp*nsd;
+        coord=(mem_double+ptr_inc);     ptr_inc += sdof;
+        coord0=(mem_double+ptr_inc);    ptr_inc += sdof;
         force=(mem_double+ptr_inc);     ptr_inc += dof;
         U=(mem_double+ptr_inc);         ptr_inc += dof;
 
@@ -491,18 +494,12 @@ int main(int argc, char** argv)
         	if(!check) printf( " Problems with tenormal_vectors \n");
 	}
 
-	if( !input_flag )
-	{
-	    for ( i = 0; i < numnp; ++i)
-	    {
-	    	*(coord0 + nsd*i) = *(coord + nsd*i) - *(U + ndof*i);
-	    	*(coord0 + nsd*i + 1) = *(coord + nsd*i + 1) - *(U + ndof*i + 1);
-	    	*(coord0 + nsd*i + 2) = *(coord + nsd*i + 2) - *(U + ndof*i + 2);
-	    }
-	}
-
 /* For the XYZF doubles */
         sofmXYZF=2*bc.num_force[0];
+/*
+   This is allocated seperately from teMemory_gr because we need to know the
+   number of force vectors read from tereader and stored in bc.num_force[0].
+*/
 
 	check = teMemory2_gr( &mem_XYZF, sofmXYZF );
 	if(!check) printf( " Problems with teMemory2_gr \n");
@@ -519,6 +516,31 @@ int main(int argc, char** argv)
 
 	check = teparameter( coord, strain_node, stress_node, U);
         if(!check) printf( " Problems with teparameter \n");
+
+/* Rescale undeformed coordinates */
+
+	if( coord_rescale > 1.01 || coord_rescale < .99 )
+	{
+	   if( input_flag && post_flag )
+	   {
+		for( i = 0; i < numnp; ++i )
+		{
+			*(coord0+nsd*i) /= coord_rescale;
+			*(coord0+nsd*i+1) /= coord_rescale;
+			*(coord0+nsd*i+2) /= coord_rescale;
+		}
+	   }
+	}
+
+	if( !input_flag )
+	{
+	    for ( i = 0; i < numnp; ++i)
+	    {
+	    	*(coord0 + nsd*i) = *(coord + nsd*i) - *(U + ndof*i);
+	    	*(coord0 + nsd*i + 1) = *(coord + nsd*i + 1) - *(U + ndof*i + 1);
+	    	*(coord0 + nsd*i + 2) = *(coord + nsd*i + 2) - *(U + ndof*i + 2);
+	    }
+	}
 
 	check = teset( bc, connecter, force, force_vec0, strain_node,
 		strain_color, stress_node, stress_color, U, U_color);

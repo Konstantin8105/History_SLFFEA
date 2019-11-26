@@ -1,5 +1,5 @@
    numel numnp nmat  nmode  (This is for a brick "rubber")
-40 84 1   -5
+40 84 1   0
 matl no., E modulus and Poisson Ratio, density
 0    1000000 .27     7640.0000
 el no., connectivity, matl no

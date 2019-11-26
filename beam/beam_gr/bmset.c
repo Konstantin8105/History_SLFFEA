@@ -2,11 +2,11 @@
     This program sets viewing and analysis values based on the parameters 
     determined in bmparameters for the FEM GUI for beam elements.
   
-   			Last Update 6/9/01
+   			Last Update 3/3/05
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le 
+    Version:  1.3
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -106,10 +106,16 @@ int bmset( BOUND bc, CURVATURE *curve, ICURVATURE *curve_color, double *dist_loa
 	   	(max_curve.zz - min_curve.zz + SMALL)/(double)(boxnumber);
 	del_strain.xx =
 	   	(max_strain.xx - min_strain.xx + SMALL)/(double)(boxnumber);
+	del_strain.xy =
+	   	(max_strain.xy - min_strain.xy + SMALL)/(double)(boxnumber);
+	del_strain.zx =
+	   	(max_strain.zx - min_strain.zx + SMALL)/(double)(boxnumber);
 	curve_div[0].xx = min_curve.xx;
 	curve_div[0].yy = min_curve.yy;
 	curve_div[0].zz = min_curve.zz;
 	strain_div[0].xx = min_strain.xx;
+	strain_div[0].xy = min_strain.xy;
+	strain_div[0].zx = min_strain.zx;
 	/*printf(" max min curve xx %10.5e %10.5e \n", max_curve.xx, min_curve.xx);
 	printf(" curve div xx %10.5e \n", curve_div[0].xx);*/
         for( i = 0; i < boxnumber; ++i )
@@ -118,6 +124,8 @@ int bmset( BOUND bc, CURVATURE *curve, ICURVATURE *curve_color, double *dist_loa
 		curve_div[i+1].yy = curve_div[i].yy + del_curve.yy;
 		curve_div[i+1].zz = curve_div[i].zz + del_curve.zz;
 		strain_div[i+1].xx = strain_div[i].xx + del_strain.xx;
+		strain_div[i+1].xy = strain_div[i].xy + del_strain.xy;
+		strain_div[i+1].zx = strain_div[i].zx + del_strain.zx;
 		/*printf(" curve div xx %10.5e \n", curve_div[i+1].xx);*/
         }
 
@@ -131,10 +139,16 @@ int bmset( BOUND bc, CURVATURE *curve, ICURVATURE *curve_color, double *dist_loa
 	   	(max_moment.zz - min_moment.zz + SMALL)/(double)(boxnumber);
 	del_stress.xx =
 	   	(max_stress.xx - min_stress.xx + SMALL)/(double)(boxnumber);
+	del_stress.xy =
+	   	(max_stress.xy - min_stress.xy + SMALL)/(double)(boxnumber);
+	del_stress.zx =
+	   	(max_stress.zx - min_stress.zx + SMALL)/(double)(boxnumber);
 	moment_div[0].xx = min_moment.xx;
 	moment_div[0].yy = min_moment.yy;
 	moment_div[0].zz = min_moment.zz;
 	stress_div[0].xx = min_stress.xx;
+	stress_div[0].xy = min_stress.xy;
+	stress_div[0].zx = min_stress.zx;
 	/*printf(" max min moment xx %10.5e %10.5e \n", max_moment.xx, min_moment.xx);
 	printf(" moment div xx %10.5e \n", moment_div[0].xx);*/
         for( i = 0; i < boxnumber; ++i )
@@ -143,6 +157,8 @@ int bmset( BOUND bc, CURVATURE *curve, ICURVATURE *curve_color, double *dist_loa
 		moment_div[i+1].yy = moment_div[i].yy + del_moment.yy;
 		moment_div[i+1].zz = moment_div[i].zz + del_moment.zz;
 		stress_div[i+1].xx = stress_div[i].xx + del_stress.xx;
+		stress_div[i+1].xy = stress_div[i].xy + del_stress.xy;
+		stress_div[i+1].zx = stress_div[i].zx + del_stress.zx;
 		/*printf(" moment div xx %10.5e \n", moment_div[i+1].xx);*/
         }
 
@@ -343,16 +359,25 @@ int bmset( BOUND bc, CURVATURE *curve, ICURVATURE *curve_color, double *dist_loa
 	       /*printf(" Uphi_z %d %10.5e %d \n", i,
 			*(U+ndof*i + 5), *(U_color+ndof*i + 5));*/
         }
-/* Assign colors to curves, strains, moments and stresses */
+/* Assign colors to curves, strains, moments and stresses.
+
+   Trusses and hinged elements do not have curvature or moments
+   and trusses do not have shear.  This means that:
+
+   if el_type == 1, 5, 7 only assign color for stress.xx/strain.xx
+   if el_type == 4, only assign color for stress.xx/strain.xx
+                    stress.xy/strain.xy, and stress.zx/strain.zx
+
+*/
 
         for( i = 0; i < numel; ++i )
         {
 	    type_num = *(el_type + i);
             for( j = 0; j < num_int; ++j )
             {
-/* Assign colors for curve xx */
-               if( type_num > 1 )
+	       if( type_num != 1 && type_num != 4 && type_num != 5 && type_num != 7 )
                {
+/* Assign colors for curve xx */
                    curve_color[i].pt[j].xx = 0;
                    if(  curve[i].pt[j].xx > curve_div[1].xx )
                    {
@@ -487,9 +512,81 @@ int bmset( BOUND bc, CURVATURE *curve, ICURVATURE *curve_color, double *dist_loa
                }
                /*printf(" strain xx %d %d %10.5e %d \n", i, j,
                         strain[i].pt[j].xx, strain_color[i].pt[j].xx);*/
-/* Assign colors for moment xx */
-               if( type_num > 1 )
+	       if( type_num != 1 && type_num != 5 && type_num != 7 )
                {
+/*     Assign colors for strain xy */
+                   strain_color[i].pt[j].xy = 0;
+                   if(  strain[i].pt[j].xy > strain_div[1].xy )
+                   {
+                      strain_color[i].pt[j].xy = 1;
+                      if(  strain[i].pt[j].xy > strain_div[2].xy )
+                      {
+                         strain_color[i].pt[j].xy = 2;
+                         if(  strain[i].pt[j].xy > strain_div[3].xy )
+                         {
+                            strain_color[i].pt[j].xy = 3;
+                            if(  strain[i].pt[j].xy > strain_div[4].xy )
+                            {
+                               strain_color[i].pt[j].xy = 4;
+                               if(  strain[i].pt[j].xy > strain_div[5].xy )
+                               {
+                                  strain_color[i].pt[j].xy = 5;
+                                  if(  strain[i].pt[j].xy > strain_div[6].xy )
+                                  {
+                                     strain_color[i].pt[j].xy = 6;
+                                     if(  strain[i].pt[j].xy > strain_div[7].xy )
+                                     {
+                                        strain_color[i].pt[j].xy = 7;
+                                     }
+                                  }
+                               }
+                            }
+                         }
+                      }
+                   }
+                   /*printf(" strain xy %d %d %10.5e %d \n", i, j,
+                            strain[i].pt[j].xy, strain_color[i].pt[j].xy);*/
+/*     Assign colors for strain zx */
+                   strain_color[i].pt[j].zx = 0;
+                   if(  strain[i].pt[j].zx > strain_div[1].zx )
+                   {
+                      strain_color[i].pt[j].zx = 1;
+                      if(  strain[i].pt[j].zx > strain_div[2].zx )
+                      {
+                         strain_color[i].pt[j].zx = 2;
+                         if(  strain[i].pt[j].zx > strain_div[3].zx )
+                         {
+                            strain_color[i].pt[j].zx = 3;
+                            if(  strain[i].pt[j].zx > strain_div[4].zx )
+                            {
+                               strain_color[i].pt[j].zx = 4;
+                               if(  strain[i].pt[j].zx > strain_div[5].zx )
+                               {
+                                  strain_color[i].pt[j].zx = 5;
+                                  if(  strain[i].pt[j].zx > strain_div[6].zx )
+                                  {
+                                     strain_color[i].pt[j].zx = 6;
+                                     if(  strain[i].pt[j].zx > strain_div[7].zx )
+                                     {
+                                        strain_color[i].pt[j].zx = 7;
+                                     }
+                                  }
+                               }
+                            }
+                         }
+                      }
+                   }
+                   /*printf(" strain zx %d %d %10.5e %d \n", i, j,
+                            strain[i].pt[j].zx, strain_color[i].pt[j].zx);*/
+               }
+               else
+               {
+                   strain_color[i].pt[j].xy = 12;
+                   strain_color[i].pt[j].zx = 12;
+               }
+	       if( type_num != 1 && type_num != 4 && type_num != 5 && type_num != 7 )
+               {
+/* Assign colors for moment xx */
                    moment_color[i].pt[j].xx = 0;
                    if(  moment[i].pt[j].xx > moment_div[1].xx )
                    {
@@ -521,6 +618,7 @@ int bmset( BOUND bc, CURVATURE *curve, ICURVATURE *curve_color, double *dist_loa
                    }
                    /*printf(" moment xx %d %d %10.5e %d \n", i, j,
                             moment[i].pt[j].xx, moment_color[i].pt[j].xx);*/
+/* Assign colors for moment zz */
 /* Assign colors for moment yy */
                    moment_color[i].pt[j].yy = 0;
                    if(  moment[i].pt[j].yy > moment_div[1].yy )
@@ -624,6 +722,78 @@ int bmset( BOUND bc, CURVATURE *curve, ICURVATURE *curve_color, double *dist_loa
                }
                /*printf(" stress xx %d %d %10.5e %d \n", i, j,
                         stress[i].pt[j].xx, stress_color[i].pt[j].xx);*/
+	       if( type_num != 1 && type_num != 5 && type_num != 7 )
+               {
+/* Assign colors for stress xy */
+                   stress_color[i].pt[j].xy = 0;
+                   if(  stress[i].pt[j].xy > stress_div[1].xy )
+                   {
+                      stress_color[i].pt[j].xy = 1;
+                      if(  stress[i].pt[j].xy > stress_div[2].xy )
+                      {
+                         stress_color[i].pt[j].xy = 2;
+                         if(  stress[i].pt[j].xy > stress_div[3].xy )
+                         {
+                            stress_color[i].pt[j].xy = 3;
+                            if(  stress[i].pt[j].xy > stress_div[4].xy )
+                            {
+                               stress_color[i].pt[j].xy = 4;
+                               if(  stress[i].pt[j].xy > stress_div[5].xy )
+                               {
+                                  stress_color[i].pt[j].xy = 5;
+                                  if(  stress[i].pt[j].xy > stress_div[6].xy )
+                                  {
+                                     stress_color[i].pt[j].xy = 6;
+                                     if(  stress[i].pt[j].xy > stress_div[7].xy )
+                                     {
+                                        stress_color[i].pt[j].xy = 7;
+                                     }
+                                  }
+                               }
+                            }
+                         }
+                      }
+                   }
+                   /*printf(" stress xy %d %d %10.5e %d \n", i, j,
+                            stress[i].pt[j].xy, stress_color[i].pt[j].xy);*/
+/* Assign colors for stress zx */
+                   stress_color[i].pt[j].zx = 0;
+                   if(  stress[i].pt[j].zx > stress_div[1].zx )
+                   {
+                      stress_color[i].pt[j].zx = 1;
+                      if(  stress[i].pt[j].zx > stress_div[2].zx )
+                      {
+                         stress_color[i].pt[j].zx = 2;
+                         if(  stress[i].pt[j].zx > stress_div[3].zx )
+                         {
+                            stress_color[i].pt[j].zx = 3;
+                            if(  stress[i].pt[j].zx > stress_div[4].zx )
+                            {
+                               stress_color[i].pt[j].zx = 4;
+                               if(  stress[i].pt[j].zx > stress_div[5].zx )
+                               {
+                                  stress_color[i].pt[j].zx = 5;
+                                  if(  stress[i].pt[j].zx > stress_div[6].zx )
+                                  {
+                                     stress_color[i].pt[j].zx = 6;
+                                     if(  stress[i].pt[j].zx > stress_div[7].zx )
+                                     {
+                                        stress_color[i].pt[j].zx = 7;
+                                     }
+                                  }
+                               }
+                            }
+                         }
+                      }
+                   }
+                   /*printf(" stress zx %d %d %10.5e %d \n", i, j,
+                            stress[i].pt[j].zx, stress_color[i].pt[j].zx);*/
+               }
+               else
+               {
+                   stress_color[i].pt[j].xy = 12;
+                   stress_color[i].pt[j].zx = 12;
+               }
             }
         }
 

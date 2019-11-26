@@ -1,5 +1,5 @@
    numel numnp nmat nmode This is for a 6 node wedge
-390 348 1 -5
+390 348 1 0
 matl no., E modulus, Poisson Ratio, and density
    0   1.000000e+07   3.000000e-01   2.238300e+03
 el no., connectivity, matl no

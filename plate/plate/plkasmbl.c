@@ -5,8 +5,8 @@
 		Updated 9/27/01
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le 
+    Version:  1.3
+    Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -23,7 +23,7 @@
 
 extern int analysis_flag, dof, neqn, numel, numnp, sof;
 extern int gauss_stress_flag;
-extern int lin_algebra_flag, numel_K, numel_P;
+extern int LU_decomp_flag, numel_K, numel_P;
 extern SH shg, shg_node, shl, shl_node;
 extern double shl_node2[sosh_node2], w[num_int+1], *Area0;
 
@@ -94,19 +94,19 @@ int plKassemble(double *A, int *connect, double *coord, CURVATURE *curve, MDIM *
 
 /* Create the coord_el transpose vector for one element */
 
-                for( j = 0; j < npel; ++j )
-                {
+		for( j = 0; j < npel; ++j )
+		{
 			node = *(connect+npel*k+j);
 
-                	*(sdof_el+nsd*j) = nsd*node;
-                	*(sdof_el+nsd*j+1) = nsd*node+1;
+			*(sdof_el+nsd*j) = nsd*node;
+			*(sdof_el+nsd*j+1) = nsd*node+1;
 
-                        *(coord_el_trans+j)=*(coord+*(sdof_el+nsd*j));
-                        *(coord_el_trans+npel*1+j)=*(coord+*(sdof_el+nsd*j+1));
+			*(coord_el_trans+j)=*(coord+*(sdof_el+nsd*j));
+			*(coord_el_trans+npel*1+j)=*(coord+*(sdof_el+nsd*j+1));
 
-                	*(dof_el+ndof*j) = ndof*node;
-                	*(dof_el+ndof*j+1) = ndof*node+1;
-                	*(dof_el+ndof*j+2) = ndof*node+2;
+			*(dof_el+ndof*j) = ndof*node;
+			*(dof_el+ndof*j+1) = ndof*node+1;
+			*(dof_el+ndof*j+2) = ndof*node+2;
 
 /* Count the number of times a particular node is part of an element */
 
@@ -195,7 +195,7 @@ int plKassemble(double *A, int *connect, double *coord, CURVATURE *curve, MDIM *
 /* Assembly of either the global skylined stiffness matrix or numel_K of the
    element stiffness matrices if the Conjugate Gradient method is used */
 
-			if(lin_algebra_flag)
+			if(LU_decomp_flag)
 			{
 			    check = globalKassemble(A, idiag, K_el, (lm + k*neqel),
 				neqel);
@@ -375,10 +375,10 @@ int plKassemble(double *A, int *connect, double *coord, CURVATURE *curve, MDIM *
 	if(analysis_flag == 1)
 	{
 
-/* Contract the global force matrix using the id array only if linear
-   algebra is used. */
+/* Contract the global force matrix using the id array only if LU decomposition
+   is used. */
 
-	  if(lin_algebra_flag)
+	  if(LU_decomp_flag)
 	  {
 	     counter = 0;
 	     for( i = 0; i < dof ; ++i )

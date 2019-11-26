@@ -6,11 +6,11 @@
     which allocates the memory and goes through the steps of the algorithm.
     These go with the calculation of displacement.
 
-		Updated 12/11/02
+		Updated 1/7/03
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le 
+    Version:  1.3
+    Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -28,7 +28,7 @@
 #define SMALL      1.e-20
 
 extern int analysis_flag, dof, numel, numnp, plane_stress_flag, sof;
-extern int lin_algebra_flag, numel_K, numel_P;
+extern int LU_decomp_flag, numel_K, numel_P;
 extern double shg[sosh], shl[sosh], w[num_int], *Area0;
 extern int  iteration_max, iteration_const, iteration;
 extern double tolerance;
@@ -47,12 +47,12 @@ int qdBoundary( double *, BOUND );
 
 
 int qdConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *matl,
-	double *P_global, double *U)
+	double *P_global_CG, double *U)
 {
-/* This function assembles the P_global matrix for the displacement calculation by
+/* This function assembles the P_global_CG matrix for the displacement calculation by
    taking the product [K_el]*[U_el].  Some of the [K_el] is stored in [A].
 
-			Updated 7/7/00
+			Updated 12/18/02
 */
 	int i, i1, i2, j, k, dof_el[neqel], sdof_el[npel*nsd];
 	int check, node;
@@ -69,7 +69,7 @@ int qdConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *
 	double P_el[neqel];
 
 
-	memset(P_global,0,dof*sof);
+	memset(P_global_CG,0,dof*sof);
 
 	for( k = 0; k < numel_K; ++k )
 	{
@@ -95,7 +95,7 @@ int qdConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *
 
 		for( j = 0; j < neqel; ++j )
 		{
-			*(P_global+*(dof_el+j)) += *(P_el+j);
+			*(P_global_CG+*(dof_el+j)) += *(P_el+j);
 		}
 	}
 
@@ -197,7 +197,7 @@ int qdConjPassemble(double *A, int *connect, double *coord, int *el_matl, MATL *
 
 		for( j = 0; j < neqel; ++j )
 		{
-			*(P_global+*(dof_el+j)) += *(P_el+j);
+			*(P_global_CG+*(dof_el+j)) += *(P_el+j);
 		}
 	}
 
@@ -213,7 +213,7 @@ int qdConjGrad(double *A, BOUND bc, int *connect, double *coord, int *el_matl,
    displacements.  It also makes the call to qdConjPassemble to get the
    product of [A]*[p].
 
-			Updated 12/11/02
+			Updated 1/7/03
 
    It is taken from the algorithm 10.3.1 given in "Matrix Computations",
    by Golub, page 534.
@@ -221,12 +221,12 @@ int qdConjGrad(double *A, BOUND bc, int *connect, double *coord, int *el_matl,
 	int i, j, sofmf, ptr_inc;
 	int check, counter;
 	double *mem_double;
-	double *p, *P_global, *r, *rm1, *z, *zm1;
+	double *p, *P_global_CG, *r, *z;
 	double alpha, alpha2, beta;
 	double fdum, fdum2;
 
 /* For the doubles */
-	sofmf = 6*dof;
+	sofmf = 4*dof;
 	mem_double=(double *)calloc(sofmf,sizeof(double));
 
 	if(!mem_double )
@@ -239,20 +239,16 @@ int qdConjGrad(double *A, BOUND bc, int *connect, double *coord, int *el_matl,
 
 	                                        ptr_inc = 0;
 	p=(mem_double+ptr_inc);                 ptr_inc += dof;
-	P_global=(mem_double+ptr_inc);          ptr_inc += dof;
-	rm1=(mem_double+ptr_inc);               ptr_inc += dof;
+	P_global_CG=(mem_double+ptr_inc);       ptr_inc += dof;
 	r=(mem_double+ptr_inc);                 ptr_inc += dof;
 	z=(mem_double+ptr_inc);                 ptr_inc += dof;
-	zm1=(mem_double+ptr_inc);               ptr_inc += dof;
 
 /* Using Conjugate gradient method to find displacements */
 
-	memset(P_global,0,dof*sof);
+	memset(P_global_CG,0,dof*sof);
 	memset(p,0,dof*sof);
 	memset(r,0,dof*sof);
-	memset(rm1,0,dof*sof);
 	memset(z,0,dof*sof);
-	memset(zm1,0,dof*sof);
 
 	for( j = 0; j < dof; ++j )
 	{
@@ -280,21 +276,19 @@ int qdConjGrad(double *A, BOUND bc, int *connect, double *coord, int *el_matl,
 	{
 
 		printf( "\n %3d %16.8e\n",counter, fdum2);
-		check = qdConjPassemble( A, connect, coord, el_matl, matl, P_global, p);
+		check = qdConjPassemble( A, connect, coord, el_matl, matl, P_global_CG, p);
 		if(!check) printf( " Problems with qdConjPassemble \n");
-		check = qdBoundary (P_global, bc);
+		check = qdBoundary (P_global_CG, bc);
 		if(!check) printf( " Problems with qdBoundary \n");
-		check = dotX(&alpha2, p, P_global, dof);	
+		check = dotX(&alpha2, p, P_global_CG, dof);	
 		alpha = fdum/(SMALL + alpha2);
 
 		for( j = 0; j < dof; ++j )
 		{
 		    /*printf( "%4d %14.5e  %14.5e  %14.5e  %14.5e  %14.5e %14.5e\n",j,alpha,
-			beta,*(U+j),*(r+j),*(P_global+j),*(p+j));*/
-		    *(rm1+j) = *(r + j); 
-		    *(zm1+j) = *(z + j); 
+			beta,*(U+j),*(r+j),*(P_global_CG+j),*(p+j));*/
 		    *(U+j) += alpha*(*(p+j));
-		    *(r+j) -=  alpha*(*(P_global+j));
+		    *(r+j) -=  alpha*(*(P_global_CG+j));
 		    *(z + j) = *(r + j)/(*(K_diag + j));
 		}
 
@@ -304,14 +298,13 @@ int qdConjGrad(double *A, BOUND bc, int *connect, double *coord, int *el_matl,
 		
 		for( j = 0; j < dof; ++j )
 		{
-		    /*printf("\n  %3d %12.7f  %14.5f ",j,*(U+j),*(P_global+j));*/
+		    /*printf("\n  %3d %12.7f  %14.5f ",j,*(U+j),*(P_global_CG+j));*/
 		    /*printf( "%4d %14.5f  %14.5f  %14.5f  %14.5f %14.5f\n",j,alpha,
-			*(U+j),*(r+j),*(P_global+j),*(force+j));
+			*(U+j),*(r+j),*(P_global_CG+j),*(force+j));
 		    printf( "%4d %14.8f  %14.8f  %14.8f  %14.8f %14.8f\n",j,
-			*(U+j)*bet,*(r+j)*bet,*(P_global+j)*alp/(*(mass+j)),
+			*(U+j)*bet,*(r+j)*bet,*(P_global_CG+j)*alp/(*(mass+j)),
 			*(force+j)*alp/(*(mass+j)));*/
 		    *(p+j) = *(z+j)+beta*(*(p+j));
-
 		}
 		check = qdBoundary (p, bc);
 		if(!check) printf( " Problems with qdBoundary \n");
@@ -328,17 +321,17 @@ int qdConjGrad(double *A, BOUND bc, int *connect, double *coord, int *el_matl,
 The lines below are for testing the quality of the calculation:
 
 1) r should be 0.0
-2) P_global( = A*U ) - force should be 0.0
+2) P_global_CG( = A*U ) - force should be 0.0
 */
 
 /*
-	check = qdConjPassemble( A, connect, coord, el_matl, matl, P_global, U);
+	check = qdConjPassemble( A, connect, coord, el_matl, matl, P_global_CG, U);
 	if(!check) printf( " Problems with qdConjPassemble \n");
 
 	for( j = 0; j < dof; ++j )
 	{
 		printf( "%4d %14.5f  %14.5f %14.5f  %14.5f  %14.5f %14.5f\n",j,alpha,beta,
-			*(U+j),*(r+j),*(P_global+j),*(force+j));
+			*(U+j),*(r+j),*(P_global_CG+j),*(force+j));
 	}
 */
 

@@ -5,8 +5,8 @@
 		Updated 9/25/06
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le 
+    Version:  1.3
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -21,9 +21,10 @@
 #include "shconst.h"
 #include "shstruct.h"
 
-extern int analysis_flag, dof, integ_flag, numel, numnp, neqn, sof;
+extern int analysis_flag, dof, sdof, integ_flag, doubly_curved_flag,
+	numel, numnp, neqn, sof;
 extern int gauss_stress_flag;
-extern int lin_algebra_flag, numel_K, numel_P;
+extern int LU_decomp_flag, numel_K, numel_P;
 extern SH shg, shg_node, shl, shl_node;
 extern ROTATE rotate, rotate_node;
 extern double w[num_int];
@@ -50,15 +51,16 @@ int shshg( double *, int , SH , SH , XL , double *, double *, double *,
 
 int normcrossX(double *, double *, double *);
 
-int shKassemble(double *A, int *connect, double *coord, int *el_matl, double *force,
-	int *id, int *idiag, double *K_diag, int *lm, MATL *matl,
+int shKassemble(double *A, int *connect, double *coord, int *el_matl, double *fiber_vec,
+	double *force, int *id, int *idiag, double *K_diag, int *lm, MATL *matl,
 	double *node_counter, STRAIN *strain, SDIM *strain_node, STRESS *stress,
 	SDIM *stress_node, double *U)
 {
         int i, i1, i2, i3, i4, i5, j, k, dof_el[neqel], sdof_el[npel*nsd];
 	int check, counter, node;
 	int matl_num;
-	double Emod, Pois, G1, G2, G3, shearK, const1, const2, fdum1, fdum2, fdum3, fdum4;
+	double Emod, Pois, G1, G2, G3, shearK, thickness, const1, const2,
+		fdum1, fdum2, fdum3, fdum4;
 	double D11,D12,D21,D22;
         double B[soB], DB[soB];
         double K_temp[neqlsq], K_el[neqlsq];
@@ -78,6 +80,7 @@ int shKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
 		Emod = matl[matl_num].E;
 		Pois = matl[matl_num].nu;
 		shearK = matl[matl_num].shear;
+		thickness = matl[matl_num].thick;
 
 /* The constants below are for plane stress */
 
@@ -97,70 +100,88 @@ int shKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
 
 /* Create the coord transpose vector and other variables for one element */
 
-                for( j = 0; j < npell; ++j )
-                {
+		for( j = 0; j < npell; ++j )
+		{
 			node = *(connect+npell*k+j);
 
-                        *(sdof_el+nsd*j)=nsd*node;
-                        *(sdof_el+nsd*j+1)=nsd*node+1;
-                        *(sdof_el+nsd*j+2)=nsd*node+2;
+			*(sdof_el+nsd*j)=nsd*node;
+			*(sdof_el+nsd*j+1)=nsd*node+1;
+			*(sdof_el+nsd*j+2)=nsd*node+2;
 
-                        *(sdof_el+nsd*npell+nsd*j)=nsd*(node+numnp);
-                        *(sdof_el+nsd*npell+nsd*j+1)=nsd*(node+numnp)+1;
-                        *(sdof_el+nsd*npell+nsd*j+2)=nsd*(node+numnp)+2;
+			*(sdof_el+nsd*npell+nsd*j)=nsd*(node+numnp);
+			*(sdof_el+nsd*npell+nsd*j+1)=nsd*(node+numnp)+1;
+			*(sdof_el+nsd*npell+nsd*j+2)=nsd*(node+numnp)+2;
 
-                        *(dof_el+ndof*j) = ndof*node;
-                        *(dof_el+ndof*j+1) = ndof*node+1;
-                        *(dof_el+ndof*j+2) = ndof*node+2;
-                        *(dof_el+ndof*j+3) = ndof*node+3;
-                        *(dof_el+ndof*j+4) = ndof*node+4;
+			*(dof_el+ndof*j) = ndof*node;
+			*(dof_el+ndof*j+1) = ndof*node+1;
+			*(dof_el+ndof*j+2) = ndof*node+2;
+			*(dof_el+ndof*j+3) = ndof*node+3;
+			*(dof_el+ndof*j+4) = ndof*node+4;
 
 /* Count the number of times a particular node is part of an element */
 
 			if(analysis_flag == 1)
 			{
-				*(node_counter + node) += 1.0;
-				*(node_counter + node + numnp) += 1.0;
+			    *(node_counter + node) += 1.0;
+			    *(node_counter + node + numnp) += 1.0;
+#if 0
+/* This code was for when the singly curved 4 node shells were of constant thickness.
+   Currently, an averaging of the thicknesses over each node is being done in
+   "shTopCoordinates" to calculate the corresponding top nodes for the entire mesh.
+*/
+			    if(!doubly_curved_flag)
+			    {
+				*(coord+*(sdof_el+nsd*j)+sdof) =
+				    *(coord+*(sdof_el+nsd*j)) +
+				    *(fiber_vec+*(sdof_el+nsd*j))*thickness;
+				*(coord+*(sdof_el+nsd*j+1)+sdof) =
+				    *(coord+*(sdof_el+nsd*j+1)) +
+				    *(fiber_vec+*(sdof_el+nsd*j+1))*thickness;
+				*(coord+*(sdof_el+nsd*j+2)+sdof) =
+				    *(coord+*(sdof_el+nsd*j+2)) +
+				    *(fiber_vec+*(sdof_el+nsd*j+2))*thickness;
+			    }
+#endif
 			}
 
 /* Create the coord -/+*/
 
-                        *(coord_el_trans+j) =
+			*(coord_el_trans+j) =
 				*(coord+*(sdof_el+nsd*j));
-                        *(coord_el_trans+npel*1+j) =
+			*(coord_el_trans+npel*1+j) =
 				*(coord+*(sdof_el+nsd*j+1));
-                        *(coord_el_trans+npel*2+j) =
+			*(coord_el_trans+npel*2+j) =
 				*(coord+*(sdof_el+nsd*j+2));
 
-                        *(coord_el_trans+npell+j) =
+			*(coord_el_trans+npell+j) =
 				*(coord+*(sdof_el+nsd*npell+nsd*j));
-                        *(coord_el_trans+npel*1+npell+j) =
+			*(coord_el_trans+npel*1+npell+j) =
 				*(coord+*(sdof_el+nsd*npell+nsd*j+1));
-                        *(coord_el_trans+npel*2+npell+j) =
+			*(coord_el_trans+npel*2+npell+j) =
 				*(coord+*(sdof_el+nsd*npell+nsd*j+2));
 
 /* Create the coord_bar and coord_hat vector for one element */
 
-                        xl.bar[j]=.5*( *(coord_el_trans+j)*(1.0-zeta)+
+			xl.bar[j]=.5*( *(coord_el_trans+j)*(1.0-zeta)+
 				*(coord_el_trans+npell+j)*(1.0+zeta));
-                        xl.bar[npell*1+j]=.5*( *(coord_el_trans+npel*1+j)*(1.0-zeta)+
+			xl.bar[npell*1+j]=.5*( *(coord_el_trans+npel*1+j)*(1.0-zeta)+
 				*(coord_el_trans+npel*1+npell+j)*(1.0+zeta));
-                        xl.bar[npell*2+j]=.5*( *(coord_el_trans+npel*2+j)*(1.0-zeta)+
+			xl.bar[npell*2+j]=.5*( *(coord_el_trans+npel*2+j)*(1.0-zeta)+
 				*(coord_el_trans+npel*2+npell+j)*(1.0+zeta));
 
-                        xl.hat[j]=*(coord_el_trans+npell+j)-*(coord_el_trans+j);
-                        xl.hat[npell*1+j]=*(coord_el_trans+npel*1+npell+j)-
+			xl.hat[j]=*(coord_el_trans+npell+j)-*(coord_el_trans+j);
+			xl.hat[npell*1+j]=*(coord_el_trans+npel*1+npell+j)-
 				*(coord_el_trans+npel*1+j);
-                        xl.hat[npell*2+j]=*(coord_el_trans+npel*2+npell+j)-
+			xl.hat[npell*2+j]=*(coord_el_trans+npel*2+npell+j)-
 				*(coord_el_trans+npel*2+j);
 
 			fdum1=fabs(xl.hat[j]);
 			fdum2=fabs(xl.hat[npell*1+j]);
 			fdum3=fabs(xl.hat[npell*2+j]);
 			fdum4=sqrt(fdum1*fdum1+fdum2*fdum2+fdum3*fdum3);
-                        xl.hat[j] /= fdum4;
-                        xl.hat[npell*1+j] /= fdum4;
-                        xl.hat[npell*2+j] /= fdum4;
+			xl.hat[j] /= fdum4;
+			xl.hat[npell*1+j] /= fdum4;
+			xl.hat[npell*2+j] /= fdum4;
 			*(zp1+j)=.5*(1.0-zeta)*fdum4;
 			*(zm1+j)=-.5*(1.0+zeta)*fdum4;
 /*
@@ -174,7 +195,7 @@ int shKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
    product of xl.hat and vec_dum produces the local y fiber direction.  This local y is
    then crossed with xl.hat to produce local x.
 */
-        	       	memset(vec_dum,0,nsd*sof);
+		       	memset(vec_dum,0,nsd*sof);
 			i2=1;
 			if( fdum1 > fdum3)
 			{
@@ -183,16 +204,16 @@ int shKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
 			}
 			if( fdum2 > fdum3) i2=3;
 			*(vec_dum+(i2-1))=1.0;
-                	rotate.f_shear[nsdsq*j+2*nsd]=xl.hat[j];
-                	rotate.f_shear[nsdsq*j+2*nsd+1]=xl.hat[npell*1+j];
-                	rotate.f_shear[nsdsq*j+2*nsd+2]=xl.hat[npell*2+j];
-                	check = normcrossX((rotate.f_shear+nsdsq*j+2*nsd),
+			rotate.f_shear[nsdsq*j+2*nsd]=xl.hat[j];
+			rotate.f_shear[nsdsq*j+2*nsd+1]=xl.hat[npell*1+j];
+			rotate.f_shear[nsdsq*j+2*nsd+2]=xl.hat[npell*2+j];
+			check = normcrossX((rotate.f_shear+nsdsq*j+2*nsd),
 			    vec_dum,(rotate.f_shear+nsdsq*j+1*nsd));
-                	if(!check) printf( "Problems with normcrossX \n");
-                	check = normcrossX((rotate.f_shear+nsdsq*j+1*nsd),
+			if(!check) printf( "Problems with normcrossX \n");
+			check = normcrossX((rotate.f_shear+nsdsq*j+1*nsd),
 			    (rotate.f_shear+nsdsq*j+2*nsd),(rotate.f_shear+nsdsq*j));
-                	if(!check) printf( "Problems with normcrossX \n");
-                }
+			if(!check) printf( "Problems with normcrossX \n");
+		}
 
 		memcpy(rotate_node.f_shear,rotate.f_shear,sorfs*sizeof(double));
 
@@ -308,7 +329,7 @@ int shKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
 /* Assembly of either the global skylined stiffness matrix or numel_K of the
    element stiffness matrices if the Conjugate Gradient method is used */
 
-			if(lin_algebra_flag)
+			if(LU_decomp_flag)
 			{
 			    check = globalKassemble(A, idiag, K_el, (lm + k*neqel),
 				neqel);
@@ -447,6 +468,7 @@ int shKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
 /* The code below assumed a plane state of stress which I now feel is incorrect.  So I
    calculate all 3 principal stresses and strains.
 */
+   
 				xxaddyy = .5*(strain[k].pt[i5].xx + strain[k].pt[i5].yy);
 				xxsubyy = .5*(strain[k].pt[i5].xx - strain[k].pt[i5].yy);
 				xysq = strain[k].pt[i5].xy*strain[k].pt[i5].xy;
@@ -470,14 +492,13 @@ int shKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
 				*(invariant+2) = -
 				     2*strain[k].pt[i5].yz*strain[k].pt[i5].zx*strain[k].pt[i5].xy +
 				     yzsq*strain[k].pt[i5].xx + zxsq*strain[k].pt[i5].yy;
-
+		 
 				check = cubic(invariant);
 
 				strain[k].pt[i5].I = *(invariant);
 				strain[k].pt[i5].II = *(invariant+1);
 				strain[k].pt[i5].III = *(invariant+2);
 #endif
-
 
 /* Add all the strains for a particular node from all the elements which share that node */
 
@@ -522,7 +543,6 @@ int shKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
 					+ xysq);
 				stress[k].pt[i5].II = xxaddyy - sqrt( xxsubyy*xxsubyy
 					+ xysq);
-
 #endif
 #if 1
 				memset(invariant,0,nsd*sof);
@@ -537,13 +557,14 @@ int shKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
 				*(invariant+2) = -
 				     2*stress[k].pt[i5].yz*stress[k].pt[i5].zx*stress[k].pt[i5].xy +
 				     yzsq*stress[k].pt[i5].xx + zxsq*stress[k].pt[i5].yy;
-
+		 
 				check = cubic(invariant);
 
 				stress[k].pt[i5].I = *(invariant);
 				stress[k].pt[i5].II = *(invariant+1);
 				stress[k].pt[i5].III = *(invariant+2);
 #endif
+
 
 /* Add all the stresses for a particular node from all the elements which share that node */
 
@@ -571,10 +592,10 @@ int shKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
 	if(analysis_flag == 1)
 	{
 
-/* Contract the global force matrix using the id array only if linear
-   algebra is used. */
+/* Contract the global force matrix using the id array only if LU decomposition
+   is used. */
 
-	  if(lin_algebra_flag)
+	  if(LU_decomp_flag)
 	  {
 	     counter = 0;
 	     for( i = 0; i < dof ; ++i )

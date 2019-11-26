@@ -2,11 +2,11 @@
     This program calculates and writes the parameters for
     the FEM GUI for truss elements.
   
-   			Last Update 6/12/01
+   			Last Update 1/24/02
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le 
+    Version:  1.3
+    Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -28,7 +28,7 @@
 
 extern int nmat, numnp, numel, dof;
 extern double step_sizex, step_sizey, step_sizez;
-extern double left, right, top, bottom, near, far, fscale;
+extern double left, right, top, bottom, near, far, fscale, coord_rescale;
 extern double cross_sec_left_right, cross_sec_up_down, cross_sec_in_out,
 	cross_sec_left_right0, cross_sec_up_down0, cross_sec_in_out0;
 extern int control_height, control_width, mesh_height, mesh_width;
@@ -48,7 +48,7 @@ extern double init_right, init_left, init_top,
 extern STRESS del_stress, max_stress, min_stress;
 extern STRAIN del_strain, max_strain, min_strain;
 extern double max_Ux, min_Ux, del_Ux, max_Uy, min_Uy, del_Uy,
-	max_Uz, min_Uz, del_Uz, absolute_max_U;
+	max_Uz, min_Uz, del_Uz, absolute_max_U, absolute_max_coord;
 
 int tsparameter( double *coord, STRAIN *strain, STRESS *stress, double *U )
 {
@@ -150,6 +150,64 @@ int tsparameter( double *coord, STRAIN *strain, STRESS *stress, double *U )
 			node_Uz_min = i;
 		}
         }
+
+/* Because Mesa has problems with Meshes that have dimensions larger than 1000
+   or smaller than .1, I am rescaling everything so that things are on the order
+   of 10.0.
+*/
+
+	absolute_max_coord = fabs(init_left);
+	if(absolute_max_coord < fabs(init_right)) absolute_max_coord = fabs(init_right);
+	if(absolute_max_coord < fabs(init_bottom)) absolute_max_coord = fabs(init_bottom);
+	if(absolute_max_coord < fabs(init_top)) absolute_max_coord = fabs(init_top);
+	if(absolute_max_coord < fabs(init_near)) absolute_max_coord = fabs(init_near);
+	if(absolute_max_coord < fabs(true_far)) absolute_max_coord = fabs(true_far);
+
+	coord_rescale = 1.0;
+	if( absolute_max_coord > 10.0 )     coord_rescale = 10.0;
+	if( absolute_max_coord > 100.0 )    coord_rescale = 100.0;
+	if( absolute_max_coord > 1000.0 )   coord_rescale = 1000.0;
+	if( absolute_max_coord > 10000.0 )  coord_rescale = 10000.0;
+	if( absolute_max_coord > 100000.0 ) coord_rescale = 100000.0;
+
+	if( absolute_max_coord < 1.0 )     coord_rescale = 0.1;
+	if( absolute_max_coord < 0.1 )     coord_rescale = 0.01;
+	if( absolute_max_coord < 0.01 )    coord_rescale = 0.001;
+	if( absolute_max_coord < 0.001 )   coord_rescale = 0.0001;
+	if( absolute_max_coord < 0.0001 )  coord_rescale = 0.00001;
+	if( absolute_max_coord < 0.00001 ) coord_rescale = 0.000001;
+
+/* Rescale coordinates and displacements */
+
+	
+	if( coord_rescale > 1.01 || coord_rescale < .99 )
+	{
+		for( i = 0; i < numnp; ++i )
+		{
+                        *(coord+nsd*i) /= coord_rescale;
+                        *(coord+nsd*i+1) /= coord_rescale;
+                        *(coord+nsd*i+2) /= coord_rescale;
+
+                        *(U+ndof*i) /= coord_rescale;
+                        *(U+ndof*i+1) /= coord_rescale;
+                        *(U+ndof*i+2) /= coord_rescale;
+
+		}
+
+		init_left /= coord_rescale;
+		init_right /= coord_rescale;
+		init_bottom /= coord_rescale;
+		init_top /= coord_rescale;
+		init_near /= coord_rescale;
+		true_far /= coord_rescale;
+
+		min_Ux /= coord_rescale;
+		max_Ux /= coord_rescale;
+		min_Uy /= coord_rescale;
+		max_Uy /= coord_rescale;
+		min_Uz /= coord_rescale;
+		max_Uz /= coord_rescale;
+	}
 
 /* Search for largest absolute value of displacement U */
 
@@ -312,11 +370,11 @@ int tsparameter( double *coord, STRAIN *strain, STRESS *stress, double *U )
 	fprintf( tsdata, "                            node\n");
 	fprintf( tsdata, "                          min  max       min            max\n");
 	fprintf( tsdata,"displacement Ux        %5d %5d   %14.6e %14.6e\n", node_Ux_min,
-		node_Ux_max, min_Ux, max_Ux);
+		node_Ux_max, min_Ux*coord_rescale, max_Ux*coord_rescale);
 	fprintf( tsdata,"displacement Uy        %5d %5d   %14.6e %14.6e\n", node_Uy_min,
-		node_Uy_max, min_Uy, max_Uy);
+		node_Uy_max, min_Uy*coord_rescale, max_Uy*coord_rescale);
 	fprintf( tsdata,"displacement Uz        %5d %5d   %14.6e %14.6e\n", node_Uz_min,
-		node_Uz_max, min_Uz, max_Uz);
+		node_Uz_max, min_Uz*coord_rescale, max_Uz*coord_rescale);
 	fprintf( tsdata,"\n");
 	fprintf( tsdata, "                        el. gauss pt.\n");
 	fprintf( tsdata, "                        min       max         min           max\n");

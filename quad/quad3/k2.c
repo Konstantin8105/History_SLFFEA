@@ -25,7 +25,7 @@
 extern int analysis_flag, dof, EMdof, neqn, EMneqn, numed, numel, numnp,
 	plane_stress_flag, sof;
 extern int B_matrix_store, Bzz_matrix_store, gauss_stress_flag;
-extern int lin_algebra_flag, Bzz_lin_algebra_flag, numel_EM, numel_P;
+extern int LU_decomp_flag, Bzz_LU_decomp_flag, numel_EM, numel_P;
 extern double dcdx[nsdsq*num_int], shg[sosh], shg_node[sosh], shl[sosh],
 	shl_node[sosh], shl_node2[sosh_node2], w[num_int], *Area0;
 
@@ -182,7 +182,7 @@ int qd3Kassemble(double *Att, double *Btt, double *Btz, double *Bzt, double *Bzz
 			  *(Att_el+i2) += *(Att_temp+i2)*fdum;
                     }
 
-		    if(Bzz_lin_algebra_flag || Bzz_matrix_store)
+		    if(Bzz_LU_decomp_flag || Bzz_matrix_store)
 		    {
 			check=matXT(Bzz_temp, gradB, gradB, EMneqel, EMneqel, nsd);
 			if(!check) printf( "Problems with matXT  \n");
@@ -253,7 +253,7 @@ int qd3Kassemble(double *Att, double *Btt, double *Btz, double *Bzt, double *Bzz
 /* Assembly of either the global skylined Att matrix or numel_EM of the
    element Att matrices if the Conjugate Gradient method is used */
 
-			if(lin_algebra_flag)
+			if(LU_decomp_flag)
 			{
 			    check = globalKassemble(Att, idiag, Att_el, (lm + k*EMneqel),
 				EMneqel);
@@ -266,7 +266,7 @@ int qd3Kassemble(double *Att, double *Btt, double *Btz, double *Bzt, double *Bzz
 			    if(!check) printf( "Problems with globalConjKassemble \n");
 			}
 
-			if(Bzz_lin_algebra_flag)
+			if(Bzz_LU_decomp_flag)
 			{
 			    check = globalKassemble(Bzz, idiag, Bzz_el, (lm + k*EMneqel),
 				EMneqel);
@@ -446,10 +446,10 @@ int qd3Kassemble(double *Att, double *Btt, double *Btz, double *Bzt, double *Bzz
 	if(analysis_flag == 1)
 	{
 
-/* Contract the global force matrix using the id array only if linear
-   algebra is used. */
+/* Contract the global force matrix using the id array only if LU decomposition
+   is used. */
 
-	  if(lin_algebra_flag)
+	  if(LU_decomp_flag)
 	  {
 	     counter = 0;
 	     for( i = 0; i < dof ; ++i )

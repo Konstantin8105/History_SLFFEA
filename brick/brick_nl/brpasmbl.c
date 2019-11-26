@@ -4,11 +4,11 @@
     nonlinearly.  The equations are solved using dynamic
     relaxation.   
 
-		Updated 12/17/02
+		Updated 1/7/03
 
     SLFFEA source file
     Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le 
+    Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -25,7 +25,7 @@
 
 extern int numel, numnp, dof, sof;
 extern double shg[sosh], shgh[sosh], shl[sosh], w[num_int], *Vol0;
-extern double dt;
+extern int Passemble_flag;
 
 int matX(double *,double *,double *, int ,int ,int );
 
@@ -36,20 +36,20 @@ int brickB(double *,double *);
 int brshg( double *, int, double *, double *, double *);
 
 int brPassemble(int *connect, double *coord, double *coordh, int *el_matl,
-	MATL *matl, double *P_global, STRESS *stress, double *V)
+	MATL *matl, double *P_global, STRESS *stress, double *dU)
 
 {
         int i,i1,i2,j,k,dof_el[npel*ndof],sdof_el[npel*nsd];
 	int check, node;
 	int matl_num;
 	double Emod, G, K, Pois;
-	double D11,D12,D13,D21,D22,D23,D31,D32,D33;
+	double D11, D12, D13, D21, D22, D23, D31, D32, D33;
 	double lamda, mu, hydro;
-        double B[soB],Bh[soB],stressd[sdim];
-        double P_el[neqel],P_temp[neqel];
-        double dU_el[neqel],domega_el[3],coord_el[npel*nsd],coordh_el[npel*nsd],
-		coord_el_trans[npel*nsd],coordh_el_trans[npel*nsd];
-	double stress_el[sdim], dstress_el[sdim], dstrain_el[sdim];
+        double B[soB], Bh[soB], stressd[sdim];
+        double P_el[neqel], P_temp[neqel];
+        double dU_el[neqel], domega_el[3], coord_el[npel*nsd], coordh_el[npel*nsd],
+		coord_el_trans[npel*nsd], coordh_el_trans[npel*nsd];
+	double stress_el[sdim],  dstress_el[sdim], dstrain_el[sdim];
 	double det[num_int], deth[num_int], wXdet;
 	int i4,i5,i5m1,i5m2;
 
@@ -81,40 +81,40 @@ int brPassemble(int *connect, double *coord, double *coordh, int *el_matl,
 /*      initialize P_el */
         	memset(P_el,0,neqel*sof);
 
-                for( j = 0; j < npel; ++j )
-                {
+		for( j = 0; j < npel; ++j )
+		{
 			node = *(connect+npel*k+j);
-                	*(sdof_el+nsd*j) = nsd*node;
-                	*(sdof_el+nsd*j+1) = nsd*node+1;
-                	*(sdof_el+nsd*j+2) = nsd*node+2;
+			*(sdof_el+nsd*j) = nsd*node;
+			*(sdof_el+nsd*j+1) = nsd*node+1;
+			*(sdof_el+nsd*j+2) = nsd*node+2;
 
-                	*(dof_el+ndof*j) = ndof*node;
-                	*(dof_el+ndof*j+1) = ndof*node+1;
-                	*(dof_el+ndof*j+2) = ndof*node+2;
+			*(dof_el+ndof*j) = ndof*node;
+			*(dof_el+ndof*j+1) = ndof*node+1;
+			*(dof_el+ndof*j+2) = ndof*node+2;
 
 /* Create the dU_el vector for one element */
 
-                	*(dU_el+ndof*j) = *(V+ndof*node)*dt;
-                	*(dU_el+ndof*j+1) = *(V+ndof*node+1)*dt;
-                	*(dU_el+ndof*j+2) = *(V+ndof*node+2)*dt;
+			*(dU_el+ndof*j) = *(dU+ndof*node);
+			*(dU_el+ndof*j+1) = *(dU+ndof*node+1);
+			*(dU_el+ndof*j+2) = *(dU+ndof*node+2);
 
 /* Create the coord vector and coordh_trans for one element */
 
-                	*(coord_el+nsd*j) = *(coord+nsd*node);
-                	*(coord_el+nsd*j+1) = *(coord+nsd*node+1);
-                	*(coord_el+nsd*j+2) = *(coord+nsd*node+2);
-                	*(coord_el_trans+j) = *(coord+nsd*node);
-                	*(coord_el_trans+npel*1+j) = *(coord+nsd*node+1);
-                	*(coord_el_trans+npel*2+j) = *(coord+nsd*node+2);
+			*(coord_el+nsd*j) = *(coord+nsd*node);
+			*(coord_el+nsd*j+1) = *(coord+nsd*node+1);
+			*(coord_el+nsd*j+2) = *(coord+nsd*node+2);
+			*(coord_el_trans+j) = *(coord+nsd*node);
+			*(coord_el_trans+npel*1+j) = *(coord+nsd*node+1);
+			*(coord_el_trans+npel*2+j) = *(coord+nsd*node+2);
 
 /* Create the coordh and coordh_trans vector for one element */
 
-                	*(coordh_el+nsd*j) = *(coordh+nsd*node);
-                	*(coordh_el+nsd*j+1) = *(coordh+nsd*node+1);
-                	*(coordh_el+nsd*j+2) = *(coordh+nsd*node+2);
-                	*(coordh_el_trans+j) = *(coordh+nsd*node);
-                	*(coordh_el_trans+npel*1+j) = *(coordh+nsd*node+1);
-                	*(coordh_el_trans+npel*2+j) = *(coordh+nsd*node+2);
+			*(coordh_el+nsd*j) = *(coordh+nsd*node);
+			*(coordh_el+nsd*j+1) = *(coordh+nsd*node+1);
+			*(coordh_el+nsd*j+2) = *(coordh+nsd*node+2);
+			*(coordh_el_trans+j) = *(coordh+nsd*node);
+			*(coordh_el_trans+npel*1+j) = *(coordh+nsd*node+1);
+			*(coordh_el_trans+npel*2+j) = *(coordh+nsd*node+2);
 		}
 
 
@@ -246,35 +246,43 @@ int brPassemble(int *connect, double *coord, double *coordh, int *el_matl,
 			*(domega_el+2)*(stress[k].pt[j].zz -
 			stress[k].pt[j].yy));
 
+		    if(Passemble_flag)
+		    {
+
 /* Calculation of the element stress matrix at full time */
 
-		    *(stress_el) = stress[k].pt[j].xx;
-		    *(stress_el+1) = stress[k].pt[j].yy;
-		    *(stress_el+2) = stress[k].pt[j].zz;
-		    *(stress_el+3) = stress[k].pt[j].xy; 
-		    *(stress_el+4) = stress[k].pt[j].zx;
-		    *(stress_el+5) = stress[k].pt[j].yz;
+			*(stress_el) = stress[k].pt[j].xx;
+			*(stress_el+1) = stress[k].pt[j].yy;
+			*(stress_el+2) = stress[k].pt[j].zz;
+			*(stress_el+3) = stress[k].pt[j].xy; 
+			*(stress_el+4) = stress[k].pt[j].zx;
+			*(stress_el+5) = stress[k].pt[j].yz;
 
-		    wXdet = *(w+j)*(*(deth+j));
+			wXdet = *(w+j)*(*(deth+j));
 
 /* Assembly of the element P matrix = (B transpose)*stress_el  */
 
-                    check=matXT(P_temp, B, stress_el, neqel, 1, sdim);
-                    if(!check) printf( "Problems with matXT \n");
+			check=matXT(P_temp, B, stress_el, neqel, 1, sdim);
+			if(!check) printf( "Problems with matXT \n");
 
-                    for( i1 = 0; i1 < neqel; ++i1 )
-		    {
-			/*printf("rrrrr %14.9f \n",*(P_temp+i1));*/
-			/*printf("rrrrr %14.9f \n",*(P_temp+i1)*wXdet);*/
-			*(P_el+i1) += *(P_temp+i1)*wXdet;
+			for( i1 = 0; i1 < neqel; ++i1 )
+			{
+				/*printf("rrrrr %14.9f \n",*(P_temp+i1));*/
+				/*printf("rrrrr %14.9f \n",*(P_temp+i1)*wXdet);*/
+				*(P_el+i1) += *(P_temp+i1)*wXdet;
+			}
 		    }
                 }
 
+		if(Passemble_flag)
+		{
+
 /* Assembly of the global P matrix */
 
-                for( j = 0; j < neqel; ++j )
-                {
+                    for( j = 0; j < neqel; ++j )
+                    {
                 	*(P_global+*(dof_el+j)) += *(P_el+j);
+		    }
 		}
         }
         return 1;

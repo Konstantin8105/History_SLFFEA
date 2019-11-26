@@ -68,11 +68,11 @@ int qdshl_node2(double * );
 
 int analysis_flag, dof, EMdof, modal_flag, neqn, EMneqn, nmat, nmode, numed,
 	numel, numnp, plane_stress_flag, sof, stress_read_flag;
-int standard_flag, B_matrix_store, Bzz_matrix_store,
+int static_flag, B_matrix_store, Bzz_matrix_store,
 	eigen_print_flag, stress_read_flag, element_stress_read_flag,
         element_stress_print_flag, gauss_stress_flag;
 
-int lin_algebra_flag, Bzz_lin_algebra_flag, numel_EM, numel_P, numnp_linear_max;
+int LU_decomp_flag, Bzz_LU_decomp_flag, numel_EM, numel_P, numnp_LUD_max;
 int iteration_max, iteration_const, iteration;
 double tolerance;
 
@@ -179,11 +179,11 @@ int main(int argc, char** argv)
         dof=numnp*ndof;
         EMdof=numed*edof;  
 
-	numnp_linear_max = 1125;
+	numnp_LUD_max = 1125;
 
 /* Assuming Conjugate gradient method is used, determine how much RAM is needed.
    This determines the largest problem that can be run on this machine.
-   If problem small enough that linear algebra is used, then calculation below
+   If problem small enough that LU decomposition is used, then calculation below
    is irrelevant.
 
    RAM variables given in bytes
@@ -211,15 +211,15 @@ int main(int argc, char** argv)
 		numel_EM = numel - numel_P;
 	}
 
-	lin_algebra_flag = 1;
-	Bzz_lin_algebra_flag = 1;
-	if(numnp > numnp_linear_max)
+	LU_decomp_flag = 1;
+	Bzz_LU_decomp_flag = 1;
+	if(numnp > numnp_LUD_max)
 	{
-		lin_algebra_flag = 0;
-		Bzz_lin_algebra_flag = 0;
+		LU_decomp_flag = 0;
+		Bzz_LU_decomp_flag = 0;
 	}
 
-	standard_flag = 1;
+	static_flag = 1;
 	modal_flag = 0;
 
 	if(nmode)
@@ -234,13 +234,13 @@ int main(int argc, char** argv)
 	        num_eigen = (int)(2.0*nmode);
 	        num_eigen = MIN(nmode + 8, num_eigen);
 	        num_eigen = MIN(dof, num_eigen);
-	        standard_flag = 0;
+	        static_flag = 0;
 	        modal_flag = 1;
 	}
 
 #if 0
-        lin_algebra_flag = 0;
-        Bzz_lin_algebra_flag = 0;
+        LU_decomp_flag = 0;
+        Bzz_LU_decomp_flag = 0;
 #endif
 
 
@@ -407,7 +407,7 @@ int main(int argc, char** argv)
 */
 	sofmAtt = numel_EM*EMneqlsq;   /* case 3 or 4 */
 
-	if(lin_algebra_flag)
+	if(LU_decomp_flag)
 	{
 	        sofmAtt = *(idiag+EMneqn-1)+1;  /* case 1 or 2 */
 	}
@@ -415,7 +415,7 @@ int main(int argc, char** argv)
 	if( sofmAtt*sof > (int)RAM_usable )
 	{
 
-/* Even if the linear algebra flag is on because there are only a few nodes, there
+/* Even if the LU decomposition flag is on because there are only a few nodes, there
    is a possibility that there is not enough memory because of poor node numbering.
    If this is the case, then we have to use the conjugate gradient method.
  */
@@ -440,24 +440,24 @@ int main(int argc, char** argv)
 	    	    Bzz_matrix_store = 0;
 		}
 	    }
-	    lin_algebra_flag = 0;
-	    Bzz_lin_algebra_flag = 0;
+	    LU_decomp_flag = 0;
+	    Bzz_LU_decomp_flag = 0;
 	}
 	else
 	{
-	    if( Bzz_lin_algebra_flag)
+	    if( Bzz_LU_decomp_flag)
 	    {
 /* Check to see if there is enough memory to store the global skylined Bzz
    stiffness matrix */
 
 		sofmBzz = *(idiag+EMneqn-1)+1;   /* case 1 */
-		Bzz_lin_algebra_flag = 1;
+		Bzz_LU_decomp_flag = 1;
 		Bzz_matrix_store = 0;
 		mem_case = 1;
 		fdum = RAM_usable - (double)(sof*(sofmAtt + sofmBzz));
 		if(fdum < 0.0)
 		{
-	    	    Bzz_lin_algebra_flag = 0;
+	    	    Bzz_LU_decomp_flag = 0;
 
 /* Check to see if there is enough memory to store all element Bzz matrices
    for Conjugate Gradient */
@@ -495,20 +495,20 @@ int main(int argc, char** argv)
 	printf( "\n We are in case %3d\n\n", mem_case);
 	switch (mem_case) {
 	        case 1:
-	                printf( " linear algebra for both\n\n");
+	                printf( " LU decomposition for both\n\n");
 	        break;
 	        case 2:
-	                printf( " linear algebra for Att\n\n");
-	                printf( " conjugate gradient for Bzz\n\n");
+	                printf( " LU decomposition for Att\n\n");
+	                printf( " Conjugate gradient for Bzz\n\n");
 	                printf( " with all element Bzz matrices stored\n\n");
 	        break;
 	        case 3:
-	                printf( " conjugate gradient for Att \n\n");
+	                printf( " Conjugate gradient for Att \n\n");
 	                printf( " with numel element Att matrices stored\n\n");
 	                printf( " and numel element Bzz matrices stored\n\n");
 	        break;
 	        case 4:
-	                printf( " conjugate gradient for Att \n\n");
+	                printf( " Conjugate gradient for Att \n\n");
 	                printf( " with numel_EM element Att matrices stored\n\n");
 	                printf( " and no element Bzz matrices stored\n\n");
 	        break;
@@ -633,7 +633,7 @@ int main(int argc, char** argv)
 	}
 #endif
 
-	if(lin_algebra_flag)
+	if(LU_decomp_flag)
 	{
 
 /* Perform LU Crout decompostion on the system */
@@ -652,9 +652,9 @@ int main(int argc, char** argv)
 	printf(" \n");
 
 #if 0
-	if(standard_flag)
+	if(static_flag)
 	{
-	    if(lin_algebra_flag)
+	    if(LU_decomp_flag)
 	    {
 
 /* Using LU decomposition to solve the system */
@@ -675,7 +675,7 @@ int main(int argc, char** argv)
 
 /* Using Conjugate gradient method to solve the system */
 
-	    if(!lin_algebra_flag)
+	    if(!LU_decomp_flag)
 	    {
 		check = qd3ConjGrad( Att, bc, connect, coord, el_matl, force, Att_diag,
 			matl, U);

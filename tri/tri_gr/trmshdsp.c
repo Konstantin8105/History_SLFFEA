@@ -2,11 +2,11 @@
     This program contains the mesh display routine for the FEM GUI
     for triangle elements.
   
-   			Last Update 5/27/01
+   			Last Update 2/4/02
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le 
+    Version:  1.3
+    Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -82,7 +82,6 @@ void trMeshDisplay(void)
 		if(After_flag )
   			trforce_vectors(bc, coord, force_vec);
 	}
-    	glPushMatrix ();
 	glLineWidth (2.0);
 	if(Render_flag)
 		trrender();
@@ -90,11 +89,9 @@ void trMeshDisplay(void)
 		trmeshdraw();
 	if(Axes_flag)
 	{
-		/*AxesNumbers();*/
-		AxesNumbers2();
+		AxesNumbers();
+		/*AxesNumbers2();*/
 	}
-    	glPopMatrix ();
-	glFlush();
   	glutSwapBuffers();
 }
 

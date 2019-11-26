@@ -1,0 +1,38 @@
+
+                             SLFFEA 1.3 Non-Linear Truss README
+
+                    Copyright (C) 1999 San Le
+
+                    email:     slffea@yahoo.com
+                    homepage:  http://www.geocities.com/Athens/2099/slffea.html
+
+For this non-linear element, the results for the large deformation calculation are
+almost the same as that of using the regular small deformation element.  
+
+The possible reasons for this are the following:
+
+1) Unlike the brick, the only deformation( and stress) is in the axial
+   direction of the truss.  This means there are no rotation rate terms
+   which are added to the total deformation as in the brick element.
+
+2) Because of 1), the truss goes through a process similar to polar
+   decomposition when its element matrices are assembled.  This also means
+   that stress is calculated in the local axial coordinate system based
+   on axial displacement.  So deformation is represented by a pure axial
+   elongation followed by a rotation.
+
+While the similarity between small and large deformation results seem to
+make this element unnecessary, it is worthwhile to include this element
+because of its time dependent formulation which may allow for plasticity.
+
+To improve results further, stress updating has been replaced with calculation
+of the stress using the actual change in length of the element:
+
+   stress = Emode*(L/Lo - 1.0)
+
+The above is used because it is the most correct calculation of the
+stress.  For dynamic relaxation, using traditional stress updating gives
+stresses which are very close to the ones calculated from the equation
+above.  This is not the case for when the Conjugate Gradient method is
+used, so I have decided to go with the equation above.
+

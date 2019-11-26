@@ -1,6 +1,6 @@
 # SLFFEA Makefile
-# Version:  1.2
-# Copyright (C) 1999, 2000, 2001  San Le (slffea@yahoo.com)
+# Version:  1.3
+# Copyright (C) 1999, 2000, 2001, 2002  San Le (slffea@yahoo.com)
 # http://slffea.com/
 #
 # This library is free software; you can redistribute it and/or

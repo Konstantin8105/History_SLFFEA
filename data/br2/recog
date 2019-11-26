@@ -24,7 +24,7 @@ el no.,connectivity, matl no
 18     144 145 146 147  148 149  150 151     0
 19     152 153 154 155  156 157  158 159     0
 20     160 161 162 163  164 165  166 167     0
-connectivity for convection surfaces: surface number  connectivity 
+connectivity for convection surfaces: surface number  connectivity, matl no
 node no. coordinates
  0  -1.175  0.000000   0.000000
  1  -0.925  0.000000   0.000000

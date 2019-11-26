@@ -2,11 +2,11 @@
     This program shows the 3 dimensional model of the finite
     element mesh for brick elements.
   
-   			Last Update 10/19/01
+   			Last Update 4/25/05
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le 
+    Version:  1.3
+    Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -147,7 +147,7 @@ void agvHandleMotion(int , int );
 /******************************* GLOBAL VARIABLES **************************/
 
 /****** FEA globals ******/
-int dof, Tdof, nmat, nmode, numel, numel_film, numnp;
+int dof, sdof, Tdof, nmat, nmode, numel, numel_film, numnp;
 int stress_read_flag, element_stress_read_flag;
 int linear_analysis, thermal_analysis;
 XYZI *mem_XYZI;
@@ -215,7 +215,7 @@ double AxisLength_x, AxisLength_y, AxisLength_z, AxisLength_max, AxisPoint_step;
 XYZF *force_vec, *force_vec0;
 
 /****** For drawing the Mesh Window ******/
-double left, right, top, bottom, near, far, fscale;
+double left, right, top, bottom, near, far, fscale, coord_rescale;
 double ortho_left, ortho_right, ortho_top, ortho_bottom,
 	ortho_left0, ortho_right0, ortho_top0, ortho_bottom0;
 int mesh_width, mesh_height;
@@ -265,7 +265,7 @@ double init_right, init_left, init_top,
 SDIM del_stress, del_strain, max_stress, min_stress,
 	max_strain, min_strain;
 double max_Ux, min_Ux, del_Ux, max_Uy, min_Uy, del_Uy,
-	max_Uz, min_Uz, del_Uz, absolute_max_U;
+	max_Uz, min_Uz, del_Uz, absolute_max_U, absolute_max_coord;
 double max_T, min_T, del_T, max_Q, min_Q, del_Q;
 
 /* These are the flags */
@@ -291,6 +291,8 @@ int Solid_flag = 1,          /* Selects between wire frame or solid model */
     Node_flag = 0,           /* Turns Node ID on and off */
     Element_flag = 0,        /* Turns Element ID on and off */
     Axes_flag = 0,           /* Turns Axes on and off  */
+    Outline_flag = 1,        /* Turns Element Outline on and off  */
+    Transparent_flag = 0,    /* Turns Element Transparency on and off  */
     CrossSection_flag = 0;   /* Turns CrossSection_flag on and off  */
 int Before_flag = 0,         /* Turns before mesh on and off */
     After_flag = 1,          /* Turns after mesh on and off */
@@ -375,6 +377,7 @@ int main(int argc, char** argv)
 		&numel,&numnp,&nmat,&numel_film,&linear_analysis,&thermal_analysis);
 	Tdof=numnp*Tndof;
 	dof=numnp*ndof;
+	sdof=numnp*nsd;
 
 /* Begin exmaining and checking for the existence of data files */
 
@@ -399,7 +402,7 @@ int main(int argc, char** argv)
 /*   Begin allocation of meomory */
 
 /* For the doubles */
-        sofmf=2*numnp*nsd + dof + numel + 4*Tdof + dof;
+        sofmf=2*sdof + dof + numel + 4*Tdof + dof;
 
 /* For the integers */
 	sofmi= numel*npel + numel_film*npel_film + numel + numel_film +
@@ -431,8 +434,8 @@ int main(int argc, char** argv)
 
 /* For the doubles */
                                                 ptr_inc=0;
-	coord=(mem_double+ptr_inc);             ptr_inc += numnp*nsd;
-	coord0=(mem_double+ptr_inc);            ptr_inc += numnp*nsd;
+	coord=(mem_double+ptr_inc);             ptr_inc += sdof;
+	coord0=(mem_double+ptr_inc);            ptr_inc += sdof;
 	force=(mem_double+ptr_inc);             ptr_inc += dof;
 	heat_el=(mem_double+ptr_inc);           ptr_inc += numel;
 	heat_node=(mem_double+ptr_inc);         ptr_inc += Tdof;
@@ -539,18 +542,12 @@ int main(int argc, char** argv)
         	if(!check) printf( " Problems with brnormal_vectors \n");
 	}
 
-	if( !input_flag )
-	{
-	    for ( i = 0; i < numnp; ++i)
-	    {
-	    	*(coord0 + nsd*i) = *(coord + nsd*i) - *(U + ndof*i);
-	    	*(coord0 + nsd*i + 1) = *(coord + nsd*i + 1) - *(U + ndof*i + 1);
-	    	*(coord0 + nsd*i + 2) = *(coord + nsd*i + 2) - *(U + ndof*i + 2);
-	    }
-	}
-
 /* For the XYZF doubles */
         sofmXYZF=2*bc.num_force[0];
+/*
+   This is allocated seperately from brMemory_gr because we need to know the
+   number of force vectors read from brreader and stored in bc.num_force[0].
+*/
 
 	check = brMemory2_gr( &mem_XYZF, sofmXYZF );
 	if(!check) printf( " Problems with brMemory2_gr \n");
@@ -567,6 +564,31 @@ int main(int argc, char** argv)
 
 	check = br2parameter( coord, Q, strain_node, stress_node, T, U);
         if(!check) printf( " Problems with br2parameter \n");
+
+/* Rescale undeformed coordinates */
+
+	if( coord_rescale > 1.01 || coord_rescale < .99 )
+	{
+	   if( input_flag && post_flag )
+	   {
+		for( i = 0; i < numnp; ++i )
+		{
+			*(coord0+nsd*i) /= coord_rescale;
+			*(coord0+nsd*i+1) /= coord_rescale;
+			*(coord0+nsd*i+2) /= coord_rescale;
+		}
+	   }
+	}
+
+	if( !input_flag )
+	{
+	    for ( i = 0; i < numnp; ++i)
+	    {
+	    	*(coord0 + nsd*i) = *(coord + nsd*i) - *(U + ndof*i);
+	    	*(coord0 + nsd*i + 1) = *(coord + nsd*i + 1) - *(U + ndof*i + 1);
+	    	*(coord0 + nsd*i + 2) = *(coord + nsd*i + 2) - *(U + ndof*i + 2);
+	    }
+	}
 
 	check = br2set( bc, connecter, force, force_vec0, Q, Q_color, strain_node,
 		strain_color, stress_node, stress_color, T, T_color, U, U_color);

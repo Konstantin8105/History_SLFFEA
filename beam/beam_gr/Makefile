@@ -1,5 +1,5 @@
 # SLFFEA Makefile
-# Version:  1.2
+# Version:  1.3
 # Copyright (C) 1999, 2000  San Le (slffea@yahoo.com)
 # http://slffea.com/
 #
@@ -58,7 +58,7 @@ bmpost: bmpost.o \
 		bmparam2.o \
 		bmset.o \
 		bmbc_vec.o \
-		rotate.o \
+		bmrotate.o \
 		bmmshdsp.o \
 		bmmesh.o \
 		bmmshkey.o \
@@ -77,7 +77,7 @@ bmpost: bmpost.o \
 		bmparam2.o \
 		bmset.o \
 		bmbc_vec.o \
-		rotate.o \
+		bmrotate.o \
 		bmmshdsp.o \
 		bmmesh.o \
 		bmmshkey.o \
@@ -108,8 +108,8 @@ bmmesh.o: bmmesh.c
 bmmshdsp.o: bmmshdsp.c 
 	$(CC) -c bmmshdsp.c 
 
-rotate.o: rotate.c 
-	$(CC) -c rotate.c 
+bmrotate.o: bmrotate.c 
+	$(CC) -c bmrotate.c 
 
 bmbc_vec.o: bmbc_vec.c 
 	$(CC) -c bmbc_vec.c 

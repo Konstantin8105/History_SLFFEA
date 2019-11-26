@@ -6,8 +6,8 @@
 		 Updated 11/2/06
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le 
+    Version:  1.3
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -25,6 +25,7 @@
 
 extern int dof, numel, numnp, sof;
 extern int consistent_mass_flag, consistent_mass_store, lumped_mass_flag;
+extern double x3[num_int3], w3[num_int3], x4[num_int4], w4[num_int4];
 
 int matXrot(double *, double *, double *, int, int);
 
@@ -50,22 +51,6 @@ int bmMassemble(double *axis_z, int *connect, double *coord, int *el_matl,
 		mass_local[neqlsq], rotate[nsdsq], rotateT[nsdsq];
         double jacob;
 	SHAPE sh;
-	double x_mass[num_int_mass], w_mass[num_int_mass];
-
-/* Create the 4 points and weights for Gauss Integration */
-
-	fdum = 1/7.0*(3.0 - 4.0*sqpt3);
-	*(x_mass) = -sqrt(fdum);
-	*(x_mass+2) =  sqrt(fdum);
-
-	fdum = 1/7.0*(3.0 + 4.0*sqpt3);
-	*(x_mass+1)= -sqrt(fdum);
-	*(x_mass+3)= sqrt(fdum);
-
-	*(w_mass)= .5 + 1.0/12.0*sq3pt33;
-	*(w_mass+1)= .5 - 1.0/12.0*sq3pt33;
-	*(w_mass+2)= .5 + 1.0/12.0*sq3pt33;
-	*(w_mass+3)= .5 - 1.0/12.0*sq3pt33;
 
         for( k = 0; k < numel; ++k )
         {
@@ -343,7 +328,7 @@ local x global z, local z global x, and local y global y.  */
                     {
 			memset(mass_local,0,neqlsq*sof);
 
-			check = bmshape_mass(&sh, *(x_mass+j), L, Lsq);
+			check = bmshape_mass(&sh, *(x4+j), L, Lsq);
 			if(!check) printf( "Problems with bmshape \n");
 /* row 0 */
 			*(mass_local) = sh.Nhat[0].dx0*sh.Nhat[0].dx0;
@@ -454,7 +439,7 @@ local x global z, local z global x, and local y global y.  */
 
 			}
 
-			fdum = rho*area*(*(w_mass+j))*jacob;
+			fdum = rho*area*(*(w4+j))*jacob;
 			for( i1 = 0; i1 < neqlsq; ++i1 )
 			{
 			    *(M_el + i1) += *(mass_local + i1)*fdum;

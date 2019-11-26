@@ -2,11 +2,11 @@
     This program shows the 3 dimensional model of the finite
     element mesh for beam elements.
   
-   			Last Update 10/19/01
+   			Last Update 4/27/05
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le 
+    Version:  1.3
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -72,7 +72,7 @@
 
 /******** Data management and calculations ********/
 
-int rotater( double *, double *, double *);
+int bmrotate( double *, double *, double *);
 
 void bmdist_load_vectors0(int , BOUND , int *, double *, XYZF_GR * );
 
@@ -147,8 +147,8 @@ void agvHandleMotion(int , int );
 /******************************* GLOBAL VARIABLES **************************/
 
 /****** FEA globals ******/
-int dof, nmat, nmode, numel, numnp;
-int stress_read_flag, element_stress_read_flag;
+int dof, sdof, nmat, nmode, numel, numnp;
+int stress_read_flag, element_stress_read_flag, stress_xyzx_flag;
 XYZPhiI *mem_XYZPhiI;
 XYZPhiF *mem_XYZPhiF;
 int *mem_int;
@@ -214,7 +214,7 @@ QYQZ *dist_load_vec0;
 XYZF_GR *dist_load_vec;
 
 /****** For drawing the Mesh Window ******/
-double left, right, top, bottom, near, far, fscale;
+double left, right, top, bottom, near, far, fscale, coord_rescale;
 double ortho_left, ortho_right, ortho_top, ortho_bottom,
 	ortho_left0, ortho_right0, ortho_top0, ortho_bottom0;
 int mesh_width, mesh_height;
@@ -269,7 +269,7 @@ SDIM del_stress, del_strain, max_stress, min_stress,
 double max_Uphi_x, min_Uphi_x, del_Uphi_x, max_Uphi_y, min_Uphi_y, del_Uphi_y,
 	max_Uphi_z, min_Uphi_z, del_Uphi_z, 
 	max_Ux, min_Ux, del_Ux, max_Uy, min_Uy, del_Uy,
-	max_Uz, min_Uz, del_Uz, absolute_max_U;
+	max_Uz, min_Uz, del_Uz, absolute_max_U, absolute_max_coord;
 
 
 /* These are the flags */
@@ -294,6 +294,7 @@ int Dist_Load_flag = 0,      /* Turns Distributed Load on and off  */
     Node_flag = 0,           /* Turns Node ID on and off */
     Element_flag = 0,        /* Turns Element ID on and off */
     Axes_flag = 0,           /* Turns Axes on and off  */
+    Transparent_flag = 0,    /* Turns Element Transparency on and off  */
     CrossSection_flag = 0;   /* Turns CrossSection_flag on and off  */
 int Before_flag = 0,         /* Turns before mesh on and off */
     After_flag = 1,          /* Turns after mesh on and off */
@@ -363,6 +364,7 @@ int main(int argc, char** argv)
         fgets( buf, BUFSIZ, o2 );
         fscanf( o2, "%d %d %d %d\n ",&numel,&numnp,&nmat,&nmode);
         dof=numnp*ndof;
+	sdof=numnp*nsd;
 	nmode = abs(nmode);
 
 /* Begin exmaining and checking for the existence of data files */
@@ -388,7 +390,7 @@ int main(int argc, char** argv)
 /*   Begin allocation of meomory */
 
 /* For the doubles */
-        sofmf=2*numnp*nsd+numnp*(nsd-1)+numnp+2*dof+2*numel*nsd;
+        sofmf=2*sdof+numnp*(nsd-1)+numnp+2*dof+2*numel*nsd;
 
 /* For the integers */
         sofmi= numel*npel+2*numel+numnp+1+numel+1+2+dof;
@@ -412,8 +414,8 @@ int main(int argc, char** argv)
 
 /* For the doubles */
                                            ptr_inc=0;
-        coord=(mem_double+ptr_inc);        ptr_inc += numnp*nsd;
-        coord0=(mem_double+ptr_inc);       ptr_inc += numnp*nsd;
+        coord=(mem_double+ptr_inc);        ptr_inc += sdof;
+        coord0=(mem_double+ptr_inc);       ptr_inc += sdof;
         dist_load=(mem_double+ptr_inc);    ptr_inc += numnp*(nsd-1);
         force=(mem_double+ptr_inc);        ptr_inc += dof;
         U=(mem_double+ptr_inc);            ptr_inc += dof;
@@ -479,15 +481,6 @@ int main(int argc, char** argv)
         	if(!check) printf( " Problems with bmreader \n");
 
 	}
-	if( !input_flag )
-	{
-	    for ( i = 0; i < numnp; ++i)
-	    {
-		*(coord0 + nsd*i) = *(coord+nsd*i) - *(U+ndof*i);
-		*(coord0 + nsd*i + 1) = *(coord+nsd*i + 1) - *(U+ndof*i+1);
-		*(coord0 + nsd*i + 2) = *(coord+nsd*i + 2) - *(U+ndof*i+2);
-	    }
-	}
 
 /* For the XYZPhiF doubles */
         sofmXYZPhiF=2*bc.num_force[0];
@@ -497,6 +490,11 @@ int main(int argc, char** argv)
 
 /* For the QYQZ doubles */
         sofmQYQZ=bc.num_dist_load[0];
+/*
+   This is allocated seperately from bmMemory_gr because we need to know the
+   number of force vectors read from bmreader and stored in bc.num_force[0]
+   and bc.num_dist_load[0].
+*/
 
 	check = bmMemory2_gr( &mem_XYZPhiF, sofmXYZPhiF, &dist_load_vec, sofmXYZF_GR,
         	&dist_load_vec0, sofmQYQZ);
@@ -515,6 +513,31 @@ int main(int argc, char** argv)
 
 	check = bmparameter( coord, curve, moment, strain, stress, U );
         if(!check) printf( " Problems with bmparameter \n");
+
+/* Rescale undeformed coordinates */
+
+	if( coord_rescale > 1.01 || coord_rescale < .99 )
+	{
+	   if( input_flag && post_flag )
+	   {
+		for( i = 0; i < numnp; ++i )
+		{
+			*(coord0+nsd*i) /= coord_rescale;
+			*(coord0+nsd*i+1) /= coord_rescale;
+			*(coord0+nsd*i+2) /= coord_rescale;
+		}
+	   }
+	}
+
+	if( !input_flag )
+	{
+	    for ( i = 0; i < numnp; ++i)
+	    {
+		*(coord0 + nsd*i) = *(coord+nsd*i) - *(U+ndof*i);
+		*(coord0 + nsd*i + 1) = *(coord+nsd*i + 1) - *(U+ndof*i+1);
+		*(coord0 + nsd*i + 2) = *(coord+nsd*i + 2) - *(U+ndof*i+2);
+	    }
+	}
 
 	check = bmset( bc, curve, curve_color, dist_load, dist_load_vec0,
 		el_type, force , force_vec0, moment, moment_color, strain,
@@ -576,8 +599,8 @@ int main(int argc, char** argv)
 		*(vec_in+1) =  dist_load_vec0[k].qy;
 		*(vec_in+2) =  dist_load_vec0[k].qz;
 
-		check = rotater(coord0_el, vec_in, vec_out);
-        	if(!check) printf( " Problems with rotater \n");
+		check = bmrotate(coord0_el, vec_in, vec_out);
+        	if(!check) printf( " Problems with bmrotate \n");
 
 		dist_load_vec[k].x = *(vec_out);
 		dist_load_vec[k].y = *(vec_out+1);
@@ -628,8 +651,8 @@ int main(int argc, char** argv)
 		*(vec_in+1) =  dist_load_vec0[k].qy;
 		*(vec_in+2) =  dist_load_vec0[k].qz;
 
-		check = rotater(coord_el, vec_in, vec_out);
-        	if(!check) printf( " Problems with rotater \n");
+		check = bmrotate(coord_el, vec_in, vec_out);
+        	if(!check) printf( " Problems with bmrotate \n");
 
 		dist_load_vec[k].x = *(vec_out);
 		dist_load_vec[k].y = *(vec_out+1);

@@ -4,11 +4,6 @@
 40
 ball, nsquash
 
-3.5
-.08088
-404
-This is for tensile
-
 2.0
 .02088
 1000
@@ -19,6 +14,20 @@ Remember to multiply load by 10
 .08088
 1604
 This is for torsion
+
+
+
+
+
+
+
+
+
+3.5
+.08088
+404
+This is for tensile
+
 
 3.5
 .08088

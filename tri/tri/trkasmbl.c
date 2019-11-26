@@ -5,8 +5,8 @@
 		Updated 11/18/01
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le 
+    Version:  1.3
+    Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -25,7 +25,7 @@
 
 extern int analysis_flag, dof, neqn, numel, numnp, plane_stress_flag, sof;
 extern int gauss_stress_flag;
-extern int lin_algebra_flag, numel_K, numel_P;
+extern int LU_decomp_flag, numel_K, numel_P;
 extern double shg[sosh], shg_node[sosh], shl[sosh], shl_node[sosh],
 	shl_node2[sosh_node2], w[num_int], *Area0;
 
@@ -236,7 +236,7 @@ int trKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
 /* Assembly of either the global skylined stiffness matrix or numel_K of the
    element stiffness matrices if the Conjugate Gradient method is used */
 
-			if(lin_algebra_flag)
+			if(LU_decomp_flag)
 			{
 			    check = globalKassemble(A, idiag, K_el, (lm + k*neqel),
 				neqel);
@@ -366,10 +366,10 @@ int trKassemble(double *A, int *connect, double *coord, int *el_matl, double *fo
 	if(analysis_flag == 1)
 	{
 
-/* Contract the global force matrix using the id array only if linear
-   algebra is used. */
+/* Contract the global force matrix using the id array only if LU decomposition
+   is used. */
 
-	  if(lin_algebra_flag)
+	  if(LU_decomp_flag)
 	  {
 	     counter = 0;
 	     for( i = 0; i < dof ; ++i )

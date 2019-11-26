@@ -5,8 +5,8 @@
                 Updated 11/8/01
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le 
+    Version:  1.3
+    Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -46,22 +46,22 @@
 /*
   title               problem title
   numel               number of elements
-  numnp               number of nodal points
+  numnp               number of nodal points 
   nmat                number of materials
-  dof                 total number of degrees of freedom
+  dof                 total number of degrees of freedom 
   coord               *(coord + 0) x coordinate of node
                       *(coord + 1) y coordinate of node
-  connect             (0-3) connectivity array
+  connect             (0-3) connectivity array 
   matl                material structure
   Emod                young's modulus
   nu                  poisson's ratio
   force               *(force + 0) x component of applied load
                       *(force + 1) y component of applied load
   plane_stress_flag   0 flag indicating whether plane stress
-                      1 or strain theory is used
+                      1 or strain theory is used 
   analysis_flag       1 calculate unknown displacemnts
                       2 calculate reaction forces
-  lin_algebra_flag    0 if numel <= 1125 elements, use LU Decomposition for
+  LU_decomp_flag      0 if numel <= 1125 elements, use LU Decomposition for
                         displacements
                       1 if numel > 1125 elements, use conjugate
                         gradient method for displacements

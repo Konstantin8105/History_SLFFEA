@@ -6,8 +6,8 @@
                 Updated 11/12/01
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le 
+    Version:  1.3
+    Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -87,7 +87,7 @@
                       *(force + 2) z component of applied load
   analysis_flag       1 calculate unknown displacemnts
                       2 calculate reaction forces
-  lin_algebra_flag    0 if numel <= 750 elements, use LU Decomposition for
+  LU_decomp_flag      0 if numel <= 750 elements, use LU Decomposition for
                         displacements
                       1 if numel > 750 elements, use conjugate
                         gradient method for displacements
@@ -121,7 +121,7 @@
   heat                heat generation 
   temp_analysis_flag  1 calculate unknown temperatues
                       2 calculate equivalant nodal heat flow
-  Tlin_algebra_flag   0 if numel <= 2250 elements, use LU Decomposition for
+  TLU_decomp_flag     0 if numel <= 2250 elements, use LU Decomposition for
                         temperatures
                       1 if numel > 2250 elements, use conjugate
                         gradient method for temperatures

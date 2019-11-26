@@ -39,7 +39,7 @@
 #define SMALLER             1.0e-20
 
 extern int dof, EMdof, neqn, EMneqn, sof;
-extern int lin_algebra_flag, numel_EM, numel_P;
+extern int LU_decomp_flag, numel_EM, numel_P;
 extern int B_matrix_store, eigen_print_flag;
 extern int iteration_max;
 
@@ -267,7 +267,7 @@ int qd3Lanczos(double *K, double *Btt, double *Btz, double *Bzt, double *Bzz, BO
         for( i = 0; i < num_eigen; ++i )
         {
 
-	    if(lin_algebra_flag)
+	    if(LU_decomp_flag)
 	    {
 
 /* Using LU decomposition to solve the system */
@@ -277,7 +277,7 @@ int qd3Lanczos(double *K, double *Btt, double *Btz, double *Bzt, double *Bzz, BO
 	    }
 
 #if 0
-	    if(!lin_algebra_flag)
+	    if(!LU_decomp_flag)
 	    {
 
 /* Using Conjugate gradient method to solve the system. 

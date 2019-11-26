@@ -1,11 +1,11 @@
 /*
     This file contains the structures of the 3-D linear beam
     FEM code.
-		Udated 5/22/00
+		Udated 11/15/04
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le 
+    Version:  1.3
+    Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -23,7 +23,7 @@ typedef struct {
 } MDIM;
 
 typedef struct {
-        double xx;
+        double xx,xy,zx;
 } SDIM;
 
 typedef struct {
@@ -55,6 +55,9 @@ typedef struct {
 	double Iy;
 	double Iz;
 	double Ip;
+	double areaSy;
+	double areaSz;
+	int extraArea;
 } MATL;
 
 typedef struct {

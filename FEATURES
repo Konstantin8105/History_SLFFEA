@@ -1,5 +1,5 @@
 
-                             SLFFEA 1.2
+                             SLFFEA 1.3
 
                     Copyright (C) 1999 San Le
 
@@ -73,6 +73,7 @@ viewing.  A complete list is given below:
  h - Display statistical information about mesh.  Reread in *view.dat file
      which can be modified to narrow or expand range of maximum and
      minimum values.
+ j - turns on and off element outlines
  p - switches between perspective and orthographic viewing
  f - turns on and off the applied forces or moments
  q - quits
@@ -80,6 +81,7 @@ viewing.  A complete list is given below:
  s - turns on and off cutting planes
         with cutting planes activated, arrow keys move the x and y cutting planes
         rather than move the mesh and < and > move the z cutting plane.
+ t - turns on and off transparency
  w - turns on and off wire frame(for beam, turns on or off distributed load)
  x - turns on or off axes
  y - screen dump

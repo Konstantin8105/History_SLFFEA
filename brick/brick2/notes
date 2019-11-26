@@ -44,4 +44,13 @@ of clockwise and counter-clockwise when dealing with convection surfaces.
 This is not the case.  The results will not change either way.  I made
 a test as well as examined the code to prove to myself that this is true.
 
- 
+
+
+One line 155 in "brcasmbl.c" where I "Compute the equivalant heat based on
+prescribed temperature" and on line 187 where I also "Compute the equivalant
+nodal heat based on prescribed temperature", this works like when I calculate
+the forces based on prescribed displacement and when I calculate the final
+reaction forces.  It is all correct, and I have tested it with a file
+called "prescribeT".  
+
+

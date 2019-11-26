@@ -1,5 +1,5 @@
    numel numnp nmat nmode  (This is for a beam bridge)
-     45   20  1   -5
+     45   20  1   0
 matl no., E mod, Poiss. Ratio, density, Area, Iy, Iz
 0   30000000.0000    0.0000 3210.0000    2.0000    1.0000    1.000
 el no.,connectivity, matl no, element type

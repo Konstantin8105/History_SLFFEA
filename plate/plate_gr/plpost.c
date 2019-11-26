@@ -2,11 +2,11 @@
     This program shows the 3 dimensional model of the finite
     element mesh for plate elements.
   
-   			Last Update 10/19/01
+   			Last Update 4/27/05
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le 
+    Version:  1.3
+    Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -146,7 +146,7 @@ void agvHandleMotion(int , int );
 /******************************* GLOBAL VARIABLES **************************/
 
 /****** FEA globals ******/
-int dof, nmat, nmode, numel, numnp;
+int dof, sdof, nmat, nmode, numel, numnp;
 int stress_read_flag, element_stress_read_flag;
 ZPhiI *mem_ZPhiI;
 ZPhiF *mem_ZPhiF;
@@ -217,7 +217,7 @@ double AxisLength_x, AxisLength_y, AxisLength_z, AxisLength_max, AxisPoint_step;
 ZPhiF *force_vec, *force_vec0;
 
 /****** For drawing the Mesh Window ******/
-double left, right, top, bottom, near, far, fscale;
+double left, right, top, bottom, near, far, fscale, coord_rescale;
 double ortho_left, ortho_right, ortho_top, ortho_bottom,
 	ortho_left0, ortho_right0, ortho_top0, ortho_bottom0;
 int mesh_width, mesh_height;
@@ -269,7 +269,7 @@ MDIM del_moment, del_curve, max_moment, min_moment,
 SDIM del_stress, del_strain, max_stress, min_stress,
 	max_strain, min_strain;
 double max_Uphi_x, min_Uphi_x, del_Uphi_x, max_Uphi_y, min_Uphi_y, del_Uphi_y,
-	max_Uz, min_Uz, del_Uz, absolute_max_U;
+	max_Uz, min_Uz, del_Uz, absolute_max_U, absolute_max_coord;
 
 /* These are the flags */
 
@@ -293,6 +293,8 @@ int Solid_flag = 1,          /* Selects between wire frame or solid model */
     Node_flag = 0,           /* Turns Node ID on and off */
     Element_flag = 0,        /* Turns Element ID on and off */
     Axes_flag = 0,           /* Turns Axes on and off  */
+    Outline_flag = 1,        /* Turns Element Outline on and off  */
+    Transparent_flag = 0,    /* Turns Element Transparency on and off  */
     CrossSection_flag = 0;   /* Turns CrossSection_flag on and off  */
 int Before_flag = 0,         /* Turns before mesh on and off */
     After_flag = 1,          /* Turns after mesh on and off */
@@ -360,6 +362,7 @@ int main(int argc, char** argv)
         fgets( buf, BUFSIZ, o2 );
         fscanf( o2, "%d %d %d %d\n ",&numel,&numnp,&nmat,&nmode);
         dof=numnp*ndof;
+	sdof=numnp*nsd;
 	nmode = abs(nmode);
 
 /* Begin exmaining and checking for the existence of data files */
@@ -385,7 +388,7 @@ int main(int argc, char** argv)
 /*   Begin allocation of meomory */
 
 /* For the doubles */
-        sofmf=2*numnp*nsd+numnp+2*dof;
+        sofmf=2*sdof+numnp+2*dof;
 
 /* For the integers */
         sofmi= numel*npel+numel+numnp+1+1+dof;
@@ -417,8 +420,8 @@ int main(int argc, char** argv)
 
 /* For the doubles */
                                         ptr_inc=0;
-        coord=(mem_double+ptr_inc);     ptr_inc += numnp*nsd;
-        coord0=(mem_double+ptr_inc);    ptr_inc += numnp*nsd;
+        coord=(mem_double+ptr_inc);     ptr_inc += sdof;
+        coord0=(mem_double+ptr_inc);    ptr_inc += sdof;
         zcoord=(mem_double+ptr_inc);    ptr_inc += numnp;
         force=(mem_double+ptr_inc);     ptr_inc += dof;
         U=(mem_double+ptr_inc);         ptr_inc += dof;
@@ -488,13 +491,6 @@ int main(int argc, char** argv)
         	check = plreader_gr( o3, curve_node, moment_node, strain_node,
 			stress_node);
         	if(!check) printf( " Problems with plreader_gr \n");
-
-/* Set zcoord to U */
-
-		for ( i = 0; i < numnp; ++i)
-		{
-			*(zcoord + i) = *(U+ndof*i);
-		}
 	}
 
 	if( input_flag )
@@ -502,13 +498,6 @@ int main(int argc, char** argv)
 		check = plreader( bc, connecter, coord0, el_matl, force, matl, moment,
 			moment_node, name, o1, stress, stress_node, U);
         	if(!check) printf( " Problems with plreader \n");
-
-/* Set zcoord to 0.0 */
-
-		for ( i = 0; i < numnp; ++i)
-		{
-			*(zcoord + i) = 0.0;
-		}
 	}
 
 	if( post_flag )
@@ -521,6 +510,44 @@ int main(int argc, char** argv)
 	{
                 check = plnormal_vectors(connecter, coord0, norm0, zcoord );
                 if(!check) printf( " Problems with plnormal_vectors \n");
+	}
+
+/* For the ZPhiF doubles */
+        sofmZPhiF=2*bc.num_force[0];
+/*
+   This is allocated seperately from plMemory_gr because we need to know the
+   number of force vectors read from plreader and stored in bc.num_force[0].
+*/
+
+	check = plMemory2_gr( &mem_ZPhiF, sofmZPhiF );
+	if(!check) printf( " Problems with plMemory2_gr \n");
+
+                                                 ptr_inc = 0;
+        force_vec =(mem_ZPhiF+ptr_inc);          ptr_inc += bc.num_force[0];
+        force_vec0 =(mem_ZPhiF+ptr_inc);         ptr_inc += bc.num_force[0];
+
+/* Search for extreme values */
+ 
+/* In mesh viewer, search for extreme values of nodal points, displacements
+   and stresss and strains to obtain viewing parameters and make color
+   assignments.  Also initialize variables */
+
+	check = plparameter( coord, curve_node, moment_node, strain_node,
+		stress_node, U );
+        if(!check) printf( " Problems with plparameter \n");
+
+/* Rescale undeformed coordinates */
+
+	if( coord_rescale > 1.01 || coord_rescale < .99 )
+	{
+	   if( input_flag && post_flag )
+	   {
+		for( i = 0; i < numnp; ++i )
+		{
+			*(coord0+nsd*i) /= coord_rescale;
+			*(coord0+nsd*i+1) /= coord_rescale;
+		}
+	   }
 	}
 
 	if( !input_flag )
@@ -539,26 +566,6 @@ int main(int argc, char** argv)
 	{
 		*(zcoord + i) = *(U+ndof*i);
 	}
-
-/* For the ZPhiF doubles */
-        sofmZPhiF=2*bc.num_force[0];
-
-	check = plMemory2_gr( &mem_ZPhiF, sofmZPhiF );
-	if(!check) printf( " Problems with plMemory2_gr \n");
-
-                                                 ptr_inc = 0;
-        force_vec =(mem_ZPhiF+ptr_inc);          ptr_inc += bc.num_force[0];
-        force_vec0 =(mem_ZPhiF+ptr_inc);         ptr_inc += bc.num_force[0];
-
-/* Search for extreme values */
- 
-/* In mesh viewer, search for extreme values of nodal points, displacements
-   and stresss and strains to obtain viewing parameters and make color
-   assignments.  Also initialize variables */
-
-	check = plparameter( coord, curve_node, moment_node, strain_node,
-		stress_node, U );
-        if(!check) printf( " Problems with plparameter \n");
 
 	check = plset( bc, connecter, curve_node, curve_color, force, force_vec0,
 		moment_node, moment_color, strain_node, strain_color, stress_node,

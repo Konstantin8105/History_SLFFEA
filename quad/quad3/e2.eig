@@ -1,0 +1,9 @@
+These are the eigenvalues and frequencies for the file: e2
+
+
+
+                        Eigenvalue          Frequency           Frequency/(2.0*pi)
+                                            sqrt(Eigenvalue)
+
+ mode number    1      -4.94536082e-05 < 0     NOT VALID           NOT VALID
+ mode number    2      -2.02822189e-05 < 0     NOT VALID           NOT VALID

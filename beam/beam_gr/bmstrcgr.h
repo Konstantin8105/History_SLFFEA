@@ -2,11 +2,11 @@
     This file contains the structures of the graphics program
     for beam elements.
 
-	Updated 7/8/99
+	Updated 1/12/05
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le 
+    Version:  1.3
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -24,7 +24,7 @@ typedef struct {
 } IMDIM;
 
 typedef struct {
-        int xx;
+        int xx, xy, zx;
 } ISDIM;
 
 typedef struct {

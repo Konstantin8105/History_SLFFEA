@@ -2,11 +2,11 @@
     This program calculates and writes the parameters for
     the FEM GUI for truss elements.
   
-   			Last Update 3/17/00
+   			Last Update 1/24/02
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le 
+    Version:  1.3
+    Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -28,7 +28,7 @@
 
 extern int nmat, numnp, numel, dof;
 extern double step_sizex, step_sizey, step_sizez;
-extern double left, right, top, bottom, near, far, fscale;
+extern double left, right, top, bottom, near, far, fscale, coord_rescale;
 extern int control_height, control_width, mesh_height, mesh_width;
 extern double ortho_left, ortho_right, ortho_top, ortho_bottom;
 extern double left_right, up_down, in_out, left_right0, up_down0, in_out0;
@@ -71,6 +71,16 @@ void tsReGetparameter(void)
 		&node_Uy_max, &min_Uy, &max_Uy);
 	fscanf( tsdata,"%20s %5s      %d %d   %lf %lf\n", char_dum, char_dum2, &node_Uz_min,
 		&node_Uz_max, &min_Uz, &max_Uz);
+
+/* Rescale the displacement data */
+
+	min_Ux /= coord_rescale;
+	max_Ux /= coord_rescale;
+	min_Uy /= coord_rescale;
+	max_Uy /= coord_rescale;
+	min_Uz /= coord_rescale;
+	max_Uz /= coord_rescale;
+
 	fscanf( tsdata,"\n");
 	fgets( buf, BUFSIZ, tsdata );
 	fgets( buf, BUFSIZ, tsdata );
@@ -97,11 +107,11 @@ void tsReGetparameter(void)
 	printf( "                            node\n");
 	printf( "                          min  max       min            max\n");
 	printf("displacement Ux        %5d %5d   %14.6e %14.6e\n", node_Ux_min,
-		node_Ux_max, min_Ux, max_Ux);
+		node_Ux_max, min_Ux*coord_rescale, max_Ux*coord_rescale);
 	printf("displacement Uy        %5d %5d   %14.6e %14.6e\n", node_Uy_min,
-		node_Uy_max, min_Uy, max_Uy);
+		node_Uy_max, min_Uy*coord_rescale, max_Uy*coord_rescale);
 	printf("displacement Uz        %5d %5d   %14.6e %14.6e\n", node_Uz_min,
-		node_Uz_max, min_Uz, max_Uz);
+		node_Uz_max, min_Uz*coord_rescale, max_Uz*coord_rescale);
 	printf("\n");
 	printf( "                        el. gauss pt.\n");
 	printf( "                        min       max         min           max\n");

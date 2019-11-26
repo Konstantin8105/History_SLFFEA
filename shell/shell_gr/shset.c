@@ -2,11 +2,11 @@
     This program sets viewing and analysis values based on the parameters 
     determined in shparameters for the FEM GUI for shell elements.
   
-   			Last Update 6/9/01
+   			Last Update 9/26/06
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le 
+    Version:  1.3
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.

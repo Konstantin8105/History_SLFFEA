@@ -5,11 +5,11 @@
 
 			San Le
 
- 		Last Update 8/15/01
+ 		Last Update 7/23/02
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le 
+    Version:  1.3
+    Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -46,7 +46,7 @@ extern int color_choice, input_flag, post_flag;
 extern int input_color_flag;
 extern int Solid_flag, Perspective_flag, Render_flag, AppliedDisp_flag,
         AppliedForce_flag, Material_flag, Node_flag, Element_flag, Axes_flag,
-	CrossSection_flag;
+	Transparent_flag, Outline_flag, CrossSection_flag;
 extern int Before_flag, After_flag, Both_flag, Amplify_flag;
 extern int stress_flag, strain_flag, stress_strain, disp_flag;
 extern int matl_choice, node_choice, ele_choice;
@@ -71,6 +71,28 @@ void trrender(void)
 
 	*(wire_color + 2) = 0.0;
 	if(!Solid_flag) *(wire_color + 2) = 1.0;
+
+	MeshColor[0][3] = 1.0;
+	MeshColor[1][3] = 1.0;
+	MeshColor[2][3] = 1.0;
+	MeshColor[3][3] = 1.0;
+	MeshColor[4][3] = 1.0;
+	MeshColor[5][3] = 1.0;
+	MeshColor[6][3] = 1.0;
+	MeshColor[7][3] = 1.0;
+
+	if(Transparent_flag)
+	{
+		MeshColor[0][3] = 0.175;
+		MeshColor[1][3] = 0.175;
+		MeshColor[2][3] = 0.175;
+		MeshColor[3][3] = 0.175;
+		MeshColor[4][3] = 0.175;
+		MeshColor[5][3] = 0.175;
+		MeshColor[6][3] = 0.175;
+		MeshColor[7][3] = 0.175;
+	}
+	if(color_choice == 30 || color_choice == 32) MeshColor[7][3] = 1.0;
 
         for( k = 0; k < numel; ++k )
 	{
@@ -240,22 +262,28 @@ void trrender(void)
         	     	glBegin(GL_TRIANGLES);
                            	glNormal3fv(norm_temp);
 			   	glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c1]);
+			   	glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c1]);
                 	   	glVertex3dv((coord_el+3));
 			   	glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c0]);
+			   	glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c0]);
                  	   	glVertex3dv((coord_el));
 			   	glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c2]);
+			   	glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c2]);
                  	   	glVertex3dv((coord_el+6));
         	     	glEnd();
 		   }
    
 /* Draw the wire frame around the mesh */
    
-		   glMaterialfv(GL_FRONT, GL_DIFFUSE,  black );
-          	     glBegin(GL_LINE_LOOP);
-                 	   glVertex3dv((coord_el+3));
-                 	   glVertex3dv((coord_el));
-                 	   glVertex3dv((coord_el+6));
-        	     glEnd();
+		   if( Outline_flag )
+		   {
+			glColor4fv( black );
+			glBegin(GL_LINE_LOOP);
+				glVertex3dv((coord_el+3));
+				glVertex3dv((coord_el));
+				glVertex3dv((coord_el+6));
+			glEnd();
+		   }
 		}
 
 		if( input_color_flag )
@@ -274,22 +302,28 @@ void trrender(void)
         	     	glBegin(GL_TRIANGLES);
                            	glNormal3fv(norm_temp);
 			   	glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c1]);
+			   	glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c1]);
                 	   	glVertex3dv((coord0_el+3));
 			   	glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c0]);
+			   	glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c0]);
                  	   	glVertex3dv((coord0_el));
 			   	glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c2]);
+			   	glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c2]);
                  	   	glVertex3dv((coord0_el+6));
         	     	glEnd();
 		   }
    
 /* Draw the wire frame around the mesh */
    
-		   glMaterialfv(GL_FRONT, GL_DIFFUSE, wire_color);
-          	     glBegin(GL_LINE_LOOP);
-                 	   glVertex3dv((coord0_el+3));
-                 	   glVertex3dv((coord0_el));
-                 	   glVertex3dv((coord0_el+6));
-        	     glEnd();
+		   if( Outline_flag )
+		   {
+			glColor4fv(wire_color);
+			glBegin(GL_LINE_LOOP);
+				glVertex3dv((coord0_el+3));
+				glVertex3dv((coord0_el));
+				glVertex3dv((coord0_el+6));
+			glEnd();
+		   }
 		}
 	}
 /* This draws the Node ID node */
@@ -303,7 +337,7 @@ void trrender(void)
 	    	fpointy = *(coord+nsd*node_number+1);
 	    	fpointz = 0.0;
               	glBegin(GL_POINTS);
-        	    glMaterialfv(GL_FRONT, GL_DIFFUSE, yellow);
+        	    glColor4fv(yellow);
                	    glVertex3f(fpointx, fpointy, fpointz);
     	   	glEnd();
 	    }
@@ -313,7 +347,7 @@ void trrender(void)
 	    	fpointy = *(coord0+nsd*node_number+1);
 	    	fpointz = 0.0;
               	glBegin(GL_POINTS);
-        	    glMaterialfv(GL_FRONT, GL_DIFFUSE, yellow);
+        	    glColor4fv(yellow);
                	    glVertex3f(fpointx, fpointy, fpointz);
     	   	glEnd();
 	    }

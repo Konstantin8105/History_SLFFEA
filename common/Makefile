@@ -1,6 +1,6 @@
 # SLFFEA Makefile
-# Version:  1.2
-# Copyright (C) 1999, 2000, 2001  San Le (slffea.juno.com)
+# Version:  1.3
+# Copyright (C) 1999, 2000, 2001, 2002  San Le (slffea@yahoo.com)
 # http://slffea.com/
 #
 # This library is free software; you can redistribute it and/or
@@ -29,7 +29,8 @@ CC = /usr/bin/gcc  -g
 LIBS = -lm
 
 all: crossx.o dotx.o matx.o matxt.o lm.o idiag.o kasmbl.o sky.o \
-	qr.o eigen.o eigenprint.o rotate.o dyadx.o cubic.o
+	qr.o eigen.o eigenprint.o rotate.o dyadx.o cubic.o \
+	nodenorm.o compare
 
 crossx.o: crossx.c
 	$(CC) -c crossx.c 
@@ -72,6 +73,16 @@ rotate.o: rotate.c
 
 cubic.o: cubic.c
 	$(CC) -c cubic.c 
+
+nodenorm.o: nodenorm.c
+	$(CC) -c nodenorm.c 
+
+compare: compare.o \
+		compare.o
+	$(CC) -o compare compare.o $(LIBS)
+
+compare.o: compare.c
+	$(CC) -c compare.c 
 
 clean:
 	-rm *.o 

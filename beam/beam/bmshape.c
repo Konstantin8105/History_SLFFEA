@@ -3,8 +3,8 @@
     element.
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le 
+    Version:  1.3
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -23,7 +23,7 @@ int bmshape(SHAPE *sh, double s, double L, double Lsq)
 /* Maps from L2 space to coordinate space and
    calculates the shape functions 
 
-		Updated 7/13/99
+            Updated 1/7/05
 */
 
 	s = L*(1. + s)/2.;
@@ -47,6 +47,11 @@ int bmshape(SHAPE *sh, double s, double L, double Lsq)
 	sh->N[1].dx2 = 2.0*( - 2.0 + 3.0*s/L)/L;
 	sh->N[2].dx2 = 6.0*(1.0 - 2.0*s/L)/(Lsq);
 	sh->N[3].dx2 = 2.0*( - 1.0 + 3.0*s/L)/L;
+
+	sh->N[0].dx3 = 12.0/(L*Lsq);
+	sh->N[1].dx3 = 6.0/Lsq;
+	sh->N[2].dx3 = -12.0/(L*Lsq);
+	sh->N[3].dx3 = 6.0/Lsq;
 
 	return 1;
 }

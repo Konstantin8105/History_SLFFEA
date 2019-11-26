@@ -2,11 +2,11 @@
     This library function writes the resulting data for a finite element
     program which does analysis on a quadrilateral element 
 
-		Updated 7/9/02
+		Updated 5/2/05
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le 
+    Version:  1.3
+    Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -21,13 +21,13 @@
 #include "qdstruct.h"
 
 extern int dof, nmat, nmode, numel, numnp, plane_stress_flag;
-extern int standard_flag, element_stress_print_flag, gauss_stress_flag;
+extern int static_flag, element_stress_print_flag, gauss_stress_flag;
 
 int qdwriter ( BOUND bc, int *connect, double *coord, int *el_matl, double *force,
 	int *id, MATL *matl, char *name, STRAIN *strain, SDIM *strain_node,
 	STRESS *stress, SDIM *stress_node, double *U)
 {
-        int i,j,dum,check, node, name_length;
+	int i,j,dum,check, node, name_length;
 	char *ccheck;
 	double fpointx, fpointy;
 	char out[30], stress_dat[40], stress_type[6];
@@ -47,122 +47,122 @@ int qdwriter ( BOUND bc, int *connect, double *coord, int *el_matl, double *forc
 	ccheck = strncpy(out+name_length, ".oqd", 4);
 	if(!ccheck) printf( " Problems with strncpy \n");
 
-        o3 = fopen( out,"w" );
+	o3 = fopen( out,"w" );
 
-        fprintf( o3, "   numel numnp nmat nmode plane_stress_flag");
-        fprintf( o3, " (This is for the quad mesh file: %s)\n", name);
-        fprintf( o3, "    %4d %4d %4d %4d %4d\n ",
+	fprintf( o3, "   numel numnp nmat nmode plane_stress_flag");
+	fprintf( o3, " (This is for the quad mesh file: %s)\n", name);
+	fprintf( o3, "    %4d %4d %4d %4d %4d\n ",
 		numel,numnp,nmat,nmode,plane_stress_flag);
-        fprintf( o3, "matl no., E modulus, Poisson Ratio, density \n");
-        for( i = 0; i < nmat; ++i )
-        {
-           fprintf( o3, "  %4d    %12.6e %12.6e %12.6e\n ",i,
-		matl[i].E, matl[i].nu, matl[i].rho);
-        }
-
-        fprintf( o3, "el no., connectivity, matl no. \n");
-        for( i = 0; i < numel; ++i )
-        {
-           fprintf( o3, "%6d ",i);
-           for( j = 0; j < npel; ++j )
-           {
-                fprintf( o3, "%6d ",*(connect+npel*i+j));
-           }
-           fprintf( o3, "   %3d\n",*(el_matl+i));
-        }
-
-        fprintf( o3, "node no., coordinates \n");
-        for( i = 0; i < numnp; ++i )
-        {
-           fpointx = *(coord+nsd*i) + *(U+ndof*i);
-           fpointy = *(coord+nsd*i+1) + *(U+ndof*i+1);
-           fprintf( o3, "%4d %14.6f %14.6f\n", i, fpointx, fpointy );
-        }
-
-        fprintf( o3, "prescribed displacement x: node  disp value \n");
-        for( i = 0; i < numnp; ++i )
-        {
-                fprintf( o3, "%4d %14.6e\n", i,
-			*(U+ndof*i));
-        }
-        fprintf( o3, " -10 \n");
-
-        fprintf( o3, "prescribed displacement y: node  disp value \n");
-        for( i = 0; i < numnp; ++i )
-        {
-                fprintf( o3, "%4d %14.6e\n", i,
-			*(U+ndof*i+1));
-        }
-        fprintf( o3, " -10 \n");
-
-        fprintf( o3, "node with point load and load vector in x,y \n");
-
-	if( standard_flag)
+	fprintf( o3, "matl no., E modulus, Poisson Ratio, density \n");
+	for( i = 0; i < nmat; ++i )
 	{
-            for( i = 0; i < bc.num_force[0] ; ++i )
-            {
+	   fprintf( o3, "  %4d    %12.6e %12.6e %12.6e\n ",i,
+		matl[i].E, matl[i].nu, matl[i].rho);
+	}
+
+	fprintf( o3, "el no., connectivity, matl no. \n");
+	for( i = 0; i < numel; ++i )
+	{
+	   fprintf( o3, "%6d ",i);
+	   for( j = 0; j < npel; ++j )
+	   {
+		fprintf( o3, "%6d ",*(connect+npel*i+j));
+	   }
+	   fprintf( o3, "   %3d\n",*(el_matl+i));
+	}
+
+	fprintf( o3, "node no., coordinates \n");
+	for( i = 0; i < numnp; ++i )
+	{
+	   fpointx = *(coord+nsd*i) + *(U+ndof*i);
+	   fpointy = *(coord+nsd*i+1) + *(U+ndof*i+1);
+	   fprintf( o3, "%4d %14.6f %14.6f\n", i, fpointx, fpointy );
+	}
+
+	fprintf( o3, "prescribed displacement x: node  disp value \n");
+	for( i = 0; i < numnp; ++i )
+	{
+		fprintf( o3, "%4d %14.6e\n", i,
+			*(U+ndof*i));
+	}
+	fprintf( o3, " -10 \n");
+
+	fprintf( o3, "prescribed displacement y: node  disp value \n");
+	for( i = 0; i < numnp; ++i )
+	{
+		fprintf( o3, "%4d %14.6e\n", i,
+			*(U+ndof*i+1));
+	}
+	fprintf( o3, " -10 \n");
+
+	fprintf( o3, "node with point load and load vector in x,y \n");
+
+	if( static_flag)
+	{
+	    for( i = 0; i < bc.num_force[0] ; ++i )
+	    {
 		node = bc.force[i];
 		*(id+ndof*node) = -1;
 		*(id+ndof*node+1) = -1;
-            }
-        }
+	    }
+	}
 
-        for( i = 0; i < numnp; ++i )
-        {
-           if( *(id+ndof*i) < 0 || *(id+ndof*i+1) < 0 )
-           {
-           	fprintf( o3,"%4d",i);
-           	for( j = 0; j < ndof; ++j )
-           	{
-               		fprintf( o3," %16.4e ",*(force+ndof*i+j));
-           	}
-           	fprintf( o3, "\n");
-           }
-        }
-        fprintf( o3, " -10\n");
+	for( i = 0; i < numnp; ++i )
+	{
+	   if( *(id+ndof*i) < 0 || *(id+ndof*i+1) < 0 )
+	   {
+		fprintf( o3,"%4d",i);
+		for( j = 0; j < ndof; ++j )
+		{
+			fprintf( o3," %16.4e ",*(force+ndof*i+j));
+		}
+		fprintf( o3, "\n");
+	   }
+	}
+	fprintf( o3, " -10\n");
 
-        fprintf( o3, "node no. with stress ");
-        fprintf( o3, "and stress vector in xx,yy,xy \n");
+	fprintf( o3, "node no. with stress ");
+	fprintf( o3, "and stress vector in xx,yy,xy \n");
 	for( i = 0; i < numnp; ++i )
 	{
-                fprintf( o3,"%4d  ",i);
-           	fprintf( o3,"%14.6e ",stress_node[i].xx);
-           	fprintf( o3,"%14.6e ",stress_node[i].yy);
-           	fprintf( o3,"%14.6e ",stress_node[i].xy);
-           	fprintf( o3, "\n");
+		fprintf( o3,"%4d  ",i);
+		fprintf( o3,"%14.6e ",stress_node[i].xx);
+		fprintf( o3,"%14.6e ",stress_node[i].yy);
+		fprintf( o3,"%14.6e ",stress_node[i].xy);
+		fprintf( o3, "\n");
 	}
-        fprintf( o3, " -10 \n");
-        fprintf( o3, "node no. with stress ");
-        fprintf( o3, "and principal stress vector I,II \n");
+	fprintf( o3, " -10 \n");
+	fprintf( o3, "node no. with stress ");
+	fprintf( o3, "and principal stress I,II \n");
 	for( i = 0; i < numnp; ++i )
 	{
-                fprintf( o3,"%4d  ",i);
-           	fprintf( o3,"%14.6e ",stress_node[i].I);
-           	fprintf( o3,"%14.6e ",stress_node[i].II);
-           	fprintf( o3, "\n");
+		fprintf( o3,"%4d  ",i);
+		fprintf( o3,"%14.6e ",stress_node[i].I);
+		fprintf( o3,"%14.6e ",stress_node[i].II);
+		fprintf( o3, "\n");
 	}
-        fprintf( o3, " -10 \n");
-        fprintf( o3, "node no. with strain ");
-        fprintf( o3, "and strain vector in xx,yy,xy \n");
+	fprintf( o3, " -10 \n");
+	fprintf( o3, "node no. with strain ");
+	fprintf( o3, "and strain vector in xx,yy,xy \n");
 	for( i = 0; i < numnp; ++i )
 	{
-                fprintf( o3,"%4d  ",i);
-           	fprintf( o3,"%14.6e ",strain_node[i].xx);
-           	fprintf( o3,"%14.6e ",strain_node[i].yy);
-           	fprintf( o3,"%14.6e ",strain_node[i].xy);
-           	fprintf( o3, "\n");
+		fprintf( o3,"%4d  ",i);
+		fprintf( o3,"%14.6e ",strain_node[i].xx);
+		fprintf( o3,"%14.6e ",strain_node[i].yy);
+		fprintf( o3,"%14.6e ",strain_node[i].xy);
+		fprintf( o3, "\n");
 	}
-        fprintf( o3, " -10 \n");
-        fprintf( o3, "node no. with strain ");
-        fprintf( o3, "and principal strain vector I,II \n");
+	fprintf( o3, " -10 \n");
+	fprintf( o3, "node no. with strain ");
+	fprintf( o3, "and principal strain I,II \n");
 	for( i = 0; i < numnp; ++i )
 	{
-                fprintf( o3,"%4d  ",i);
-           	fprintf( o3,"%14.6e ",strain_node[i].I);
-           	fprintf( o3,"%14.6e ",strain_node[i].II);
-           	fprintf( o3, "\n");
+		fprintf( o3,"%4d  ",i);
+		fprintf( o3,"%14.6e ",strain_node[i].I);
+		fprintf( o3,"%14.6e ",strain_node[i].II);
+		fprintf( o3, "\n");
 	}
-        fprintf( o3, " -10 \n");
+	fprintf( o3, " -10 \n");
 
 	if(element_stress_print_flag)
 	{
@@ -189,7 +189,7 @@ int qdwriter ( BOUND bc, int *connect, double *coord, int *el_matl, double *forc
 		ccheck = strncpy(stress_dat+name_length, ".str.oqd", 8);
 		if(!ccheck) printf( " Problems with strncpy \n");
 
-        	o4 = fopen( stress_dat,"w" );
+		o4 = fopen( stress_dat,"w" );
 
 		fprintf( o4, "element no. and %5s pt. no. with stress ", stress_type);
 		fprintf( o4, "and stress vector in xx,yy,xy \n");
@@ -206,7 +206,7 @@ int qdwriter ( BOUND bc, int *connect, double *coord, int *el_matl, double *forc
 		}
 		fprintf( o4, " -10 \n");
 		fprintf( o4, "element no. and %5s pt. no. with stress ", stress_type);
-		fprintf( o4, "and principal stress vector I,II \n");
+		fprintf( o4, "and principal stress I,II \n");
 		for( i = 0; i < numel; ++i )
 		{
 		   for( j = 0; j < num_int; ++j )
@@ -233,7 +233,7 @@ int qdwriter ( BOUND bc, int *connect, double *coord, int *el_matl, double *forc
 		}
 		fprintf( o4, " -10 \n");
 		fprintf( o4, "element no. and %5s pt. no. with strain ", stress_type);
-		fprintf( o4, "and principal strain vector I,II \n");
+		fprintf( o4, "and principal strain I,II \n");
 		for( i = 0; i < numel; ++i )
 		{
 		   for( j = 0; j < num_int; ++j )
@@ -247,6 +247,6 @@ int qdwriter ( BOUND bc, int *connect, double *coord, int *el_matl, double *forc
 		fprintf( o4, " -10 \n");
 	}
 
-        return 1;
+	return 1;
 }
 

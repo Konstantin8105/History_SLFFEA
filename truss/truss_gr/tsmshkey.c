@@ -5,7 +5,7 @@
                         Last Update 8/18/06
 
     SLFFEA source file
-    Version:  1.2
+    Version:  1.3
     Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006  San Le 
 
     The source code contained in this file is released under the
@@ -41,6 +41,7 @@ extern ISTRESS *stress_color;
 extern ISTRAIN *strain_color;
 extern int *U_color;
 
+extern GLfloat MeshColor[boxnumber+5][4];
 extern double step_sizex, step_sizey, step_sizez;
 extern int choice_stress;
 extern double left_right, up_down, in_out, left_right0, up_down0, in_out0;
@@ -61,7 +62,7 @@ extern int input_color_flag;
 extern int Perspective_flag, Render_flag,
     AppliedDisp_flag, AppliedForce_flag,
     Material_flag, Node_flag, Element_flag, Axes_flag,
-    CrossSection_flag;
+    Transparent_flag, CrossSection_flag;
 extern int Before_flag, After_flag,
     Both_flag, Amplify_flag;
 extern double amplify_factor, amplify_step, amplify_step0;
@@ -365,6 +366,9 @@ void tsMeshKeys( unsigned char key, int x, int y )
 	    	break;
 	    case 's':
 		CrossSection_flag = 1 - CrossSection_flag;
+		break;
+	    case 't':
+		Transparent_flag = 1 - Transparent_flag;
 		break;
   	    case 'x':
 		Axes_flag = 1 - Axes_flag;

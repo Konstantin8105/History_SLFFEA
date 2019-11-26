@@ -58,23 +58,23 @@
   title               problem title
   numed               number of edges
   numel               number of elements
-  numnp               number of nodal points
+  numnp               number of nodal points 
   nmat                number of materials
-  dof                 total number of degrees of freedom
+  dof                 total number of degrees of freedom 
   EMdof                total number of degrees of freedom for electromagnetic element
   coord               *(coord + 0) x coordinate of node
                       *(coord + 1) y coordinate of node
-  connect             (0-3) connectivity array
+  connect             (0-3) connectivity array 
   matl                material structure
   EMod                young's modulus
   nu                  poisson's ratio
   force               *(force + 0) x component of applied load
                       *(force + 1) y component of applied load
   plane_stress_flag   0 flag indicating whether plane stress
-                      1 or strain theory is used
+                      1 or strain theory is used 
   analysis_flag       1 calculate unknown displacemnts
                       2 calculate reaction forces
-  lin_algebra_flag    0 if numel <= 1125 elements, use LU Decomposition for
+  LU_decomp_flag      0 if numel <= 1125 elements, use LU Decomposition for
                         displacements
                       1 if numel > 1125 elements, use conjugate
                         gradient method for displacements

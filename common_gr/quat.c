@@ -37,10 +37,10 @@
 
     and modified by San Le.
 
-                Updated 6/26/02
+                Updated 4/26/01
 
     SLFFEA source file
-    Version:  1.2
+    Version:  1.3
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.

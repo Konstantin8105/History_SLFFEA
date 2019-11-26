@@ -1,14 +1,20 @@
 /*
     This program performs finite element analysis by reading in
     the data, doing assembling, and then solving the linear system
-    for a 4 node doubly curved shell element.  The shell itself is
-    defined by 8 nodes.
+    for a 4 node doubly curved shell element.  The shell itself may
+    be defined by 8 nodes.  Alternatively, as of April 2005, this
+    element also works for shells defined by 4 nodes only.  Note that
+    for the 4 node shells, the element thickness does not mean that
+    these elements are of constant thickness.  Rather, each element
+    thickness is averaged over all elements which share a node, and
+    this is used to calculate the corresponding top nodes for the
+    entire mesh.
 
-        Updated 11/4/09
+        Updated 11/3/09
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999-2009  San Le 
+    Version:  1.3
+    Copyright (C) 1999-2009 San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -46,8 +52,8 @@ int decomp(double *,int *,int );
 
 int shMassemble(int *, double *, int *, int *, double *, MATL *);
 
-int shKassemble(double *, int *, double *, int *, double *, int *, int *,
-	double *, int *, MATL *, double *, STRAIN *, SDIM *, STRESS *,
+int shKassemble(double *, int *, double *, int *, double *, double *, int *,
+	int *, double *, int *, MATL *, double *, STRAIN *, SDIM *, STRESS *,
 	SDIM *, double *);
 
 int diag( int *, int *, int, int, int, int);
@@ -55,6 +61,10 @@ int diag( int *, int *, int, int, int, int);
 int formlm( int *, int *, int *, int, int, int );
 
 int shformid( BOUND, int *);
+
+int shTopCoordinates(int *, double *, int *, double *, MATL *, double *);
+
+int node_normals( int *, double *, double *, double *, int, int);
 
 int shreader( BOUND , int *, double *, int *, double *, MATL *, char *,
 	FILE *, STRESS *, SDIM *, double *);
@@ -68,13 +78,13 @@ int shshl( double, SH, double * );
 int shshl_node2(double * );
 #endif
 
-int analysis_flag, dof, modal_flag, integ_flag, neqn, nmat, nmode, numel, numnp,
-	sof;
-int standard_flag, consistent_mass_flag, consistent_mass_store, eigen_print_flag,
+int analysis_flag, dof, sdof, modal_flag, integ_flag, doubly_curved_flag,
+	neqn, nmat, nmode, numel, numnp, sof;
+int static_flag, consistent_mass_flag, consistent_mass_store, eigen_print_flag,
         lumped_mass_flag, stress_read_flag, element_stress_read_flag,
         element_stress_print_flag, gauss_stress_flag;
 
-int lin_algebra_flag, numel_K, numel_P, numnp_linear_max;
+int LU_decomp_flag, numel_K, numel_P, numnp_LUD_max;
 int iteration_max, iteration_const, iteration;
 double tolerance;
 
@@ -94,7 +104,7 @@ int main(int argc, char** argv)
         double fpointx, fpointy, fpointz, node_vec[nsd];
         int *connect, *el_matl, dum;
         double *coord, *force, *mass, *U, *Uz_fib, *Voln, *A,
-		*node_counter, *vector_dum;
+		*node_counter, *vector_dum, *fiber_vec;
 	double *K_diag, *ritz;
 	EIGEN *eigen;
 	int num_eigen;
@@ -110,6 +120,7 @@ int main(int argc, char** argv)
         long timef;
 	int  mem_case, mem_case_mass;
 	double RAM_max, RAM_usable, RAM_needed, MEGS;
+        double thickness;
 
         sof = sizeof(double);
 
@@ -230,12 +241,13 @@ int main(int argc, char** argv)
         fgets( buf, BUFSIZ, o1 );
         fscanf( o1, "%d %d %d %d %d\n ",&numel,&numnp,&nmat,&nmode,&integ_flag);
         dof=numnp*ndof;
+        sdof=numnp*nsd;
 
-	numnp_linear_max = 450;
+	numnp_LUD_max = 450;
 
 /* Assuming Conjugate gradient method is used, determine how much RAM is needed.
    This determines the largest problem that can be run on this machine.
-   If problem small enough that linear algebra is used, then calculation below
+   If problem small enough that LU decomposition is used, then calculation below
    is irrelevant.
 
    RAM variables given in bytes
@@ -261,10 +273,10 @@ int main(int argc, char** argv)
 		numel_K = numel - numel_P;
 	}
 
-	lin_algebra_flag = 1;
-	if(numnp > numnp_linear_max) lin_algebra_flag = 0;
+	LU_decomp_flag = 1;
+	if(numnp > numnp_LUD_max) LU_decomp_flag = 0;
 
-	standard_flag = 1;
+	static_flag = 1;
 	modal_flag = 0;
 
 	lumped_mass_flag = 1;
@@ -288,12 +300,12 @@ int main(int argc, char** argv)
 		num_eigen = (int)(3.0*nmode);
 		num_eigen = MIN(nmode + 10, num_eigen);
 		num_eigen = MIN(dof, num_eigen);
-		standard_flag = 0;
+		static_flag = 0;
 		modal_flag = 1;
 	}
 
 #if 0
-        lin_algebra_flag = 0;
+        LU_decomp_flag = 0;
 #endif
 
 /*   Begin allocation of meomory */
@@ -301,10 +313,11 @@ int main(int argc, char** argv)
 	MemoryCounter = 0;
 
 /* For the doubles */
-	sofmf=2*numnp*nsd + 3*dof + numnp + 2*numel + 2*numnp + dof;
+	sofmf=2*sdof + 3*dof + numnp + 2*numel + 2*numnp + dof + sdof;
         if(modal_flag)
         {
-		sofmf=2*numnp*nsd + 3*dof + numnp + 2*numel + 2*numnp + dof + num_eigen*dof;
+		sofmf=2*sdof + 3*dof + numnp + 2*numel + 2*numnp + dof +
+			sdof + num_eigen*dof;
         }
 	MemoryCounter += sofmf*sizeof(double);
 	printf( "\n Memory requrement for doubles is %15d bytes\n",MemoryCounter);
@@ -336,7 +349,7 @@ int main(int argc, char** argv)
 
 /* For the doubles */
                                                 ptr_inc=0;
-        coord=(mem_double+ptr_inc);    	        ptr_inc += 2*numnp*nsd;
+        coord=(mem_double+ptr_inc);    	        ptr_inc += 2*sdof;
 	vector_dum=(mem_double+ptr_inc);        ptr_inc += dof;
         force=(mem_double+ptr_inc);             ptr_inc += dof;
         U=(mem_double+ptr_inc);                 ptr_inc += dof;
@@ -345,6 +358,7 @@ int main(int argc, char** argv)
         Vol0=(mem_double+ptr_inc);              ptr_inc += numel;
 	node_counter=(mem_double+ptr_inc);      ptr_inc += 2*numnp;
 	K_diag=(mem_double+ptr_inc);            ptr_inc += dof;
+	fiber_vec=(mem_double+ptr_inc);         ptr_inc += sdof;
 
 /* If modal analysis is desired, allocate for ritz vectors */
 
@@ -392,6 +406,20 @@ int main(int argc, char** argv)
 	check = shreader( bc, connect, coord, el_matl, force, matl, name,
 		o1, stress, stress_node, U);
         if(!check) printf( " Problems with shreader \n");
+
+	if(!doubly_curved_flag)
+	{
+/*  In the case of a singly curved shell, I use the function node_normals calculate
+    vectors in the fiber direction for each node.
+*/ 
+	    check = node_normals( connect, coord, fiber_vec, node_counter,
+		numel, numnp);
+	    if(!check) printf( " Problems with fiber_vec \n");
+
+	    shTopCoordinates(connect, coord, el_matl, fiber_vec, matl, node_counter);
+
+	    memset(node_counter,0,numnp*sizeof(double));
+	}
 
         printf(" \n\n");
 
@@ -443,7 +471,7 @@ int main(int argc, char** argv)
 	sofmA = numel_K*neqlsq;		 /* case 2 */
 	mem_case = 2;
 
-	if(lin_algebra_flag)
+	if(LU_decomp_flag)
 	{
 		sofmA = *(idiag+neqn-1)+1;       /* case 1 */
 		mem_case = 1;
@@ -452,23 +480,23 @@ int main(int argc, char** argv)
 	if( sofmA*sof > (int)RAM_usable )
 	{
 
-/* Even if the linear algebra flag is on because there are only a few nodes, there
+/* Even if the LU decomposition flag is on because there are only a few nodes, there
    is a possibility that there is not enough memory because of poor node numbering.
    If this is the case, then we have to use the conjugate gradient method.
  */
 
 		sofmA = numel_K*neqlsq;
-		lin_algebra_flag = 0;
+		LU_decomp_flag = 0;
 		mem_case = 2;
 	}
 
 	printf( "\n We are in case %3d\n\n", mem_case);
 	switch (mem_case) {
 		case 1:
-			printf( " linear algebra\n\n");
+			printf( " LU decomposition\n\n");
 		break;
 		case 2:
-			printf( " conjugate gradient \n\n");
+			printf( " Conjugate gradient \n\n");
 		break;
 	}
 
@@ -554,8 +582,9 @@ int main(int argc, char** argv)
 
 	analysis_flag = 1;
 	memset(A,0,sofmA*sof);
-	check = shKassemble(A, connect, coord, el_matl, force, id, idiag, K_diag,
-		lm, matl, node_counter, strain, strain_node, stress, stress_node, U);
+	check = shKassemble(A, connect, coord, el_matl, fiber_vec, force,
+		id, idiag, K_diag, lm, matl, node_counter, strain, strain_node,
+		stress, stress_node, U);
         if(!check) printf( " Problems with shKassembler \n");
 /*
         printf( "\n\n This is the force matrix \n");
@@ -590,7 +619,7 @@ int main(int argc, char** argv)
 	    }
 	}
 
-	if(lin_algebra_flag)
+	if(LU_decomp_flag)
 	{
 
 /* Perform LU Crout decompostion on the system */
@@ -610,9 +639,9 @@ int main(int argc, char** argv)
         }
 */
 
-	if(standard_flag)
+	if(static_flag)
 	{
-	    if(lin_algebra_flag)
+	    if(LU_decomp_flag)
 	    {
 
 /* Using LU decomposition to solve the system */
@@ -631,7 +660,7 @@ int main(int argc, char** argv)
 	    }
 /* Using Conjugate gradient method to solve the system */
 
-	    if(!lin_algebra_flag)
+	    if(!LU_decomp_flag)
 	    {
 		check = shConjGrad( A, bc, connect, coord, el_matl, force, K_diag,
 			matl, U);
@@ -666,8 +695,9 @@ int main(int argc, char** argv)
 /* Calculate the reaction forces */
 	    analysis_flag = 2;
 	    memset(force,0,dof*sof);
-	    check = shKassemble(A, connect, coord, el_matl, force, id, idiag, K_diag,
-		lm, matl, node_counter, strain, strain_node, stress, stress_node, U);
+	    check = shKassemble(A, connect, coord, el_matl, fiber_vec, force,
+		id, idiag, K_diag, lm, matl, node_counter, strain, strain_node,
+		stress, stress_node, U);
 	    if(!check) printf( " Problems with shKassembler \n");
 
 /* Calcuate the local z fiber displacement on each node */
@@ -813,9 +843,9 @@ int main(int argc, char** argv)
 /* Calculate the stresses */
 		analysis_flag = 2;
 
-		check = shKassemble(A, connect, coord, el_matl, vector_dum, id,
-		    idiag, K_diag, lm, matl, node_counter, strain, strain_node,
-		    stress, stress_node, U);
+		check = shKassemble(A, connect, coord, el_matl, fiber_vec,
+		    vector_dum, id, idiag, K_diag, lm, matl, node_counter,
+		    strain, strain_node, stress, stress_node, U);
 		if(!check) printf( " Problems with shKassembler \n");
 
 /* Calcuate the local z fiber displacement on each node */

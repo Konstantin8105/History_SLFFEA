@@ -13,11 +13,11 @@
    a shell.   Note that implicit in this algorithm is the assumption that [M]
    is positive definite.
 
-                        Updated 6/20/02 
+                        Updated 6/28/02 
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le
+    Version:  1.3
+    Copyright (C) 1999, 2000, 2001, 2002  San Le
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -37,7 +37,7 @@
 #define SMALLER             1.0e-20
 
 extern int dof, neqn, sof;
-extern int lin_algebra_flag, numel_K, numel_P;
+extern int LU_decomp_flag, numel_K, numel_P;
 extern int consistent_mass_flag, consistent_mass_store, eigen_print_flag,
 	lumped_mass_flag;
 extern int iteration_max;
@@ -206,7 +206,7 @@ int shLanczos(double *K, BOUND bc, int *connect, double *coord, EIGEN *eigen,
         for( i = 0; i < num_eigen; ++i )
         {
 
-	    if(lin_algebra_flag)
+	    if(LU_decomp_flag)
 	    {
 
 /* Using LU decomposition to solve the system */
@@ -215,7 +215,7 @@ int shLanczos(double *K, BOUND bc, int *connect, double *coord, EIGEN *eigen,
 		if(!check) printf( " Problems with solve \n");
 	    }
 
-	    if(!lin_algebra_flag)
+	    if(!LU_decomp_flag)
 	    {
 
 /* Using Conjugate gradient method to solve the system. 
@@ -484,6 +484,7 @@ int shLanczos(double *K, BOUND bc, int *connect, double *coord, EIGEN *eigen,
 	}
 
 	free(mem_double);
+	free(index);
 
 	return 1;
 }

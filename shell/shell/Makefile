@@ -1,5 +1,5 @@
 # SLFFEA Makefile
-# Version:  1.2
+# Version:  1.3
 # Copyright (C) 1999, 2000  San Le (slffea@yahoo.com)
 # http://slffea.com/
 #
@@ -31,7 +31,7 @@ COMMON = ../../common
 OBJECTS = $(COMMON)/matxt.o $(COMMON)/matx.o $(COMMON)/dotx.o \
 	$(COMMON)/lm.o $(COMMON)/idiag.o $(COMMON)/kasmbl.o  \
 	$(COMMON)/sky.o $(COMMON)/qr.o $(COMMON)/eigen.o \
-	$(COMMON)/eigenprint.o $(COMMON)/cubic.o
+	$(COMMON)/eigenprint.o $(COMMON)/nodenorm.o $(COMMON)/cubic.o
 
 OBJECTS2 = $(COMMON)/crossx.o 
 
@@ -42,6 +42,7 @@ all: shl shp shplane
 shl: femsh.o \
 		shmemory.o \
 		shreader.o \
+		shcoord.o \
 		shid.o \
 		shshape.o \
 		shellb.o \
@@ -58,6 +59,7 @@ shl: femsh.o \
 	$(CC) -o shl femsh.o \
 		shmemory.o \
 		shreader.o \
+		shcoord.o \
 		shid.o \
 		shshape.o \
 		shellb.o \
@@ -119,6 +121,9 @@ shshape.o: shshape.c
 
 shid.o: shid.c
 	$(CC) -c shid.c
+
+shcoord.o: shcoord.c
+	$(CC) -c shcoord.c
 
 shreader.o: shreader.c
 	$(CC) -c shreader.c

@@ -5,11 +5,11 @@
 
 			San Le
 
- 		Last Update 6/26/01
+ 		Last Update 7/23/02
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le 
+    Version:  1.3
+    Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -55,7 +55,7 @@ extern int color_choice, input_flag, post_flag;
 extern int input_color_flag;
 extern int Solid_flag, Perspective_flag, Render_flag, AppliedDisp_flag,
         AppliedForce_flag, Material_flag, Node_flag, Element_flag, Axes_flag,
-	CrossSection_flag;
+	Outline_flag, Transparent_flag, CrossSection_flag;
 extern int Before_flag, After_flag, Both_flag, Amplify_flag;
 extern int stress_flag, strain_flag, stress_strain, disp_flag;
 extern int matl_choice, node_choice, ele_choice;
@@ -81,6 +81,29 @@ void werender(void)
 
 	*(wire_color + 2) = 0.0;
 	if(!Solid_flag) *(wire_color + 2) = 1.0;
+
+	MeshColor[0][3] = 1.0;
+	MeshColor[1][3] = 1.0;
+	MeshColor[2][3] = 1.0;
+	MeshColor[3][3] = 1.0;
+	MeshColor[4][3] = 1.0;
+	MeshColor[5][3] = 1.0;
+	MeshColor[6][3] = 1.0;
+	MeshColor[7][3] = 1.0;
+
+	if(Transparent_flag)
+	{
+		MeshColor[0][3] = 0.175;
+		MeshColor[1][3] = 0.175;
+		MeshColor[2][3] = 0.175;
+		MeshColor[3][3] = 0.175;
+		MeshColor[4][3] = 0.175;
+		MeshColor[5][3] = 0.175;
+		MeshColor[6][3] = 0.175;
+		MeshColor[7][3] = 0.175;
+	}
+	if(color_choice == 30 || color_choice == 32) MeshColor[7][3] = 1.0;
+
 
         for( k = 0; k < numel; ++k )
         {
@@ -393,10 +416,13 @@ void werender(void)
 			glBegin(GL_TRIANGLES);
 				glNormal3fv(norm_temp);
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c1]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c1]);
 				glVertex3dv((coord_el+3));
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c0]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c0]);
 				glVertex3dv((coord_el));
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c2]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c2]);
 				glVertex3dv((coord_el+6));
 			glEnd();
 
@@ -408,10 +434,13 @@ void werender(void)
 			glBegin(GL_TRIANGLES);
 				glNormal3fv(norm_temp);
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c1]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c1]);
 				glVertex3dv((coord_el+3));
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c4]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c4]);
 				glVertex3dv((coord_el+12));
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c0]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c0]);
 				glVertex3dv((coord_el));
 			glEnd();
 
@@ -423,10 +452,13 @@ void werender(void)
 			glBegin(GL_TRIANGLES);
 				glNormal3fv(norm_temp);
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c3]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c3]);
 				glVertex3dv((coord_el+9));
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c0]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c0]);
 				glVertex3dv((coord_el));
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c4]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c4]);
 				glVertex3dv((coord_el+12));
 			glEnd();
 
@@ -438,10 +470,13 @@ void werender(void)
 			glBegin(GL_TRIANGLES);
 				glNormal3fv(norm_temp);
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c1]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c1]);
 				glVertex3dv((coord_el+3));
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c2]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c2]);
 				glVertex3dv((coord_el+6));
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c4]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c4]);
 				glVertex3dv((coord_el+12));
 			glEnd();
 
@@ -453,10 +488,13 @@ void werender(void)
 			glBegin(GL_TRIANGLES);
 				glNormal3fv(norm_temp);
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c5]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c5]);
 				glVertex3dv((coord_el+15));
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c4]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c4]);
 				glVertex3dv((coord_el+12));
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c2]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c2]);
 				glVertex3dv((coord_el+6));
 			glEnd();
 
@@ -468,10 +506,13 @@ void werender(void)
 			glBegin(GL_TRIANGLES);
 				glNormal3fv(norm_temp);
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c5]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c5]);
 				glVertex3dv((coord_el+15));
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c2]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c2]);
 				glVertex3dv((coord_el+6));
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c3]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c3]);
 				glVertex3dv((coord_el+9));
 			glEnd();
 
@@ -483,10 +524,13 @@ void werender(void)
 			glBegin(GL_TRIANGLES);
 				glNormal3fv(norm_temp);
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c0]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c0]);
 				glVertex3dv((coord_el));
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c3]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c3]);
 				glVertex3dv((coord_el+9));
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c2]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c2]);
 				glVertex3dv((coord_el+6));
 			glEnd();
 
@@ -498,10 +542,13 @@ void werender(void)
 			glBegin(GL_TRIANGLES);
 				glNormal3fv(norm_temp);
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c4]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c4]);
 				glVertex3dv((coord_el+12));
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c5]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c5]);
 				glVertex3dv((coord_el+15));
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c3]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c3]);
 				glVertex3dv((coord_el+9));
 			glEnd();
 
@@ -509,37 +556,38 @@ void werender(void)
    
 /* Draw the wire frame around the mesh */
    
-		   glColor4fv( black );
-		     glBegin(GL_LINE_LOOP);
-			   glVertex3dv((coord_el+3));
-			   glVertex3dv((coord_el));
-			   glVertex3dv((coord_el+6));
-		     glEnd();
-		     glBegin(GL_LINE_LOOP);
-			   glVertex3dv((coord_el));
-			   glVertex3dv((coord_el+3));
-			   glVertex3dv((coord_el+12));
-			   glVertex3dv((coord_el+9));
-		     glEnd();
-		     glBegin(GL_LINE_LOOP);
-			   glVertex3dv((coord_el+3));
-			   glVertex3dv((coord_el+6));
-			   glVertex3dv((coord_el+15));
-			   glVertex3dv((coord_el+12));
-		     glEnd();
-		     glBegin(GL_LINE_LOOP);
-			   glVertex3dv((coord_el+6));
-			   glVertex3dv((coord_el));
-			   glVertex3dv((coord_el+9));
-			   glVertex3dv((coord_el+15));
-		     glEnd();
-		     glBegin(GL_LINE_LOOP);
-			   glVertex3dv((coord_el+12));
-			   glVertex3dv((coord_el+15));
-			   glVertex3dv((coord_el+9));
-		     glEnd();
-
-
+		   if( Outline_flag )
+		   {
+			glColor4fv( black );
+			glBegin(GL_LINE_LOOP);
+				glVertex3dv((coord_el+3));
+				glVertex3dv((coord_el));
+				glVertex3dv((coord_el+6));
+			glEnd();
+			glBegin(GL_LINE_LOOP);
+				glVertex3dv((coord_el));
+				glVertex3dv((coord_el+3));
+				glVertex3dv((coord_el+12));
+				glVertex3dv((coord_el+9));
+			glEnd();
+			glBegin(GL_LINE_LOOP);
+				glVertex3dv((coord_el+3));
+				glVertex3dv((coord_el+6));
+				glVertex3dv((coord_el+15));
+				glVertex3dv((coord_el+12));
+			glEnd();
+			glBegin(GL_LINE_LOOP);
+				glVertex3dv((coord_el+6));
+				glVertex3dv((coord_el));
+				glVertex3dv((coord_el+9));
+				glVertex3dv((coord_el+15));
+			glEnd();
+			glBegin(GL_LINE_LOOP);
+				glVertex3dv((coord_el+12));
+				glVertex3dv((coord_el+15));
+				glVertex3dv((coord_el+9));
+			glEnd();
+		   }
 		}
 
 		if( input_color_flag )
@@ -567,10 +615,13 @@ void werender(void)
 			glBegin(GL_TRIANGLES);
 				glNormal3fv(norm_temp);
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c1]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c1]);
 				glVertex3dv((coord0_el+3));
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c0]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c0]);
 				glVertex3dv((coord0_el));
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c2]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c2]);
 				glVertex3dv((coord0_el+6));
 			glEnd();
 
@@ -582,10 +633,13 @@ void werender(void)
 			glBegin(GL_TRIANGLES);
 				glNormal3fv(norm_temp);
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c1]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c1]);
 				glVertex3dv((coord0_el+3));
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c4]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c4]);
 				glVertex3dv((coord0_el+12));
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c0]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c0]);
 				glVertex3dv((coord0_el));
 			glEnd();
 
@@ -597,10 +651,13 @@ void werender(void)
 			glBegin(GL_TRIANGLES);
 				glNormal3fv(norm_temp);
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c3]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c3]);
 				glVertex3dv((coord0_el+9));
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c0]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c0]);
 				glVertex3dv((coord0_el));
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c4]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c4]);
 				glVertex3dv((coord0_el+12));
 			glEnd();
 
@@ -612,10 +669,13 @@ void werender(void)
 			glBegin(GL_TRIANGLES);
 				glNormal3fv(norm_temp);
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c1]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c1]);
 				glVertex3dv((coord0_el+3));
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c2]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c2]);
 				glVertex3dv((coord0_el+6));
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c4]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c4]);
 				glVertex3dv((coord0_el+12));
 			glEnd();
 
@@ -627,10 +687,13 @@ void werender(void)
 			glBegin(GL_TRIANGLES);
 				glNormal3fv(norm_temp);
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c5]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c5]);
 				glVertex3dv((coord0_el+15));
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c4]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c4]);
 				glVertex3dv((coord0_el+12));
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c2]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c2]);
 				glVertex3dv((coord0_el+6));
 			glEnd();
 
@@ -642,10 +705,13 @@ void werender(void)
 			glBegin(GL_TRIANGLES);
 				glNormal3fv(norm_temp);
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c5]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c5]);
 				glVertex3dv((coord0_el+15));
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c2]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c2]);
 				glVertex3dv((coord0_el+6));
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c3]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c3]);
 				glVertex3dv((coord0_el+9));
 			glEnd();
 
@@ -657,10 +723,13 @@ void werender(void)
 			glBegin(GL_TRIANGLES);
 				glNormal3fv(norm_temp);
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c0]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c0]);
 				glVertex3dv((coord0_el));
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c3]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c3]);
 				glVertex3dv((coord0_el+9));
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c2]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c2]);
 				glVertex3dv((coord0_el+6));
 			glEnd();
 
@@ -672,46 +741,51 @@ void werender(void)
 			glBegin(GL_TRIANGLES);
 				glNormal3fv(norm_temp);
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c4]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c4]);
 				glVertex3dv((coord0_el+12));
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c5]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c5]);
 				glVertex3dv((coord0_el+15));
 				glMaterialfv(GL_FRONT, GL_DIFFUSE, MeshColor[c3]);
+				glMaterialfv(GL_FRONT, GL_AMBIENT, MeshColor[c3]);
 				glVertex3dv((coord0_el+9));
 			glEnd();
 		   }
    
 /* Draw the wire frame around the mesh */
    
-		   glColor4fv( wire_color );
-		     glBegin(GL_LINE_LOOP);
-			   glVertex3dv((coord0_el+3));
-			   glVertex3dv((coord0_el));
-			   glVertex3dv((coord0_el+6));
-		     glEnd();
-		     glBegin(GL_LINE_LOOP);
-			   glVertex3dv((coord0_el));
-			   glVertex3dv((coord0_el+3));
-			   glVertex3dv((coord0_el+12));
-			   glVertex3dv((coord0_el+9));
-		     glEnd();
-		     glBegin(GL_LINE_LOOP);
-			   glVertex3dv((coord0_el+3));
-			   glVertex3dv((coord0_el+6));
-			   glVertex3dv((coord0_el+15));
-			   glVertex3dv((coord0_el+12));
-		     glEnd();
-		     glBegin(GL_LINE_LOOP);
-			   glVertex3dv((coord0_el+6));
-			   glVertex3dv((coord0_el));
-			   glVertex3dv((coord0_el+9));
-			   glVertex3dv((coord0_el+15));
-		     glEnd();
-		     glBegin(GL_LINE_LOOP);
-			   glVertex3dv((coord0_el+12));
-			   glVertex3dv((coord0_el+15));
-			   glVertex3dv((coord0_el+9));
-		     glEnd();
-
+		   if( Outline_flag )
+		   {
+			glColor4fv( wire_color );
+			glBegin(GL_LINE_LOOP);
+				glVertex3dv((coord0_el+3));
+				glVertex3dv((coord0_el));
+				glVertex3dv((coord0_el+6));
+			glEnd();
+			glBegin(GL_LINE_LOOP);
+				glVertex3dv((coord0_el));
+				glVertex3dv((coord0_el+3));
+				glVertex3dv((coord0_el+12));
+				glVertex3dv((coord0_el+9));
+			glEnd();
+			glBegin(GL_LINE_LOOP);
+				glVertex3dv((coord0_el+3));
+				glVertex3dv((coord0_el+6));
+				glVertex3dv((coord0_el+15));
+				glVertex3dv((coord0_el+12));
+			glEnd();
+			glBegin(GL_LINE_LOOP);
+				glVertex3dv((coord0_el+6));
+				glVertex3dv((coord0_el));
+				glVertex3dv((coord0_el+9));
+				glVertex3dv((coord0_el+15));
+			glEnd();
+			glBegin(GL_LINE_LOOP);
+				glVertex3dv((coord0_el+12));
+				glVertex3dv((coord0_el+15));
+				glVertex3dv((coord0_el+9));
+			glEnd();
+		   }
 		}
 	}
 /* This draws the Node ID node */

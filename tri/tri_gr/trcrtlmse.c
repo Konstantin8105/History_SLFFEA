@@ -2,11 +2,11 @@
     This program contains the control mouse routine for the FEM GUI
     for triangle elements.
   
-                        Last Update 10/19/05
+                        Last Update 1/25/02
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le 
+    Version:  1.3
+    Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -39,6 +39,9 @@ extern int *connecter;
 extern BOUND bc;
 extern XYF *force_vec, *force_vec0;
 
+/****** For drawing the Mesh Window ******/
+extern double coord_rescale;
+
 /* Global variables for the mesh color and nodal data */
 
 extern int *el_matl_color;
@@ -65,7 +68,8 @@ extern int ortho_redraw_flag;
 extern int input_flag, post_flag, color_choice, matl_choice, node_choice, ele_choice;
 extern int input_color_flag;
 extern int Solid_flag, Perspective_flag, Render_flag, AppliedDisp_flag,
-	AppliedForce_flag, Material_flag, Node_flag, Element_flag, Axes_flag;
+	AppliedForce_flag, Material_flag, Node_flag, Element_flag,
+	Axes_flag, Outline_flag;
 extern int Before_flag, After_flag, Both_flag, Amplify_flag; 
 extern int stress_flag, strain_flag, stress_strain, disp_flag;
 
@@ -424,6 +428,7 @@ void trControlMouse(int button, int state, int x, int y)
 				Solid_flag = 0;
 				strain_flag = 0;
 				stress_flag = 0;
+				Outline_flag = 1;
      			}
      			if ( y >= ControlDiv_y[4] && y < ControlDiv_y[5] )
      			{
@@ -830,15 +835,15 @@ void trControlMouse(int button, int state, int x, int y)
 			strain_flag = 0;
 			stress_flag = 0;
 			disp_flag = 1;
-			sprintf( BoxData[0], "%10.3e ", Ux_div[8]);
-			sprintf( BoxData[2], "%10.3e ", Ux_div[7]);
-			sprintf( BoxData[4], "%10.3e ", Ux_div[6]);
-			sprintf( BoxData[6], "%10.3e ", Ux_div[5]);
-			sprintf( BoxData[8], "%10.3e ", Ux_div[4]);
-			sprintf( BoxData[10], "%10.3e ", Ux_div[3]);
-			sprintf( BoxData[12], "%10.3e ", Ux_div[2]);
-			sprintf( BoxData[14], "%10.3e ", Ux_div[1]);
-			sprintf( BoxData[16], "%10.3e ", Ux_div[0]);
+			sprintf( BoxData[0], "%10.3e ", Ux_div[8]*coord_rescale);
+			sprintf( BoxData[2], "%10.3e ", Ux_div[7]*coord_rescale);
+			sprintf( BoxData[4], "%10.3e ", Ux_div[6]*coord_rescale);
+			sprintf( BoxData[6], "%10.3e ", Ux_div[5]*coord_rescale);
+			sprintf( BoxData[8], "%10.3e ", Ux_div[4]*coord_rescale);
+			sprintf( BoxData[10], "%10.3e ", Ux_div[3]*coord_rescale);
+			sprintf( BoxData[12], "%10.3e ", Ux_div[2]*coord_rescale);
+			sprintf( BoxData[14], "%10.3e ", Ux_div[1]*coord_rescale);
+			sprintf( BoxData[16], "%10.3e ", Ux_div[0]*coord_rescale);
                 break;
                 case 20:
                         strncpy(BoxText, "disp Y", 6);
@@ -846,15 +851,15 @@ void trControlMouse(int button, int state, int x, int y)
 			strain_flag = 0;
 			stress_flag = 0;
 			disp_flag = 1;
-			sprintf( BoxData[0], "%10.3e ", Uy_div[8]);
-			sprintf( BoxData[2], "%10.3e ", Uy_div[7]);
-			sprintf( BoxData[4], "%10.3e ", Uy_div[6]);
-			sprintf( BoxData[6], "%10.3e ", Uy_div[5]);
-			sprintf( BoxData[8], "%10.3e ", Uy_div[4]);
-			sprintf( BoxData[10], "%10.3e ", Uy_div[3]);
-			sprintf( BoxData[12], "%10.3e ", Uy_div[2]);
-			sprintf( BoxData[14], "%10.3e ", Uy_div[1]);
-			sprintf( BoxData[16], "%10.3e ", Uy_div[0]);
+			sprintf( BoxData[0], "%10.3e ", Uy_div[8]*coord_rescale);
+			sprintf( BoxData[2], "%10.3e ", Uy_div[7]*coord_rescale);
+			sprintf( BoxData[4], "%10.3e ", Uy_div[6]*coord_rescale);
+			sprintf( BoxData[6], "%10.3e ", Uy_div[5]*coord_rescale);
+			sprintf( BoxData[8], "%10.3e ", Uy_div[4]*coord_rescale);
+			sprintf( BoxData[10], "%10.3e ", Uy_div[3]*coord_rescale);
+			sprintf( BoxData[12], "%10.3e ", Uy_div[2]*coord_rescale);
+			sprintf( BoxData[14], "%10.3e ", Uy_div[1]*coord_rescale);
+			sprintf( BoxData[16], "%10.3e ", Uy_div[0]*coord_rescale);
                 break;
                 case 30:
     			strncpy(BoxText, "Material", 8);
@@ -888,13 +893,13 @@ void trControlMouse(int button, int state, int x, int y)
 			Element_flag = 0;
 			Material_flag = 0;
 			Node_flag = 1;
-			fpointx = *(coord + nsd*node_choice);
-			fpointy = *(coord + nsd*node_choice + 1);
+			fpointx = *(coord + nsd*node_choice)*coord_rescale;
+			fpointy = *(coord + nsd*node_choice + 1)*coord_rescale;
 			fpointz = 0.0;
 			if(!After_flag)
 			{
-				fpointx = *(coord0 + nsd*node_choice);
-				fpointy = *(coord0 + nsd*node_choice + 1);
+				fpointx = *(coord0 + nsd*node_choice)*coord_rescale;
+				fpointy = *(coord0 + nsd*node_choice + 1)*coord_rescale;
 				fpointz = 0.0;
 			}
 			sprintf( BoxData[0], "%4d ", node_choice);
@@ -925,7 +930,8 @@ void trControlMouse(int button, int state, int x, int y)
 			dum2 = *(connecter + npel*ele_choice+1);
 			sprintf( BoxData[8], "%4d,%4d ",dum1, dum2);
 			dum1 = *(connecter + npel*ele_choice+2);
-			sprintf( BoxData[10], "%4d ",dum1);
+			dum2 = *(connecter + npel*ele_choice+3);
+			sprintf( BoxData[10], "%4d,%4d ",dum1, dum2);
 			sprintf( BoxData[12], " " );
 			sprintf( BoxData[14], " " );
 			sprintf( BoxData[16], " " );
@@ -936,8 +942,8 @@ void trControlMouse(int button, int state, int x, int y)
 
 /* If there is a post file, then turn the input_color_flag on so that the before
    mesh will be drawn in pink.  If there is no post file, turn on the
-   input_color_flag for every case except when stress analysis or material, element
-   or node is selected.
+   input_color_flag for every case except when stress/displacement analysis or material,
+   element or node is selected.
  */
 
         if( color_choice < 10)

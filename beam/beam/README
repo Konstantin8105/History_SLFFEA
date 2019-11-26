@@ -3,14 +3,21 @@
 
                     Copyright (C) 1999 San Le
 
-                    email:     slffea@juno.com
+                    email:     slffea@yahoo.com
                     homepage:  http://www.geocities.com/Athens/2099/slffea.html
 
 
-The type of beam theory I am using is Euler-Bernoulli, which means there is no
-shear deformation.  This manifests itself in the displacement assumptions.  The
-alternative theory which does allow for shear deformation is Reissner-Mindlin, and
-I hope to add such beam elements one day.
+There are 5 element types from which to choose:
+
+1) Truss element
+2) Euler-Bernoulli(EB) beam where plane sections are assumed to remain plane
+3) Reissner-Mindlin(RM) beam(Timoshenko) where plane sections are NOT assumed to remain plane
+   and there is a shear correction added to the transverse shear components of the EB beam. 
+   [You should read the notes file for further discussion of the differences between element
+   2 and 3.]
+4) Hinge element.  You can view this element like a truss which can handle transverse loads
+   or a beam with rotational degrees of freedom removed.
+5) Hughes implementation of Timoshenko beam. 
 
 This element has a feature you do not see in the other elements, the distributed
 load. 
@@ -18,7 +25,7 @@ load.
 Beams usually require that you to specify the local axes as part of the input
 data because elements have to rotated from their local coordinates to the global
 coordinates.  For my beam, you can either specify the axes yourself or have the software
-do it for you based on the method given in Logan [11] in slffea-1.2/REFERENCES.  Note that
+do it for you based on the method given in Logan [15] in slffea-1.3/REFERENCES.  Note that
 the local x axis will always be along the length of the beam.  And because axis z and y are
 perpendicular to x and to each other, you only have to specify either y or z(I chose
 z).  In case the z axis you input is not exactly perpendicular to x, I also do a cross
@@ -69,7 +76,10 @@ v = V - phix*z
 w = W + phix*y
 
 (Note that the above contradicts the strain assumptions, causing non-zero
-shear strains.  I haven't worked out exactly what to do about this)
+shear strains.  I haven't worked out exactly what to do about this.  If you
+read the "Remark" of section 5.4.3 from Hughes in [12], he possibly alludes
+to this: "As is often the case in beam and plate theories, the stress and
+kinematic assumptions lead to "microscopic" inconsistencies.")
 
 you will see that "u" still represents the axial direction along the beam
 length, whereas "v" and "w" are the displacements perpendicular to the
@@ -77,7 +87,7 @@ beam axis.  This type of formulation has to be done because the integration
 is still done along the length of the beam.
 
 I do not do nodal averaging of stresses, moments, strains and curvatures because
-these quantites are highly localized per element.  For instance a beam node
+these quantities are highly localized per element.  For instance a beam node
 which looks like:
 
        y ^
@@ -99,15 +109,24 @@ which looks like:
 for a displacement in the x direction, element 1 will experience pure
 tensile stress while element 2 experiences pure bending.
 
+Some additional notes:  I was sent a data file by "Erik Hansen" which
+showed that the moments were somewhat inaccurate.  After extensive
+examination of the code and theory, I wondered if it was due to not
+using enough elements (the data file had only 2 elements, 3 nodes).
+I expanded the mesh to 10 elements, 11 nodes, and indeed, there was
+very good agreement with the code and theory.  This tells me that for
+quantities such as displacement and angle which are based on 0 and 1st
+derivatives, there is good agreement with theory, but for 2nd derivative
+quantities like curvature and moment, I need more nodes and elements.
 
 Some more notes:  I was reading through my Euler-Bernoulli beam theory, and
 because I hadn't looked at if for a while, I forgot how the interpolation worked.
 I got confused by the way displacement in y, given by v below, and displacement in
 z, given by w below, were defined.  For instance:
 
-v'  = phiz
-v'' = phiz' = V'' + PHIz'
-            = V(node 0)*N0'' + PHIz(node 0)*N1'' + V(node 1)*N2'' + PHIz(node 1)*N3''
+v'  = phiz 
+v'' = phiz' = V'' + PHIz' 
+            = V(node 0)*N0'' + PHIz(node 0)*N1'' + V(node 1)*N2'' + PHIz(node 1)*N3'' 
 
 I was confused because I thought the derivatives of N1 and N3 should only be first rather
 than second.  But I forgot that the nature of the interpolation is such that:
@@ -124,7 +143,7 @@ v = N0*V0 + N1*PHIZ0 + N2*V1 + N3*PHIZ1
 These Ns are cubic, unlike the linear interpolations of the brick element, and
 their derivatives aren't directly related to the derivatives of the quantities
 they correspond to like the PHIz.  Also, note that the units of N1 and N3 are
-L while N0 and N2 are unitless.
+L while N0 and N2 are unitless. 
 
 
 Even more notes:  Something interesting about the beam is that the output data for
@@ -133,18 +152,18 @@ components of moments x, y, and z.  This latter moment applies to the internal m
 of the beam while the former is the resultant and applied moments.  This is in
 contrast to the brick element which gives the external loads and internal stresses.
 To understand how this works, you should look at how the beam element is derived,
-in particular how by inspection the terms, we can extract out moments and curvatures. 
+in particular how by inspecting the terms, we can extract out moments and curvatures. 
 This is still confusing because, as in the case of the brick, the stresses aren't equivalent
 to the external forces and need to be itegrated over the volume of the element to get
 force.  And of course, stress has different units than force.  
 
-To overcome this confusion, I think we can view the integration of the internal moment
-as an integration which doesn't add any units.  As can be seen by the integration
-of [B transpose ][D][B][U] = [ element force ], the [D][B][U] = [ stress and moment vector],
-while and the units of the [B transpose ] matrix which integrates with the
-moments have units of 1/L.  The integration over L will therefore result in a quantity with
-the same units as moment.  For instance, in the case of the [B] matrix for the
-Euler-Bernoulli beam:
+To overcome this confusion, view the integration of the internal moment as an integration
+which doesn't add any units.  As can be seen by the integration of [B transpose ][D][B][U] =
+[ element force ], the [D][B][U] = [ stress and moment vector], while and the units of the
+[B transpose ] matrix which integrates with the moments have units of 1/L.  The integration
+over L will therefore result in a quantity with the same units as moment.  For instance, in
+the case of the [B] matrix for the Euler-Bernoulli beam:
+
 
 [B transpose ] [ stress ] =
 

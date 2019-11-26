@@ -2,11 +2,11 @@
     This program calculates and writes the parameters for
     the FEM GUI for beam elements.
   
-   			Last Update 4/22/00
+   			Last Update 3/2/05
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le 
+    Version:  1.3
+    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -28,7 +28,7 @@
 
 extern int nmat, numnp, numel, dof;
 extern double step_sizex, step_sizey, step_sizez;
-extern double left, right, top, bottom, near, far, fscale;
+extern double left, right, top, bottom, near, far, fscale, coord_rescale;
 extern int control_height, control_width, mesh_height, mesh_width;
 extern double ortho_left, ortho_right, ortho_top, ortho_bottom;
 extern double left_right, up_down, in_out, left_right0, up_down0, in_out0;
@@ -79,6 +79,16 @@ void bmReGetparameter(void)
 		&node_Uy_max, &min_Uy, &max_Uy);
 	fscanf( bmdata,"%20s %5s      %d %d   %lf %lf\n", char_dum, char_dum2, &node_Uz_min,
 		&node_Uz_max, &min_Uz, &max_Uz);
+
+/* Rescale the displacement data */
+
+	min_Ux /= coord_rescale;
+	max_Ux /= coord_rescale;
+	min_Uy /= coord_rescale;
+	max_Uy /= coord_rescale;
+	min_Uz /= coord_rescale;
+	max_Uz /= coord_rescale;
+
 	fscanf( bmdata,"%20s %5s %5s  %d %d   %lf %lf\n", char_dum, char_dum2, char_dum3,
 		&node_Uphi_x_min, &node_Uphi_x_max, &min_Uphi_x, &max_Uphi_x);
 	fscanf( bmdata,"%20s %5s %5s  %d %d   %lf %lf\n", char_dum, char_dum2, char_dum3,
@@ -100,6 +110,12 @@ void bmReGetparameter(void)
 	fscanf( bmdata,"%20s %5s    %d %d %d %d  %lf %lf\n", char_dum, char_dum2,
 		&min_stress_el.xx, &min_stress_integ.xx, &max_stress_el.xx,
 		&max_stress_integ.xx, &min_stress.xx, &max_stress.xx);
+	fscanf( bmdata,"%20s %5s    %d %d %d %d  %lf %lf\n", char_dum, char_dum2,
+		&min_stress_el.xy, &min_stress_integ.xy, &max_stress_el.xy,
+		&max_stress_integ.xy, &min_stress.xy, &max_stress.xy);
+	fscanf( bmdata,"%20s %5s    %d %d %d %d  %lf %lf\n", char_dum, char_dum2,
+		&min_stress_el.zx, &min_stress_integ.zx, &max_stress_el.zx,
+		&max_stress_integ.zx, &min_stress.zx, &max_stress.zx);
 	fscanf( bmdata,"\n");
 	fscanf( bmdata,"%20s %5s    %d %d %d %d  %lf %lf\n", char_dum, char_dum2,
 		&min_curve_el.xx, &min_curve_integ.xx, &max_curve_el.xx,
@@ -113,6 +129,12 @@ void bmReGetparameter(void)
 	fscanf( bmdata,"%20s %5s    %d %d %d %d  %lf %lf\n", char_dum, char_dum2,
 		&min_strain_el.xx, &min_strain_integ.xx, &max_strain_el.xx,
 		&max_strain_integ.xx, &min_strain.xx, &max_strain.xx);
+	fscanf( bmdata,"%20s %5s    %d %d %d %d  %lf %lf\n", char_dum, char_dum2,
+		&min_strain_el.xy, &min_strain_integ.xy, &max_strain_el.xy,
+		&max_strain_integ.xy, &min_strain.xy, &max_strain.xy);
+	fscanf( bmdata,"%20s %5s    %d %d %d %d  %lf %lf\n", char_dum, char_dum2,
+		&min_strain_el.zx, &min_strain_integ.zx, &max_strain_el.zx,
+		&max_strain_integ.zx, &min_strain.zx, &max_strain.zx);
 	fscanf( bmdata,"\n");
 	fgets( buf, BUFSIZ, bmdata );
 	fscanf( bmdata,"%lf %lf %lf %lf %lf %lf\n", &ortho_right, &ortho_left,
@@ -129,11 +151,11 @@ void bmReGetparameter(void)
 	printf( "                            node\n");
 	printf( "                          min  max       min            max\n");
 	printf("displacement Ux        %5d %5d   %14.6e %14.6e\n", node_Ux_min,
-		node_Ux_max, min_Ux, max_Ux);
+		node_Ux_max, min_Ux*coord_rescale, max_Ux*coord_rescale);
 	printf("displacement Uy        %5d %5d   %14.6e %14.6e\n", node_Uy_min,
-		node_Uy_max, min_Uy, max_Uy);
+		node_Uy_max, min_Uy*coord_rescale, max_Uy*coord_rescale);
 	printf("displacement Uz        %5d %5d   %14.6e %14.6e\n", node_Uz_min,
-		node_Uz_max, min_Uz, max_Uz);
+		node_Uz_max, min_Uz*coord_rescale, max_Uz*coord_rescale);
 	printf("angle phi x            %5d %5d   %14.6e %14.6e\n", node_Uphi_x_min,
 		node_Uphi_x_max, min_Uphi_x, max_Uphi_x);
 	printf("angle phi y            %5d %5d   %14.6e %14.6e\n", node_Uphi_y_min,
@@ -155,6 +177,12 @@ void bmReGetparameter(void)
 	printf("stress xx            %5d %2d %5d %2d  %14.6e %14.6e\n", min_stress_el.xx,
 		min_stress_integ.xx, max_stress_el.xx, max_stress_integ.xx,
 		min_stress.xx, max_stress.xx);
+	printf("stress xy            %5d %2d %5d %2d  %14.6e %14.6e\n", min_stress_el.xy,
+		min_stress_integ.xy, max_stress_el.xy, max_stress_integ.xy,
+		min_stress.xy, max_stress.xy);
+	printf("stress zx            %5d %2d %5d %2d  %14.6e %14.6e\n", min_stress_el.zx,
+		min_stress_integ.zx, max_stress_el.zx, max_stress_integ.zx,
+		min_stress.zx, max_stress.zx);
 	printf("\n");
 	printf("curve xx             %5d %2d %5d %2d  %14.6e %14.6e\n", min_curve_el.xx,
 		min_curve_integ.xx, max_curve_el.xx, max_curve_integ.xx,
@@ -168,6 +196,12 @@ void bmReGetparameter(void)
 	printf("strain xx            %5d %2d %5d %2d  %14.6e %14.6e\n", min_strain_el.xx,
 		min_strain_integ.xx, max_strain_el.xx, max_strain_integ.xx,
 		min_strain.xx, max_strain.xx);
+	printf("strain xy            %5d %2d %5d %2d  %14.6e %14.6e\n", min_strain_el.xy,
+		min_strain_integ.xy, max_strain_el.xy, max_strain_integ.xy,
+		min_strain.xy, max_strain.xy);
+	printf("strain zx            %5d %2d %5d %2d  %14.6e %14.6e\n", min_strain_el.zx,
+		min_strain_integ.zx, max_strain_el.zx, max_strain_integ.zx,
+		min_strain.zx, max_strain.zx);
 	printf("\n");
 	printf("Orthographic viewport parameters(right, left, top, bootom, near, far)\n ");
 	printf("%14.6e %14.6e %14.6e %14.6e %14.6e %14.6e\n", ortho_right, ortho_left,

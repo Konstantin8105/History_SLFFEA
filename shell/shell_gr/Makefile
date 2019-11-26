@@ -1,6 +1,6 @@
 # SLFFEA Makefile
-# Version:  1.2
-# Copyright (C) 1999, 2000  San Le (slffea.juno.com)
+# Version:  1.3
+# Copyright (C) 1999, 2000  San Le (slffea@yahoo.com)
 # http://slffea.com/
 #
 # This library is free software; you can redistribute it and/or
@@ -27,7 +27,7 @@ LIB1 = -I/usr/local/include -O2 -funroll-loops -ansi -pedantic \
 LIB2 = -L/usr/local/lib -lglut -lGLU -lGL -lm -L/usr/X11/lib \
 	-L/usr/X11R6/lib -lX11 -lXext -lXmu -lXt -lXi -lSM -lICE
 
-OBJECTS_SH = ../shell/shmemory.o ../shell/shreader.o 
+OBJECTS_SH = ../shell/shmemory.o ../shell/shreader.o ../shell/shcoord.o 
 
 OBJECTS_SHH = ../shell/shconst.h ../shell/shstruct.h 
 
@@ -44,7 +44,8 @@ OBJECTS_GR = $(COMMON_GR)/pwinston.o $(COMMON_GR)/axes.o \
 
 OBJECTS_GRH = $(COMMON_GR)/color_gr.h $(COMMON_GR)/control.h 
 
-OBJECTS2 = $(COMMON)/crossx.o $(COMMON)/matx.o $(COMMON)/dotx.o 
+OBJECTS2 = $(COMMON)/crossx.o $(COMMON)/matx.o $(COMMON)/dotx.o \
+	$(COMMON)/nodenorm.o 
 
 COMMON_GR = ../../common_gr
 

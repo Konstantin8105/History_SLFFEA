@@ -1,5 +1,5 @@
 
-                             SLFFEA 1.2
+                             SLFFEA 1.3
 
                     Copyright (C) 1999 San Le
 
@@ -10,61 +10,155 @@
                              References
                              ----------
 
-(1) Benson, David, AMES 232 A Course Notes: Fall Quarter 1997,  UCSD Soft Reserves,
+(1) Bathe, Klaus-Jurgen, Finite Element Porcedures, Prentice-Hall Inc.,
+        New Jersey, 1996.
+
+(2) Beer, Ferdinand P. and E. Russell Johnston Jr., Vector Mechanics for Engineers
+        5th Ed., McGraw-Hill Publishing Company, New York, 1988.
+
+(3) Belytschko, Ted, et. al., Nonlinear Finite Element for Continua and Structures,
+        John Wiley & Sons, New York, 1997.
+        TA 347.F5 2000 B64
+
+(4) Benson, David, AMES 232 A Course Notes: Fall Quarter 1997,  UCSD Soft Reserves,
         La Jolla, 1997.
 
-(2) Benson, David, AMES 232 B Course Notes: Winter Quarter 1997,  UCSD Soft Reserves,
+(5) Benson, David, AMES 232 B Course Notes: Winter Quarter 1997,  UCSD Soft Reserves,
         La Jolla, 1997.
 
-(3) Benson, David, AMES 232 C Course Notes: Winter Quarter 1998,  UCSD Soft Reserves,
+(6) Benson, David, AMES 232 C Course Notes: Winter Quarter 1998,  UCSD Soft Reserves,
         La Jolla, 1998.
 
-(4) Burkhard, Walter A., C for Programmers, Wadsworth Publishing Company,
+(7) Burkhard, Walter A., C for Programmers, Wadsworth Publishing Company,
         Belmont, 1988.
 
-(5) Fung, Y. C., Foundations of Solid Mechanics, Prentice-Hall Inc., Englewood Cliffs,
+(8) Clough, Ray W. and Joseph Penzien, Dynamics of Structures 2nd Ed., 
+        McGraw-Hill Publishing Company, New York, 1993.
+
+(9) Cook, Robert Davis, Concepts and Applications of Finite Element Analysis 2nd Ed.,
+        John Wiley & Sons, New York, 1981.
+
+(10) Cook, Robert Davis, et. al., Concepts and Applications of Finite Element Analysis
+        3rd Ed., John Wiley & Sons, New York, 1989.
+
+(11) Cook, Robert Davis, et. al., Concepts and Applications of Finite Element Analysis
+        4th Ed., John Wiley & Sons, New York, 2002.
+
+(12) Crisfield, M. A., Nonlinear Finite Element Analysis of Solids and Structures
+        Vol. 1: Essentials, John Wiley & Sons, Chichester, 1991.
+        TA 647.C75 1991 V. 1
+
+(13) Crisfield, M. A., Nonlinear Finite Element Analysis of Solids and Structures
+        Vol. 2: Advanced Topics, John Wiley & Sons, Chichester, 1997.
+        TA 647.C75 1997 V. 2
+
+
+(14) Felippa, Carlos A., Non-Linear Finite Element Methods, University of Colorado, 
+        Boulder, 2001.
+
+        website:  http://caswww.colorado.edu/courses.d/NFEM.d/
+          email:  carlos.felippa@colorado.edu
+
+(15) Frisch-Fay, R., Flexible Bars, Butterworth & Co., London, 1962.
+
+(16) Fung, Y. C., Foundations of Solid Mechanics, Prentice-Hall Inc., Englewood Cliffs,
         1965.
 
-(6) Golub, Gene H. and C.F. Van Loan, Matrix Computations 3rd Ed., The Johns Hopkins
+(17) Golub, Gene H. and C.F. Van Loan, Matrix Computations 3rd Ed., The Johns Hopkins
         University Press, Baltimore, 1996.
 
-(7) Grandin, Hartley Jr., Fundamentals of the Finite Element Method, Waveland Press
+(18) Grandin, Hartley Jr., Fundamentals of the Finite Element Method, Waveland Press
         Inc., 1991.
 
-(8) Hughes, Thomas J. R., The Finite Element Method, Prentice-Hall Inc., Englewood
+(19) Hughes, Thomas J. R., The Finite Element Method, Prentice-Hall Inc., Englewood
         Cliffs,  1987.
 
-(9) Kohneke, Peter, *ANSYS User's Manual for Revision 5.0, Vol IV Theory, Swanson
+(20) Kohneke, Peter, *ANSYS User's Manual for Revision 5.0, Vol IV Theory, Swanson
         Analysis Systems Inc., Houston, 1992.
 
-(10) Jin, Jianming, The Finite Element Method in Electromagnetics, John Wiley & Sons,
+(21) Kythe, Prem K. and Dongming Wei, An Introduction to Linear and Nonlinear Finite
+        Element Analysis: A Computational Approach, Birkhauser, Boston, 2004.
+        TA 646.K98 2004
+
+(22) Jin, Jianming, The Finite Element Method in Electromagnetics, John Wiley & Sons,
         New York, 1993.
 
-(11) Logan, Daryl L., A First Course in the Finite Element Method 2nd Ed., PWS-KENT,
+(23) Logan, Daryl L., A First Course in the Finite Element Method 2nd Ed., PWS-KENT,
         1992. 
 
-(12) Marsden, Jarrold E. and Anthony J. Tromba, Vector Calculus, 3rd ed. 
+(24) Love, A. E. H., A Treatise on the Mathematical Theory of Elasticity 4th Ed.,  
+        Dover Publications, New York, 1944.
+
+(25) Lovelock, David and Hanno Rund, Tensors, Differential Forms, and Variational
+        Principles, Dover Publications Inc., New York, 1989.
+
+(26) Marsden, Jarrold E. and Anthony J. Tromba, Vector Calculus, 3rd ed. 
         H. Freeman and Co., New York, 1988.
 
-(13) Nadeau, Gerard, Introduction to Elasticity, Hold, Rinehart, and Winston Inc.,
+(27) Mase, George E. and G. Thomas Mase, Continuum Mechanics for Engineers, CRC
+        Press Inc., Boca Raton, 1992.
+
+(28) Mendelson, Alexander, Plasticity: Theory and Application, Robert E. Krieger
+        Publishing Company,  Malabar, 1986.
+
+(29) Mohr, G. A., Finite Elements for Solids, Fluids, and Optimization, Oxford
+        University Press Inc., New York, 1992.
+
+(30) Nadeau, Gerard, Introduction to Elasticity, Hold, Rinehart, and Winston Inc.,
         New York, 1964.
 
-(14) Neider, Jackie, et. al., OpenGL Programming Guide, Addison-Wesley Publishing
+(31) Nayfeh, Ali H. and P. Frank Pai, Linear and Nonlinear Structural Mechanics,
+        John Wiley & Sons, Hoboken, 2004.
+
+(32) Neider, Jackie, et. al., OpenGL Programming Guide, Addison-Wesley Publishing
         Company, Reading, 1993.
 
-(15) Press, William H., et. al., Numerical Recipes in C 2nd Ed., Cambridge University
+(33) Nayfeh, Ali H. and P. Frank Pai, Linear and Nonlinear Strutcural Mechanics, 
+        John Wiley & Sons, Hoboken, 2004.
+
+(34) Owen, D. R. J. and E. Hinton, Finite Elements in Plasticity: Theory and Practice,
+        Pineridge Press Limited, Swansea, 1980.
+
+(35) Paz, Mario and William Leigh, Integrated Matrix Analysis of Structures: Theory and
+        Computation, Kluwer Academic Publishers, Boston, 2001.
+
+(36) Popov, Egor P., Engineering Mechanics of Solids, Prentice-Hall Inc., Englewood
+        Cliffs, 1990.
+
+(37) Press, William H., et. al., Numerical Recipes in C 2nd Ed., Cambridge University
         Press, New York, 1992.
 
-(16) Przemieniecki, J. S., Theory of Matrix Structural Analysis, Dover Publications Inc.,
+(38) Przemieniecki, J. S., Theory of Matrix Structural Analysis, Dover Publications Inc.,
         New York, 1985.
 
-(17) Rao, Singiresu S., The Finite Element Method in Engineering, Butterworth-Heinemann,
+(39) Rao, Singiresu S., The Finite Element Method in Engineering, Butterworth-Heinemann,
         1999.
 
-(18) Selby, Samuel M., Standard Mathematical Tables 16th Ed., The Chemical Rubber
+(40) Selby, Samuel M., Standard Mathematical Tables 16th Ed., The Chemical Rubber
         Co. Cleveland, 1968.
 
-(19) Tong, Pin and John N. Rossettos, Finite-Element Method Basic Technique and
+(41) Sokolnikoff, I. S. and R. D. Specht, Mathematical Theory of Elasticity 1st Ed., 
+        McGraw-Hill Book Company Inc., London, 1946.
+
+(42) Sokolnikoff, I. S., Tensor Analysis: Theory and Applications to Geometry and 
+        Mechanics of Continua 2nd Ed., John Wiley & Sons, New York, 1964.
+
+(43) Thomson, William T., Theory of Vibration with Applications 3rd Ed., Prentice-Hall
+        Inc., Englewood Cliffs, 1988.
+
+(44) Tong, Pin and John N. Rossettos, Finite-Element Method Basic Technique and
         Implementation, MIT Press, 1978.
 
+(45) Turek, S. and Chr. Becker, Featflow User Manual Release 1.1, University of Heidelberg,
+        Institute for Applied Mathematics, Heidelberg, 1998.
+
+(46) Volakis, John L., et. al., Finite Element Method for Electromagnetics, 
+        IEEE Press, 1998.
+
+(47) Washizu, Kyuichiro, Variational Methods in Elasticity and Plasticity, 
+        Pergamon Press, 1968.
+
 * ANSYS is a registered trademark of Swanson Analysis Systems, Inc.
+
+Some of the above references have call numbers associated with them.  This
+is for books for which I still need to read through.

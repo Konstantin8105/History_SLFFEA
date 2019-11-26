@@ -1,0 +1,28 @@
+Mass
+
+I was tempted to use equation 11.45 in "Theory of Matrix Structural Analysis"
+by J. S. Przemieniecki on page 299 to get the mass matrix, but I don't think
+this works for non-rectangular elements.  The reason is that the Jacobian
+is different for the different Gauss points, so while it may be true that
+
+
+sum *(w + j) * (det + j) = Area
+
+and
+
+sum *(M_temp + j) =   4/9   0.0   2/9   0.0   1/9   0.0   2/9   0.0 
+                      0.0   4/9   0.0   2/9   0.0   1/9   0.0   2/9 
+                      2/9   0.0   4/9   0.0   2/9   0.0   1/9   0.0 
+                      0.0   2/9   0.0   4/9   0.0   2/9   0.0   1/9 
+                      1/9   0.0   2/9   0.0   4/9   0.0   2/9   0.0 
+                      0.0   1/9   0.0   2/9   0.0   4/9   0.0   2/9 
+                      2/9   0.0   1/9   0.0   2/9   0.0   4/9   0.0 
+                      0.0   2/9   0.0   1/9   0.0   2/9   0.0   4/9 
+
+sum *(M_temp + j) * (*(w + j) * (det + j)) != Area * sum *(M_temp + j)
+
+because:
+
+a1*b1 + a2*b2 != (a1 + a2) * (b1 + b2)
+
+

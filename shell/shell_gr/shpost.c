@@ -5,8 +5,8 @@
    			Last Update 10/10/06
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le 
+    Version:  1.3
+    Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -89,6 +89,10 @@ int shnormal_vectors (int *, double *, NORM * );
 
 int shMemory2_gr( XYZPhiF **, int );
 
+int shTopCoordinates(int *, double *, int *, double *, MATL *, double *);
+
+int node_normals( int *, double *, double *, double *, int, int);
+
 int shreader_gr( FILE *, SDIM *, SDIM *);
 
 int shreader( BOUND , int *, double *, int *, double *, MATL *,
@@ -146,7 +150,7 @@ void agvHandleMotion(int , int );
 /******************************* GLOBAL VARIABLES **************************/
 
 /****** FEA globals ******/
-int dof, nmat, nmode, numel, numnp, integ_flag;
+int dof, sdof, nmat, nmode, numel, numnp, integ_flag, doubly_curved_flag;
 int stress_read_flag, element_stress_read_flag;
 XYZPhiI *mem_XYZPhiI;
 XYZPhiF *mem_XYZPhiF;
@@ -210,7 +214,7 @@ double AxisLength_x, AxisLength_y, AxisLength_z, AxisLength_max, AxisPoint_step;
 XYZPhiF *force_vec, *force_vec0;
 
 /****** For drawing the Mesh Window ******/
-double left, right, top, bottom, near, far, fscale;
+double left, right, top, bottom, near, far, fscale, coord_rescale;
 double ortho_left, ortho_right, ortho_top, ortho_bottom,
 	ortho_left0, ortho_right0, ortho_top0, ortho_bottom0;
 int mesh_width, mesh_height;
@@ -261,7 +265,7 @@ SDIM del_stress, del_strain, max_stress, min_stress,
 	max_strain, min_strain;
 double max_Uphi_x, min_Uphi_x, del_Uphi_x, max_Uphi_y, min_Uphi_y, del_Uphi_y,
 	max_Ux, min_Ux, del_Ux, max_Uy, min_Uy, del_Uy,
-	max_Uz, min_Uz, del_Uz, absolute_max_U;
+	max_Uz, min_Uz, del_Uz, absolute_max_U, absolute_max_coord;
 
 /* These are the flags */
 
@@ -285,6 +289,8 @@ int Solid_flag = 1,          /* Selects between wire frame or solid model */
     Node_flag = 0,           /* Turns Node ID on and off */
     Element_flag = 0,        /* Turns Element ID on and off */
     Axes_flag = 0,           /* Turns Axes on and off  */
+    Outline_flag = 1,        /* Turns Element Outline on and off  */
+    Transparent_flag = 0,    /* Turns Element Transparency on and off  */
     CrossSection_flag = 0;   /* Turns CrossSection_flag on and off  */
 int Before_flag = 0,         /* Turns before mesh on and off */
     After_flag = 1,          /* Turns after mesh on and off */
@@ -304,14 +310,15 @@ int stress_flag = 0,       /* Tells whether stress viewing is on or off */
 
 int main(int argc, char** argv)
 {
-        int i, j, check;
-        char *ccheck;
+	int i, j, check;
+	char *ccheck;
 	int dum, dum1, dum2, dum3, dum4;
-        double fpointx, fpointy, fpointz, node_vec[3], fdum;
+	double fpointx, fpointy, fpointz, node_vec[3], fdum;
+	double *node_counter, *fiber_vec;
 	int sofmi, sofmf, sofmSTRESS, sofmISTRESS, sofmSTRAIN,
 		sofmXYZPhiI, sofmXYZPhiF, sofmSDIM, sofmNORM, ptr_inc;
-        char name[30], name2[30], osh_exten[4], buf[ BUFSIZ ];
-        FILE *o1, *o2, *o3;
+	char name[30], name2[30], osh_exten[4], buf[ BUFSIZ ];
+	FILE *o1, *o2, *o3;
 
         right=0;
         top=0;
@@ -352,6 +359,7 @@ int main(int argc, char** argv)
         fgets( buf, BUFSIZ, o2 );
         fscanf( o2, "%d %d %d %d %d\n ",&numel,&numnp,&nmat,&nmode,&integ_flag);
         dof=numnp*ndof;
+	sdof=numnp*nsd;
 	nmode = abs(nmode);
 
 /* Begin exmaining and checking for the existence of data files */
@@ -377,7 +385,7 @@ int main(int argc, char** argv)
 /*   Begin allocation of meomory */
 
 /* For the doubles */
-        sofmf=4*numnp*nsd+2*dof+numnp;
+        sofmf=4*sdof+2*dof+numnp+2*numnp+sdof;
 
 /* For the integers */
         sofmi= numel*npell+numel+numnp+1+1+dof;
@@ -408,31 +416,33 @@ int main(int argc, char** argv)
         if(!check) printf( " Problems with shMemory_gr \n");
 
 /* For the doubles */
-                                        ptr_inc=0;
-        coord=(mem_double+ptr_inc);     ptr_inc += 2*numnp*nsd;
-        coord0=(mem_double+ptr_inc);    ptr_inc += 2*numnp*nsd;
-        force=(mem_double+ptr_inc);     ptr_inc += dof;
-        U=(mem_double+ptr_inc);         ptr_inc += dof;
-        Uz_fib=(mem_double+ptr_inc);    ptr_inc += numnp;
+	                                        ptr_inc=0;
+	coord=(mem_double+ptr_inc);             ptr_inc += 2*sdof;
+	coord0=(mem_double+ptr_inc);            ptr_inc += 2*sdof;
+	force=(mem_double+ptr_inc);             ptr_inc += dof;
+	U=(mem_double+ptr_inc);                 ptr_inc += dof;
+	Uz_fib=(mem_double+ptr_inc);            ptr_inc += numnp;
+	node_counter=(mem_double+ptr_inc);      ptr_inc += 2*numnp;
+	fiber_vec=(mem_double+ptr_inc);         ptr_inc += sdof;
 
 /* For the materials */
 
 	matl_crtl = matl;
 
 /* For the integers */
-                                                ptr_inc = 0;
-        connecter=(mem_int+ptr_inc);            ptr_inc += numel*npell;
-        el_matl=(mem_int+ptr_inc);              ptr_inc += numel;
-        bc.force =(mem_int+ptr_inc);            ptr_inc += numnp+1;
-        bc.num_force=(mem_int+ptr_inc);         ptr_inc += 1;
-        U_color=(mem_int+ptr_inc);              ptr_inc += dof;
+	                                        ptr_inc = 0;
+	connecter=(mem_int+ptr_inc);            ptr_inc += numel*npell;
+	el_matl=(mem_int+ptr_inc);              ptr_inc += numel;
+	bc.force =(mem_int+ptr_inc);            ptr_inc += numnp+1;
+	bc.num_force=(mem_int+ptr_inc);         ptr_inc += 1;
+	U_color=(mem_int+ptr_inc);              ptr_inc += dof;
 
 	el_matl_color = el_matl;
 
 /* For the XYZPhiI integers */
-                                          	ptr_inc = 0;
-        bc.fix =(mem_XYZPhiI+ptr_inc);       	ptr_inc += numnp+1;
-        bc.num_fix=(mem_XYZPhiI+ptr_inc);    	ptr_inc += 1;
+	                                  	ptr_inc = 0;
+	bc.fix =(mem_XYZPhiI+ptr_inc);       	ptr_inc += numnp+1;
+	bc.num_fix=(mem_XYZPhiI+ptr_inc);    	ptr_inc += 1;
 
 /* For the SDIM doubles */
                                                 ptr_inc = 0;
@@ -469,11 +479,28 @@ int main(int argc, char** argv)
 	{
 		check = shreader( bc, connecter, coord, el_matl, force, matl,
 			name, o3, stress, stress_node, U);
-        	if(!check) printf( " Problems with shreader \n");
+		if(!check) printf( " Problems with shreader \n");
 		stress_read_flag = 0;
 
-        	check = shreader_gr( o3, strain_node, stress_node);
-        	if(!check) printf( " Problems with shreader_gr \n");
+		check = shreader_gr( o3, strain_node, stress_node);
+		if(!check) printf( " Problems with shreader_gr \n");
+
+		if(!doubly_curved_flag)
+		{
+/*  In the case of a singly curved shell, I use the function node_normals calculate
+    vectors in the fiber direction for each node.
+*/
+		    check = node_normals( connecter, coord, fiber_vec,
+			node_counter, numel, numnp);
+		    if(!check) printf( " Problems with fiber_vec \n");
+
+		    shTopCoordinates(connecter, coord, el_matl, fiber_vec, matl,
+			node_counter);
+
+		    memset(node_counter,0,numnp*sizeof(double));
+		    memset(fiber_vec,0,sdof*sizeof(double));
+		}
+
 	}
 
 	if( input_flag )
@@ -481,18 +508,76 @@ int main(int argc, char** argv)
 		check = shreader( bc, connecter, coord0, el_matl, force, matl,
 			name, o1, stress, stress_node, U);
         	if(!check) printf( " Problems with shreader \n");
+
+		if(!doubly_curved_flag)
+		{
+/*  In the case of a singly curved shell, I use the function node_normals calculate
+    vectors in the fiber direction for each node.
+*/
+		    check = node_normals( connecter, coord0, fiber_vec,
+			node_counter, numel, numnp);
+		    if(!check) printf( " Problems with fiber_vec \n");
+
+		    shTopCoordinates(connecter, coord0, el_matl, fiber_vec, matl,
+			node_counter);
+
+		    memset(node_counter,0,numnp*sizeof(double));
+		    memset(fiber_vec,0,sdof*sizeof(double));
+		}
 	}
 
 	if( post_flag )
 	{
 		check = shnormal_vectors(connecter, coord, norm );
-                if(!check) printf( " Problems with shnormal_vectors \n");
+		if(!check) printf( " Problems with shnormal_vectors \n");
 	}
 
 	if( input_flag )
 	{
-                check = shnormal_vectors(connecter, coord0, norm0 );
-                if(!check) printf( " Problems with shnormal_vectors \n");
+		check = shnormal_vectors(connecter, coord0, norm0 );
+		if(!check) printf( " Problems with shnormal_vectors \n");
+	}
+
+/* For the XYZPhiF doubles */
+	sofmXYZPhiF=2*bc.num_force[0];
+/*
+   This is allocated seperately from shMemory_gr because we need to know the
+   number of force vectors read from shreader and stored in bc.num_force[0].
+*/
+
+        check = shMemory2_gr( &mem_XYZPhiF, sofmXYZPhiF );
+        if(!check) printf( " Problems with shMemory2_gr \n");
+
+                                                   ptr_inc = 0;
+        force_vec =(mem_XYZPhiF+ptr_inc);          ptr_inc += bc.num_force[0];
+        force_vec0 =(mem_XYZPhiF+ptr_inc);         ptr_inc += bc.num_force[0];
+
+/* Search for extreme values */
+ 
+/* In mesh viewer, search for extreme values of nodal points, displacements
+   and stresss and strains to obtain viewing parameters and make color
+   assignments.  Also initialize variables */
+
+	check = shparameter( coord, strain_node, stress_node, U );
+        if(!check) printf( " Problems with shparameter \n");
+
+/* Rescale undeformed coordinates */
+
+	if( coord_rescale > 1.01 || coord_rescale < .99 )
+	{
+	   if( input_flag && post_flag )
+	   {
+		for( i = 0; i < numnp; ++i )
+		{
+			*(coord0+nsd*i) /= coord_rescale;
+			*(coord0+nsd*i+1) /= coord_rescale;
+			*(coord0+nsd*i+2) /= coord_rescale;
+
+			*(coord0+nsd*(i+numnp)) /= coord_rescale;
+			*(coord0+nsd*(i+numnp) + 1) /= coord_rescale;
+			*(coord0+nsd*(i+numnp) + 2) /= coord_rescale;
+		}
+	   }
 	}
 
 	if( !input_flag )
@@ -565,25 +650,6 @@ int main(int argc, char** argv)
 	   /*printf("\n node %3d %14.9f %14.9f %14.9f %14.9f %14.9f",
 		i,*(Uz_fib+i),fdum,*(node_vec), *(node_vec+1), *(node_vec+2));*/
         }
-
-/* For the XYZPhiF doubles */
-        sofmXYZPhiF=2*bc.num_force[0];
-
-        check = shMemory2_gr( &mem_XYZPhiF, sofmXYZPhiF );
-        if(!check) printf( " Problems with shMemory2_gr \n");
-
-                                                   ptr_inc = 0;
-        force_vec =(mem_XYZPhiF+ptr_inc);          ptr_inc += bc.num_force[0];
-        force_vec0 =(mem_XYZPhiF+ptr_inc);         ptr_inc += bc.num_force[0];
-
-/* Search for extreme values */
- 
-/* In mesh viewer, search for extreme values of nodal points, displacements
-   and stresss and strains to obtain viewing parameters and make color
-   assignments.  Also initialize variables */
-
-	check = shparameter( coord, strain_node, stress_node, U );
-        if(!check) printf( " Problems with shparameter \n");
 
 	check = shset( bc, connecter, force, force_vec0, strain_node,
 		strain_color, stress_node, stress_color, U, U_color );

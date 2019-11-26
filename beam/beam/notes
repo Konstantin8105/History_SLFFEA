@@ -1,0 +1,921 @@
+
+
+
+================================================================================================
+Discussion of Euler-Bernoulli and the Reissner-Mindlin(Timoshenko) Shear Deformable Beam
+================================================================================================
+
+For an Euler-Bernoulli beam there is an assumption that plane sections remain plane and the beam
+is not shear deformable.  This manifests itself in the displacement assumptions.  The alternative
+theory which does allow for shear deformation is Reissner-Mindlin.  What is confusing about this
+is that an EB beam still has transverse shear components in its full [K] matrix even though
+there are no shear terms in the [B] matrix.  These transverse shear components imply that there
+is transverse shear arising in the beam.  I think this is the case, and that the additional
+terms provided by the the Reissner-Mindlin beam theory act simply as shear correction
+factors. 
+
+
+------------------------------------------------------------------------------------------------
+P 1.0
+------------------------------------------------------------------------------------------------
+
+I finally did a benchmark test for modal analysis for the beam for
+both a cantilever and a beam free at both ends.  The main reference is:
+
+ Thomson, William T., Theory of Vibration with Applications 3rd Ed.,
+    Prentice-Hall Inc., Englewood Cliffs, 1988.
+
+page 223-225.
+
+The equation I used was on page 223:
+
+    omega(n) = (beta*L)^2*sqrt[E*Iz/(rho*L^4)] 
+
+which for SLFFEA takes the form:
+
+    omega(n) = (beta*L)^2*sqrt[E*Iz)/(rho*L^4*A)] 
+
+which accounts for area.  Note that the true equation is:
+
+    omega(n) = (beta*L)^2*sqrt[E*J/(rho*L^4*A)] 
+               (beta*L)^2*sqrt[E*(Iy+Iz)/(rho*L^4*A)] 
+
+J = polar moment of inertia = Iy + Iz
+
+but I compensate for this by fixing movement in the x and z
+displacement direction, and x and y in the rotational direction.
+Also, I use table 8.4-2. 
+
+
+cantilever(file "cantilever")
+----------
+\|
+\|_________________
+\|
+\|
+
+|y
+|
+|
+|
+--------------> x
+
+               b.c's are:            
+                                      U ( 0) = 0.0  no displacement at left
+                                   U/dx ( 0) = 0.0  no angle at left
+                         (d^2 U)/(dx^2) ( L) = 0.0  no shear at end
+                         (d^3 U)/(dx^3) ( L) = 0.0  no moment at end
+
+For the first mode:
+
+    omega(1) = (beta*L)^2*sqrt[E*Iz/(rho*L^4*A)] 
+             = 3.52*sqrt[2.0e11*1.0e-3/(2.332e3*6^4*.01)] 
+
+             = 2.86345846e+02
+
+SLFFEA gave:
+    omega(1) = 2.82422407e+02
+
+which is reasonably good agreement.
+
+
+free beam  (file "es3")   
+---------
+           V
+  ---------------------
+           ^
+
+           |y
+           |
+           |
+           |
+     -------------->x
+
+               b.c's are:            
+                         (d^2 U)/(dx^2) ( -L/2) = 0.0  no shear at left
+                         (d^2 U)/(dx^2) (  L/2) = 0.0  no shear at end
+                         (d^3 U)/(dx^3) ( -L/2) = 0.0  no moment at left
+                         (d^3 U)/(dx^3) (  L/2) = 0.0  no moment at end
+
+               To make it possible to do FEA, I also add 2 more b.c.'s
+
+                                      U ( 0.0) = 0.0  no shear at center
+                                     U/dx ( 0) = 0.0  no angle at center
+
+Because I did not fix all the nodes until it became a 2-D problem, I am
+using the other form of the equation.
+
+For the first mode:
+
+    omega(1) = (beta*L)^2*sqrt[E*(Iy+Iz)/(rho*L^4*A)] 
+             = 22.4*sqrt[1.0e12*2.0e-4/(1.0e6*1.0^4*.01)] 
+
+             = 3.16783838e+03
+
+SLFFEA gave:
+    omega(1) = 3.13836383e+03
+
+which is reasonably good agreement.  But this is a bit of cheating and
+you should read everything below to see why.
+
+----------------------------------------------------------------------
+
+
+P 1.1
+
+I then tried the problem again fixing the nodes to reduce it to a 2-D problem.
+This means I should expect a decrease of the results by sqrt(2) so that:
+
+    omega(1) = 3.16783838e+03/sqrt(2) = 2.24e+03
+
+SLFFEA gave:
+    omega(1) = 1.39998255e+03
+
+which is 1.6 times too small.  I tried this same problem again with the
+total length being 100.0 rather than 1.0 and with different A, Iy, and Iz
+but once again was off by 1.6.  The source of the problem is that
+fixing the mesh at the center (because I am assuming symmetry) may be a
+distortion of the problem.  In essence, I have created 2 cantilevers,
+and this problem is no longer free-free.  I tested this later theory
+by breaking up the mesh in half and doing the problem as a cantilever
+and indeed got the same eigenvalues:
+
+                          original           changed to cantilever
+
+ mode number    1         1.39998255e+03    1.39998255e+03
+ mode number    2         1.39998255e+03    1.39998255e+03
+ mode number    3         3.13836383e+03    3.13836383e+03
+ mode number    4         8.67591155e+03    8.67591141e+03
+ mode number    5         9.33781439e+03    9.33781455e+03
+ mode number    6         1.53073373e+04
+ mode number    7         2.02813729e+04
+
+So now, using the same equations as before for a cantilever:
+
+    omega(1) = (beta*L)^2*sqrt[E*Iz/(rho*L^4*A)] 
+             = 22.4*sqrt[1.0e12*1.0e-4/(1.0e6*0.5^4*.01)] 
+
+             = 1.408e+03
+
+SLFFEA gave:
+    omega(1) = 1.39998255e+03
+
+which is again, very good agreement.(Actually, we are using the value
+for mode 2.  Mode 1 is axial expansion and contraction).
+
+Figure 8.4-2 shows a correspondence between the free-free configuration and
+the cantilever.  But how to create the appropriate mesh for free-free, I do
+not yet know.  Further, note that the third mode of the "changed to cantilever"
+mesh is 3.13836383e+03, and the mode shape is the same as mode 1.  This
+makes sense and corresponds to the original problem of the full mesh.
+
+
+Side note:
+
+Another problem is that some of the higher modes are sinusoidal as
+expected, but others are not.  Also, there is a tendency to get repeat
+eigenvalues with this problem which makes me think I may not be capturing
+all the values.  This is in contrast with the cantilever problem which
+produces all distinct eigenvalues, although modes higher than 1 do
+look questionable.  
+
+---------------------------------------------------------------------------------
+
+P 2.0
+
+This was given in the README, but I felt it was important enough to write again
+here as well.
+
+Even more notes:  Something interesting about the beam is that the output data for
+the external loads has moments x, y, z, but the internal streeses also has the
+components of moments x, y, and z.  This latter moment applies to the internal moment
+of the beam while the former is the resultant and applied moments.  This is in
+contrast to the brick element which gives the external loads and internal stresses.
+To understand how this works, you should look at how the beam element is derived,
+in particular how by inspecting the terms, we can extract out moments and curvatures.
+This is still confusing because, as in the case of the brick, the stresses aren't equivalent
+to the external forces and need to be itegrated over the volume of the element to get
+force.  And of course, stress has different units than force.
+
+To overcome this confusion, view the integration of the internal moment as an integration
+which doesn't add any units.  As can be seen by the integration of [B transpose ][D][B][U] =
+[ element force ], the [D][B][U] = [ stress and moment vector], while the units of the
+[B transpose ] matrix which integrates with the moments have units of 1/L.  The integration
+over L will therefore result in a quantity with the same units as moment.  For instance, in
+the case of the [B] matrix for the Euler-Bernoulli beam:
+
+[B transpose ] [ stress ] =
+
+
+| Nhat1'     0          0          0       |                         | force x   |
+| 0          N1''       0          0       |                         | force y   |
+| 0          0         -N1''       0       |                         | force z   |
+| 0          0          0          Nhat1'  |                         | moment x  | node 1
+| 0          0          N2''       0       |   | Area* stress xx |   | moment y  |
+| 0          N2''       0          0       | * | moment zz       | = | moment z  |
+| Nhat2'     0          0          0       |   | moment yy       |   | force x   |
+| 0          N3''       0          0       |   | moment xx       |   | force y   |
+| 0          0         -N3''       0       |                         | force z   | node 2
+| 0          0          0          Nhat2'  |                         | moment x  |
+| 0          0          N4''       0       |                         | moment y  |
+| 0          N4''       0          0       |                         | moment z  |
+
+Nhat1' and Nhat2' has units of 1/L, which when integrated over the length and
+multiplied by the Area* stress xx will give force.  N1'' and N3'' have units of 1/(L*L)
+which when integrated over the length and multiplied by moment, gives force.  N2'' and
+N4'' have units of 1/(L) which when integrated over the length and multiplied by moment,
+gives moment. (Note that I have shifted the numbering from 1 to 4 rather than 0 to 3. 
+Also, I will discuss below why there are negative signs for N1'' and N3'' in the
+third column when I discuss [B].)  
+
+Also notice that:
+
+jacob = L/2    N1''(0) = -6/L^2    N1''(L) =  6/L^2   jacob*N1''(0)
+               N3''(L) =  6/L^2    N3''(L) = -6/L^2
+
+               N2''(0) = -4/L      N2''(L) =  2/L
+               N4''(L) = -2/L      N4''(L) =  4/L
+
+Which tells us that the forces are the same at the ends while the moments swich signs.
+The magnitude of N1 and N3 as well as N2 and N4 however, remain the same.
+
+---------------------------------------------------------------------------------
+
+P 3.0
+
+Notes:
+
+As seen by the above, beams are unique elements in that the quantities of stress and strain
+are accompanied by moments and curvatures.  This made me think about the standard form with
+which we think of the integration of stress and strain to get the internal energy and how
+this relates to the nodal forces.  For instance, for a brick element, we integrate through
+the volume:
+
+   [B transpose ][D][B][U] = [ element force ]
+
+which is nearly:
+
+   [B transpose ][ element stress ] = [ element force ]
+
+Because [B transpose ][U] = [ strain ], it follows that if I can extract [U] from
+the strain and multiply it the stress, I can get the nodal force.  This is somewhat
+difficult to do in general, but for a beam, I made the basic test of putting in pure
+tension.  I put a load of 1.000000e+01 and the right end, and from material properties of:
+
+ matl no., E mod, Poiss. Ratio, density, Area, Iy, Iz, AreaSy, AreaSz
+     0   2.000000e+11 2.700000e-01 2.332000e+03 3.838000e-02 4.939000e-03 2.928000e-03
+
+I got a displacement of 1.302762e-09 for each unit length element and a stress and strain
+of 2.605524e+02 and 1.302762e-09 for each element.  The nodal forces were, as expected,
+1.000000e+01 at the right end and -1.000000e+01 at the left.  Based on what I said above:
+
+     (stress xx) * ( strain xx)/ (U x) = (2.605524e+02)*(1.302762e-09)/(1.628452e-09) = 2.08441984+02
+
+Which, if multiplied by the area, 3.838000e-02, and length, 1.25, gives 1.000000e+01 which confirms
+the above.  Multiplying by area and length is equivelant to integrating through the volume. 
+Incidentally, this works because the stress, strain, area, and length are constant throughout the
+beam, so I don't have to worry about things such as gauss points of integration.
+
+The above made me try another experiment where I wrote out all the forces of all elements 
+on an individual basis and compared it to the output of the element nodal stress and moment.
+To write out these forces, I added on line 442 in bmkasmbl.c:
+
+   printf("\n %3d %3d %14.6f ", k, j, *(force_el_U + j));
+
+The results were what I expected, where often, the moments given in the above force element
+match the moments of the outpput.  The instances where things do not match are for elements
+where the local coordinates do not match the global coordinates.  For example, for the 42nd
+element of the bridge mesh(which lies at an angle in the x-z plane), I get from the above:
+
+  -74785.920280
+   -1685.934045
+  -22034.950531     3.881028e+04  this is the axial stress while the left column is force
+   -6055.197165     4.810192e+04
+  -40931.385242     4.093139e+04   <------ match
+ -114380.398637     1.039507e+05 
+   74785.920280 
+    1685.934045 
+   22034.950531     3.881028e+04  this is the axial stress while the left column is force
+   12798.933347     4.810192e+04
+  -37862.790573    -3.786279e+04  <------ match
+   97521.058183     8.579262e+04
+
+If I calculate the magnitude of the force from the left column and divide by area, I get:
+
+-74785.920280**2 + -1685.934045**2 + -22034.950531**2 = 77982.788**2
+
+Dividing this by the area = 2.0 gives 3.8991e+4 which is close to 3.881028e+04.
+The reason they don't match will be discussed further below.
+
+To further this test, I decided to write out the above forces after rotating them back
+into the local coordinates of the beam.  This was done by adding on line 444 in
+bmkasmbl.c:
+
+   check = rotXmat(force_local, rotate, force_el_U, 1, neqel);
+   if(!check) printf( "Problems with rotXmat \n");
+
+   for( j = 0; j < neqel; ++j )
+   {
+           printf("\n dof %3d %3d %14.6f ", k, j, *(force_local + j));
+   }
+
+Again, I calculate the axial stress based on the magnitude of the stresses.  The results
+I get are, for element 42:
+
+ -77620.558968 
+  -1685.934045 
+   7315.855562      3.881028e+04  this is the axial stress while the left column is force
+ -48101.923038      4.810192e+04   <------ match
+ -40931.385242      4.093139e+04   <------ match
+-103950.690258      1.039507e+05   <------ match
+  77620.558968 
+   1685.934045 
+  -7315.855562      3.881028e+04  this is the axial stress while the left column is force
+  48101.923038      4.810192e+04  <------ match
+ -37862.790573     -3.786279e+04  <------ match
+  85792.624881      8.579262e+04  <------ match
+
+  38991.394213                    calculated axial stress
+
+As can be seen, except for the signs in the first set, there is a match for all the
+quantities, although the axial stress shows the same slight descrepancy.  This descrepancy
+is due to calculating the stress based on the magnitude of the force divided by the
+area.  The only force which contributes to the axial stress are from the force components
+which are in the direction of the local x axis of the beam(which runs along its length).  So
+taking only the x component of the force, 77620.558968, and dividing by the area, 2.0,
+I get 3.881028 which exactly matches the stress in the output file.  I conclude that the only way
+to match these 2 sets of calculations is by rotating the element forces, and then taking
+the x component of the force and dividing by the area.
+
+
+To make a more thorough test, I created a new mesh with elements which did not 
+lie on any of the principal axes.  The results for element 7 were:
+
+ -18402.467361 
+ -12389.013907 
+ -13308.993448      9.201234e+03  this is the axial stress while the left column is force
+ -43222.588177      4.322259e+04  <------ match
+ 123917.430459     -1.239174e+05  <------ match
+ -79991.787940      7.999179e+04  <------ match
+  18402.467361 
+  12389.013907 
+  13308.993448      9.201234e+03  this is the axial stress while the left column is force
+  43222.588177      4.322259e+04  <------ match
+  57645.295830      5.764530e+04  <------ match
+ -89020.478077     -8.902048e+04  <------ match
+
+      9201.234    calculated axial stress matches the above axial stress.
+
+Again, except for the signs, everything matches.
+
+The stresses in the transverse directions exits despite this being an EB beam.  Later,
+I try to match these with stresses calculated in the RM beam.
+
+The difference between the calculation of the forces of the left column and that of
+the right are that those on the left are determined by numerical integration over
+the length of the beam while those on the right come from the direct calculation of
+[D][B][U].  To account for the change in sign between the first and second node, it
+is best to think in terms of the moment vs. x beam diagram.  For the simple cantilever
+beam as depicted above:
+
+cantilever(file "cantilever")
+----------
+                   |
+                   |  P
+\|                 |
+\|_________________V
+\|
+\|
+
+|y
+|
+|
+|
+-------------------> x
+
+a force balance, moment balance will give:
+
+   ^ P             |
+   |               |  P
+\| |               |
+\|_|_______________V
+\| <-_ 
+\|    ) Moment  on left end = PL
+
+For each individual beam element, the moments and forces of the left column are the
+EXTERNAL LOADS OF THE INDIVIDUAL ELEMENT AT THE NODES.  These external loads arise
+from the nodal forces and moments of the adjacent elements.  A diagram of this element
+looks like:
+
+       ^ Shear = P |
+       |           |  Shear = P
+       |           |
+      _|___________V
+       <-_ 
+          ) Moment on left end = P(L-xL)
+
+       _->
+      ( Moment on right end = -P(L-xR)
+
+As we move to the right on the x axis, the moment gets smaller(less distance from the
+end with P) while the magnitude of the shear remains the same.  This is reflected in the
+values of the elemental nodal forces in the calculation of the cantilever.  The internal
+forces and moments of the beam given in the right hand column on the other hand, are
+based on balancing the shear and moment on the left node.  An expression for this moment
+becomes:
+
+     M = -P(L-xL) + P*x2 = P(x2+xL-L)
+
+where x2 is given below.  In a moment diagram of this element, it would look like:
+
+       ^ Shear = P |
+ y ^   |           |  Shear = P
+   |   |           |
+   |___|___________V
+       |          |
+       |--->x2   _-
+       |       _-
+       |     _-
+       |   _-
+       | _-
+       |-
+
+
+As can be seen, it is negative throughout.  When x2 is 0, it is equal to the negative of
+the external nodal moment on the left, -P(L-xL).  Once it gets to the right, it is equal
+to the nodal moment at the right, -P(L-xR).  When we move onto the next element to the
+right, the elemental forces and moments of the left column now become: 
+
+       ^ Shear = P |
+       |           |  Shear = P
+       |           |
+      _|___________V
+       <-_
+          ) Moment on left end = P(L-xR)
+
+       _->
+      ( Moment on right end = -P(L-xR2)
+
+
+and the process starts over again.  If you look at a typical free body diagram of
+a typical beam segment(See Figure 5-18 c and d, page 237 and Figure 5-19 b and c,
+page 238 of Popov, Egor P., "Engineering Mechanics of Solids"), you can see how
+moment and shear have opposite directions depending on which side of the cross-section
+it is.
+
+We should add that the reason there is no balancing of the external elemental
+shear force by the internal forces of the beam are because for an Euler-Bernoulli beam,
+the shear forces are entirely borne as moment.  The force balance still works out though, 
+as the shear on the left node is balanced by that on the right.
+
+================================================================================================
+P 4.0   For the Euler-Bernoulli Non-Shear Deformable Beam
+================================================================================================
+
+
+There may be some confusion over the order of how the forces and stresses are calculaded.
+Compare the above [B transpose ] matrix with the [B] matrix used to calculate the strain
+and curvature matrix:
+
+[ strain ] = [ B ][ U ] = 
+
+                                                                                                           | U x   |
+                                                                                                           | U y   |
+| strain xx |   | Nhat1' 0      0      0       0      0      Nhat2'  0      0      0       0      0    |   | U z   |
+|  curve zz | = | 0      N1''   0      0       0      N2''   0       N3''   0      0       0      N4'' | * | Phi x | node 1
+|  curve yy |   | 0      0     -N1''   0       N2''   0      0       0     -N3''   0       N4''   0    |   | Phi y |
+|  curve xx |   | 0      0      0      Nhat1'  0      0      0       0      0      Nhat2'  0      0    |   | Phi z |
+                                                                                                           | U x   |
+                                                                                                           | U y   |
+                                                                                                           | U z   | node 2
+                                                                                                           | Phi x |
+                                                                                                           | Phi y |
+                                                                                                           | Phi z |
+
+Note that the order of the curvatures are zz, yy, and xx.  This is in contrast with the moments
+in the force/moment vetor from [B transpose ][D][B][U] = [B transpose ][stress] (see above) which
+goes x, y, z.  This causes confusion because I use the stress curvature matrix to compare results
+with the force matrix.  The order of the columns of [[B] determines the order of the components
+of [U] while the order of the rows of [[B] determines the order of the components of [strain].
+
+The reason that N1'' and N3'' are negative in the third row is that I want the [B] matrices to give
+the correct signs for the stress and moment terms.  When there is a point load in the negative
+y direction, the beam has negative curvature with respect to the z axis throughout and so the
+moment is also negative.  When there is a point load in the negative z direction, this creates
+positive curvature and moment in the y axis throughout*.  So while the third row normally would
+have N2'' and N4'' negative due to the expressions for the displacement in z(see: Kohneke, Peter,
+*ANSYS User's Manual for Revision 5.0, Vol IV Theory, page 12-5.):
+
+   displacement in z = Uz = N1*Uz1 - N2*(Phi y1) + N3*Uz2 - N4*(Phi y2)
+
+this row is multiplied by -1. 
+
+  *Egor Popov discusses this further in "Engineering Mechanics of Solids" on pages 502 in the
+  2nd footnote at the bottom of the page.  Also, look at the derivation of equation 10-10. 
+  He basically states that positive curvature in the zz axis matches positive moment,
+  while for bending in the x-z plane, curvature and moment have opposite sign.  I have changed
+  from this rule by keeping moments and curvatures the same sign in the x-z plane by defining
+  curvature equal to:
+
+   Uz'' = - 1/curvature = - M/EIy
+
+---------------------------------------------------------------------------------
+
+P 4.1
+
+The expressions for the displacements in the y and z directions are:
+
+   Uy = N1*Uy1 + N2*(Phi z1) + N3*Uy2 + N4*(Phi z2)
+   Uz = N1*Uz1 - N2*(Phi y1) + N3*Uz2 - N4*(Phi y2)
+
+The reason all the terms in Uy are positive is that positive rotation in the z axis
+multiplied by N2 and N4(which have extra units of length) deflect the beam in the positive
+y direction.  In contrast, positive rotation in the y axis multiplied by N2 and N4 move
+in the negative z direction.
+
+---------------------------------------------------------------------------------
+
+P 4.2
+
+The material property matrix [D] is given by:
+
+|    E*Area    0      0      0     |
+|    0       E*Iz     0      0     |
+|    0         0      E*Iy   0     |
+|    0         0      0      G*Ip  |
+
+
+================================================================================================
+P 5.0   For the New Reissner-Mindlin(Timoshenko) Shear Deformable Beam
+================================================================================================
+
+For the additional shear terms, the expression for strain, when calculated based on the [B]
+matrix can take on two forms. 
+
+Modified Hermitian Beam(MHB):
+
+The first, based on using the use of the cubic shape functions(Hermitian) N1, N2, N3, and N4 becomes: 
+
+[ strain ] = [ B ][ U ] =
+                                                                                                            | U x   |
+                                                                                                            | U y   |
+| strain xx  |   | Nhat1' 0      0      0       0      0      Nhat2'  0      0      0       0      0    |   | U z   |
+|  curve zz  | = | 0      N1''   0      0       0      N2''   0       N3''   0      0       0      N4'' | * | Phi x | node 1
+|  curve yy  |   | 0      0     -N1''   0       N2''   0      0       0     -N3''   0       N4''   0    |   | Phi y |
+|  curve xx  |   | 0      0      0      Nhat1'  0      0      0       0      0      Nhat2'  0      0    |   | Phi z |
+| strain zx' |   | 0      0     -N1'''  0       N2'''  0      0       0     -N3'''  0       N4'''  0    |   | U x   |
+| strain xy' |   | 0      N1'''  0      0       0      N2'''  0       N3'''  0      0       0      N4'''|   | U y   |
+                                                                                                            | U z   | node 2
+                                                                                                            | Phi x |
+                                                                                                            | Phi y |
+                                                                                                            | Phi z |
+  strain zx = (strain zx')*phiz*Lsq/12.0
+  strain xy = (strain xy')*phiy*Lsq/12.0
+
+The last 2 rows giving strain zx' and strain xy' come from equation 13.34 if Chapter 13 in the
+book I found on the Internet at:
+
+      http://caswww.colorado.edu/courses.d/NFEM.d/NFEM.Ch13.d/NFEM.Ch13.pdf
+
+The author, Carlos Felippa, gives the shear strain as given by what I have above.
+
+Hughes Beam:
+
+If I use the formulation given by Tom Hughes in "The Finite Element Method", where linear
+interpolating funcitions are used thoughout, the strain relation becomes:
+
+[ strain ] = [ B ][ U ] =
+                                                                                                           | U x   |
+                                                                                                           | U y   |
+| strain xx |   | Nhat1' 0      0      0      0      0      Nhat2' 0      0      0       0      0      |   | U z   |
+|  curve zz | = | 0      0      0      0      0      Nhat1' 0      0      0      0       0      Nhat2' | * | Phi x | node 1
+|  curve yy |   | 0      0      0      0      Nhat1' 0      0      0      0      0       Nhat2' 0      |   | Phi y |
+|  curve xx |   | 0      0      0      Nhat1' 0      0      0      0      0      Nhat2'  0      0      |   | Phi z |
+| strain zx |   | 0      0      N1hat' 0      N1hat  0      0      0      N2hat' 0       N2hat  0      |   | U x   |
+| strain xy |   | 0      N1hat' 0      0      0     -N1hat  0      N2hat' 0      0       0     -N2hat  |   | U y   |
+                                                                                                           | U z   | node 2
+                                                                                                           | Phi x |
+                                                                                                           | Phi y |
+                                                                                                           | Phi z |
+The above matrix is different from that given in Hughes because in his beam coordinate system, the
+axis along the length of the beam is z while in SLFFEA, it is x.  This results in a switch
+of shape functions corresponding to the x and z components.  Also, the the 5th and 6th row
+describing strain have sign changes. 
+
+IMPORTANT!: In the above, the last 2 rows of the Hughes strain relate to the transverse shear
+strain.  For the MHB, the last 2 rows give the shear correction factors that are added to the
+transverse shear which already exists(even in EB beams) in the K matrix of the EB beam.  If you
+transpose the Hughes [B] matrix, you will see that the shear terms come entirely from the terms in
+last 2 rows as all other components will multiply to zero.  This is not true of the components
+of a Hermitian beam.  The fact that the last 2 rows of both matrices have the same form except for
+their signs contributes to the confusion, but again, they are not the same. 
+
+The ordering of the rows is not really important in terms of the resulting K matrix because
+in the product of [B traspose][DB] = [K], swapping a row means a sapping of columns for [B traspose]
+and so the corresponding elements which multiplied together before will do so again.
+
+---------------------------------------------------------------------------------
+
+P 5.1
+
+The material property matrix [D] is given by:
+
+|    E*Area   0        0        0        0        0        |
+|    0        E*Iz     0        0        0        0        |
+|    0        0        E*Iy     0        0        0        |
+|    0        0        0        G*Ip     0        0        |
+|    0        0        0        0        G*Areaz  0        |
+|    0        0        0        0        0        G*Areay  |
+
+---------------------------------------------------------------------------------
+
+P 5.2
+
+Based on the modified [B] and [stress] matrices above, I get the following for the
+integrated Hermitian beam element:
+
+[B transpose ] [ stress ] =
+
+
+| Nhat1'     0          0          0          0          0     |                         | force x   |
+| 0          N1''       0          0          0          N1''' |                         | force y   |
+| 0          0         -N1''       0         -N1'''      0     |                         | force z   |
+| 0          0          0          Nhat1'     0          0     |                         | moment x  | node 1
+| 0          0          N2''       0          N2'''      0     |   | Area* stress xx |   | moment y  |
+| 0          N2''       0          0          0          N2''' |   | moment zz       | = | moment z  |
+| Nhat2'     0          0          0          0          0     | * | moment yy       |   | force x   |
+| 0          N3''       0          0          0          N3''' |   | moment xx       |   | force y   |
+| 0          0         -N3''       0         -N3'''      0     |   | stress zx       |   | force z   | node 2
+| 0          0          0          Nhat2'     0          0     |   | stress xy       |   | moment x  |
+| 0          0          N4''       0          N4'''      0     |                         | moment y  |
+| 0          N4''       0          0          0          N4''' |                         | moment z  |
+
+stress zx = -EmodXIz*(strain zx)/(1.0 + phiz)    (The units are Nm^2)
+stress xy = -EmodXIy*(strain xy)/(1.0 + phiy)
+
+Normally, stress zx and xy would be defined by:
+
+stress zx = G*Areay*(strain zx)    (The units are N)
+stress xy = G*Areaz*(strain zx)
+
+but because the internal energy is given by [B][stress], I had to redefine stress zx and
+stress xy based on the above because when they are multiplied by the resulting shape functions
+in [B] arising from v''' and w''', this is the only way to get the internal energy.  The
+source of -1.0/(1.0 + phiy) is explained below.
+
+---------------------------------------------------------------------------------
+
+P 5.3
+
+Based on the modified [B] and [stress] matrices above, I get the following for the
+Hughes integrated C0 beam element:
+
+[B transpose ] [ stress ] =
+
+                                                                                                          
+| Nhat1'     0          0          0          0          0      |                         | force x   |
+| 0          0          0          0          0          N1hat' |                         | force y   |
+| 0          0          0          0          N1hat'     0      |                         | force z   |
+| 0          0          0          N1hat'     0          0      |                         | moment x  | node 1
+| 0          0          Nhat1'     0          N1hat      0      |   | Area* stress xx |   | moment y  |
+| 0          Nhat1'     0          0          0         -N1hat  |   | moment zz       | = | moment z  |
+| Nhat2'     0          0          0          0          0      | * | moment yy       |   | force x   | 
+| 0          0          0          0          0          N2hat' |   | moment xx       |   | force y   |
+| 0          0          0          0          N2hat'     0      |   | stress zx       |   | force z   | node 2
+| 0          0          0          N2hat'     0          0      |   | stress xy       |   | moment x  |
+| 0          0          Nhat2'     0          N2hat      0      |                         | moment y  |
+| 0          Nhat2'     0          0          0         -N2hat  |                         | moment z  |
+
+
+stress zx = EmodXIz*(strain zx)    (The units are Nm^2)
+stress xy = EmodXIy*(strain xy)
+
+Normally, stress zx and xy would be defined by:
+
+stress zx = G*Areay*(strain zx)    (The units are N)
+stress xy = G*Areaz*(strain zx)
+
+but because the internal energy is given by [B][stress], I had to redefine stress zx and
+stress xy based on the above because when they are multiplied by the resulting shape functions
+in [B] arising from v''' and w''', this is the only way to get the internal energy.
+
+---------------------------------------------------------------------------------
+
+P 6.0
+
+To do some test my implementation of the Reissner-Mindlin beam given by Hughes, I tried to replicate
+the table given in Figure 5.5.2, page 378 of Hughes.   Because he doesn't give a mesh, I had to
+make some make my own and therefore, some of the numbers are not exact.  Also, I set the element
+type to 2 even though they really should be shear deformable elements.
+
+This test was to see the amount of improvement using reduced integration for the element.  My
+results closely matched Hughes and there is a clear improvement using reduced integration.  There
+is even less stiffness(and a greater displacement) in the values of the 8 and 16 element mesh.
+The actual value was taken to be the result given by the cubically interpolated Euler Beam.
+
+For a beam with length 8.0 and material properties:
+
+ matl no., E mod, Poiss. Ratio, density, Area, Iy, Iz, AreaSy, AreaSz
+     0   2.000000e+11 2.700000e-01 2.332000e+03 1.000000e-04 1.000000e-05 1.000000e-05
+
+actual         reduced       reduced/actual         2 point       2 point/actual      number of elements
+
+5.120000e-02   3.900960e-02  0.7619                 2.355263e-03  .04600              1  elements
+5.120000e-02   4.860960e-02  0.9494                 8.290406e-03  .16192              2  elements
+5.120000e-02   5.100960e-02  0.9963                 2.240574e-02  .43761              4  elements    
+5.120000e-02   5.160960e-02  1.008                  3.901079e-02  .76181              8  elements
+5.120000e-02   5.175960e-02  1.011                  4.788225e-02  .93520             16  elements
+
+So Hughes's element with reduced integration is something worth including as an element type
+option. 
+
+
+---------------------------------------------------------------------------------
+
+P 7.0
+
+In my attempt to derive the Przemieniecki [K] matrix using variational calculus as it is
+prescribed by equation 13.34 if Chapter 13 in the book I found on the Internet at:
+
+      http://caswww.colorado.edu/courses.d/NFEM.d/NFEM.Ch13.d/NFEM.Ch13.pdf
+
+I could not make the derivation work without including the -1.0/(phiy + 1.0).  In this equation,
+the internal energy is given by the integral over the length:
+
+   U = 1.0/2.0 integral ( E*I*kappa^2 + G*As*gamma^2) dx      Equation 13.34
+
+    E = elastic modulus
+    I = moment of inertia
+    G = shear mudulus
+   As = shear area
+kappa = cruvature
+gamma = shear strain
+
+For an EB beam, there would only be the first term which is the energy from bending.  The second term
+is the energy from the shear.  As I stated in the code in "bmkasmbl.c" at about line 130, I needed to
+multiply by a factor of -1.0/(phiy + 1.0) to match the [K] matrix as given on page 79 of Przemieniecki.  
+If you look at equation 13.34, you see that the second term is positive and therefore should increase
+the total internal energy.  But if I multiply the term by -1.0/(phiy + 1.0), I will decrease the internal
+energy.  This made me try an experiment where I calculated the eigenvalues of an EB beam, and then a
+Przemieniecki beam element.  These eigenvalues represent energy states so it should be true that if the
+eigenvalues are less in the Przemieniecki beam element, then the energy of the [K] matrix went down (Of course,
+the displacement may then increase making the overall energy go up.)  The set of eigenvalues of a constrained
+(1 node completely fixed) [K] matrix was:
+
+  1.706567e+05   2.516661e+05   4.885889e+06   6.008300e+06   2.229830e+07   3.199717e+07   Przemieniecki
+  1.763602e+05   2.642993e+05   5.922364e+06   6.008300e+06   2.459204e+07   3.685280e+07   EB beam
+
+As can be seen, the eigenvalues of the EB beam are higher, implying that the [K] of an EB beam is stiffer
+and we have to subtract from it to get the lower energy of a Przemieniecki beam.
+
+------------------------------------------------------------------------------------------------------
+
+P 8.0
+
+As you saw in earlier sections, I have tried to match the nodal stresses calculated through:
+
+   [K][U]
+
+with that calculated through:
+
+   [D][B][U]
+
+with the new components of [B] along with the new shear terms, there are slight changes in the
+value of the moments.  This happens because, if you look at the calculation of [B traspose][stress]
+above, you can see that the rows corresponding to moments in [B], have terms that will add the
+shear.  To make the two calculations equal, I carefully examined the way the new shear
+terms added to the moments.  It is too complex to discuss here, but I will say a few general
+things.
+
+  1) Because the new rows of the [B] matrix (the last 2 rows corresponding to the shear terms) are
+     based on the third derivatives of N, they are constant throughout the beam.  If I multiply
+     them by a factor of 6.0/L(which is also necessary to get the correct units) and then add them
+     to the moments as they were calculated before, I get moments which match those calculated from
+     [K][U]. 
+
+  2) I have to switch the sign for the second node.
+     
+------------------------------------------------------------------------------------------------------
+
+P 9.0
+
+For the rows corresponding to shear, an examination of the [B] matrix shows that its multiplication
+with [stress] will mean that there is contribution from the moments.  Because moments vary along the
+length of the beam, it is much more difficult to find the factor of moment which should be added.  It
+turns out that again, it is an amount constant in magnitude(though there is a sign change).  This
+amount is the same as the averange of the values of the moments at the ends times 2.0/L.  And because
+moment varies linearly across the length, I tried simply taking the value of the moment at the center. 
+But something interesting happens here.  To get the moments to match between the 2 methods
+of calculation, I had to switch signs on all the values for the first node in the force = [K][U].  So
+the average is based on if this sign did not switch.  This means that an average normally calculated by:
+
+            x ave = (x1 + x2)/2.0
+
+now takes the form:
+
+            x ave = (x1 - x2)/2.0
+
+This is reflected in the calculations.  I originally tried some trickier things to make this
+calculation thinking that it would be more consistent with the theroy, but I now feel it was
+needlessly complex while also not being very enlightening.
+
+The problems associated with getting the two different methods to match are that I need
+to take the average of the moments yy and zz based on their values at the nodes, but within the
+integrated technique, it is possible to get the moments at different points, such as the
+gauss points of integration.  The average of these latter moments are not the same as those at
+the nodes.  This is expected since, as mentioned above, there needs to be a sign change
+in the values of the moments of the first node to match the 2 methods of calculation.
+That means that if the moment yy of the integrated method converges to 5.0, then the moment yy
+of from the reaction forces will be -5.0 at node 1.  If, at the second node, the moment was 7.0,
+the average in the 2 cases would be:
+
+    ( 5.0 + 7.0)/2.0 = 6.0    from integration
+    (-5.0 + 7.0)/2.0 = 1.0    from forces
+
+So the value of the moment at the center is either 6.0 or 1.0 depending on the method used(You can
+see this by setting the interpolation variable x = 0.0).  I went through many different senarios
+to get everything to match in a way which would be clear, but for now, I do not think this
+is possible.
+
+Despite this inability to unify the 2 methods, there are still advantages each method has over
+the other.  For the integrated element, the strain zx and xy and stress zx and xy are based
+on the third derivative of the displacement in z and y respectively.  For the fully assembled
+stiffness matrix, strain zx and xy and stress zx and xy are from the forces.  So depending
+on what you feel should be the source of these stresses and strains, you can choose the applicable
+element to make the calculation.
+
+
+================================================================================================
+P 10.0    New Element Types
+================================================================================================
+
+As stated above, for SLFFEA-1.3, I have added some new element types, as well as an option
+on how to make calculations for them.  These new types include a Reissner-Mindlin(Timoshenko)
+Shear Deformable Beam and a hinged element.  For the latter, it can be viewed as a truss with
+shear properties.  This means you still have to fix rotations in the same situations for when
+trusses have to be fixed(e.g. when conneted at right angles to other hinged or truss elements).
+Otherwise, the stiffness matrix will be singular and your results will be invalid.
+
+One interesting thing about this element is that the rows corresponding to rotation are
+non-zero, yet it is still necessary to fix rotations.  I think the reason is that the rank
+of this matrix is 3, as opposed to a beam which has a rank of 6.  If you look at (13.31) of
+the paper:
+
+   http://caswww.colorado.edu/courses.d/IFEM.d/IFEM.Ch13.d/IFEM.Ch13.pdf
+
+   Felippa, Carlos A., Non-Linear Finite Element Methods, University of Colorado,
+        Boulder, 2001.
+
+you will see that the 1-D element stiffness only has one linearlly independant (unique) row. 
+In the author's description of the element, he says that this 1-D stiffness element is rank 1.   
+So you have to fix the boundary in the 3 remaining DOFs.
+
+Personal note:  I made this mistake with the bridge problem when I set the elements on one side
+equal to element 4.  This caused me to get significantly different results depending on whether
+I usde integration or the precalculated element stiffnesses, despite the fact that both methods
+gave nearly identical element stiffness matraces.  When this happens, it is a good guess that
+the resulting global stiffness is singular, although in this case, it did not cause the code to
+blow up.  To confirm my hypothosis, I calculated the eigenvalues of the mesh and got an 
+eigenvalue of 4.67360651e-14, which is very small, making me think that this matrix was
+nearly singular.
+
+
+------------------------------------------------------------------------------------------------
+P 11.0    Differences between the strains yy and zz for el_type 3 and el_type 9 
+------------------------------------------------------------------------------------------------
+
+There is a difference between the curvatures yy and zz caculated by using a pre-calculated
+stiffness and the integrated stiffness despite the fact that the moments yy and zz are the same. 
+The reason is that in the pre-calculated stiffness, moments are calculated directly from the
+curvatures and there is a linear relationship of the form:
+
+   curve[k].pt[0].zz = moment[k].pt[0].zz/EmodXIz 
+   curve[k].pt[0].yy = moment[k].pt[0].yy/EmodXIy
+
+For the curvatures coming from the integrated code, curvatures is calculated first, then
+is related to the moments with:
+
+   moment[k].pt[j].zz += *(stress_el+1) - *(stress_el+5)*fdum*6.0/L
+   moment[k].pt[j].yy += *(stress_el+2) - *(stress_el+4)*fdum*6.0/L
+
+The *(stress_el+5) and *(stress_el+4) and correspond to stress xy and zx respectively.  Because
+of this addition, there is no linear relationship between the moments and curvatures yy and zz.
+I could recalculate the curvatures yy and zz again from the moments to make them match, but
+I think I will keep it as is to allow for user choice in result, as is the case for stress xy
+and zx.
+
+------------------------------------------------------------------------------------------------
+P 11.1    Differences between the stress xy and zx for el_type 3 and el_type 9 
+------------------------------------------------------------------------------------------------
+
+Another thing to note is that the signs(in addition to the magnitudes) of the stress and strains
+xy and zx may be different between the 2 element types(mostly for stress and strain xy).  As I
+state above in 9.0, the stress and strain xy and zx are based on different calculations.
+Specifcally, el_type 3 includes the contribution of moment at the center whereas el_type 9 does
+ not.  I made a test where I did the equivalent of removing the moment contribution from the
+el_type 3 stress calculation and this resulted in a match between the stress and strain of the
+two types.  This shows that the contribution of the moment is often enough to switch signs of
+stress/strain xy and zx.
+
+
+

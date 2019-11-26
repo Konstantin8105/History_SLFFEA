@@ -3,7 +3,7 @@
     by reading in the data, doing assembling, and
     then solving the linear system for a truss
 
-	Updated 11/11/00
+	Updated 4/26/05
 
     SLFFEA source file
     Version:  1.1
@@ -45,7 +45,7 @@ int tsreader( BOUND , int *, double *, int *, double *, MATL *,
 int tsMemory( double **, int, int **, int, MATL **, int , XYZI **, int,
         STRAIN **, STRESS **, int );
 
-int dof, analysis_flag, neqn, nmat, nmode, numel, numnp, sof;
+int dof, sdof, analysis_flag, neqn, nmat, nmode, numel, numnp, sof;
 int standard_flag, consistent_mass_flag, stress_read_flag, gauss_stress_flag;
 
 int iteration_max, iteration_const, iteration;
@@ -113,13 +113,14 @@ int main(int argc, char** argv)
 	fgets( buf, BUFSIZ, o1 );
         fscanf( o1, "%d %d %d %d\n ",&numel,&numnp,&nmat,&nmode);
         dof=numnp*ndof;
+	sdof=numnp*nsd;
 
 	standard_flag = 1;
 
 /*   Begin allocation of meomory */
 
 /* For the doubles */
-        sofmf= numnp*nsd + 2*dof;
+        sofmf= sdof + 2*dof;
 
 /* For the integers */
         sofmi= numel*npel + 2*dof + numel*npel*ndof + numel + numnp+1 + 1;
@@ -136,7 +137,7 @@ int main(int argc, char** argv)
 
 /* For the doubles */
                                                 ptr_inc = 0;
-        coord=(mem_double+ptr_inc);             ptr_inc += numnp*nsd;
+        coord=(mem_double+ptr_inc);             ptr_inc += sdof;
         force=(mem_double+ptr_inc);             ptr_inc += dof;
         U=(mem_double+ptr_inc);                 ptr_inc += dof;
 

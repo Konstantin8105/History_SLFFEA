@@ -6,11 +6,11 @@
 
 			San Le
 
- 		Last Update 5/28/01
+ 		Last Update 7/23/02
 
     SLFFEA source file
-    Version:  1.2
-    Copyright (C) 1999, 2000, 2001  San Le 
+    Version:  1.3
+    Copyright (C) 1999, 2000, 2001, 2002  San Le 
 
     The source code contained in this file is released under the
     terms of the GNU Library General Public License.
@@ -47,7 +47,7 @@ extern int color_choice, input_flag, post_flag;
 extern int input_color_flag;
 extern int Perspective_flag, Render_flag, AppliedDisp_flag,
         AppliedForce_flag, Material_flag, Node_flag, Element_flag, Axes_flag,
-	CrossSection_flag;
+	Transparent_flag, CrossSection_flag;
 extern int Before_flag, After_flag, Both_flag, Amplify_flag;
 extern int stress_flag, strain_flag, disp_flag;
 extern int matl_choice, node_choice, ele_choice;
@@ -71,6 +71,28 @@ void tsmeshdraw(void)
         else Before_flag = 0;
 
 	*(wire_color + 2) = 0.0;
+
+	MeshColor[0][3] = 1.0;
+	MeshColor[1][3] = 1.0;
+	MeshColor[2][3] = 1.0;
+	MeshColor[3][3] = 1.0;
+	MeshColor[4][3] = 1.0;
+	MeshColor[5][3] = 1.0;
+	MeshColor[6][3] = 1.0;
+	MeshColor[7][3] = 1.0;
+
+	if(Transparent_flag)
+	{
+		MeshColor[0][3] = 0.075;
+		MeshColor[1][3] = 0.075;
+		MeshColor[2][3] = 0.075;
+		MeshColor[3][3] = 0.075;
+		MeshColor[4][3] = 0.075;
+		MeshColor[5][3] = 0.075;
+		MeshColor[6][3] = 0.075;
+		MeshColor[7][3] = 0.075;
+	}
+	if(color_choice == 30 || color_choice == 32) MeshColor[7][3] = 1.0;
 
         for( k = 0; k < numel; ++k )
         {

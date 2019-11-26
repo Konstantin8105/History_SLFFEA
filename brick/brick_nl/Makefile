@@ -33,7 +33,8 @@ OBJECTS = $(COMMON)/matxt.o $(COMMON)/matx.o $(COMMON)/crossx.o \
 	$(COMMON)/dotx.o $(COMMON)/cubic.o 
 OBJECTS2 = $(COMMON)/crossx.o 
 OBJECTS_BR = $(BRICK)/brmemory.o $(BRICK)/brreader.o $(BRICK)/brid.o $(BRICK)/brshape.o \
-	$(BRICK)/brickb.o $(BRICK)/brwriter.o $(BRICK)/brvolume.o  $(BRICK)/brwriter2.o 
+	$(BRICK)/brickb.o $(BRICK)/brbound.o $(BRICK)/brwriter.o $(BRICK)/brvolume.o  \
+	$(BRICK)/brwriter2.o $(BRICK)/brconj.o 
 
 #PROGS = nbr pvv
 PROGS = nbr
@@ -44,11 +45,16 @@ all: nbr
 nbr: femnbr.o \
 		brfmasmbl.o \
 		brpasmbl.o \
+		brpasmbl2.o \
 		../brick/brconst.h \
 		../brick/brstruct.h 
 	$(CC) -o nbr femnbr.o \
 		brfmasmbl.o \
-		brpasmbl.o $(OBJECTS_BR) $(OBJECTS) $(LIBS)
+		brpasmbl.o \
+		brpasmbl2.o $(OBJECTS_BR) $(OBJECTS) $(LIBS)
+
+brpasmbl2.o: brpasmbl2.c
+	$(CC) -c brpasmbl2.c 
 
 brpasmbl.o: brpasmbl.c
 	$(CC) -c brpasmbl.c 

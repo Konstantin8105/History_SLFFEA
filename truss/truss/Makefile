@@ -1,5 +1,5 @@
 # SLFFEA Makefile
-# Version:  1.2
+# Version:  1.3
 # Copyright (C) 1999, 2000  San Le (slffea@yahoo.com)
 # http://slffea.com/
 #
@@ -48,6 +48,7 @@ ts: femtruss.o \
 		tslanczos.o \
 		tsmassp.o \
 		tswriter.o \
+		tslength.o \
 		tsconst.h \
 		tsstruct.h 
 	$(CC) -o ts femtruss.o \
@@ -60,8 +61,12 @@ ts: femtruss.o \
 		tsmasmbl.o \
 		tslanczos.o \
 		tsmassp.o \
-		tswriter.o $(OBJECTS)  $(LIBS)
+		tswriter.o \
+		tslength.o $(OBJECTS) $(LIBS)
 
+
+tslength.o: tslength.c
+	$(CC) -c tslength.c 
 
 tswriter.o: tswriter.c
 	$(CC) -c tswriter.c 
